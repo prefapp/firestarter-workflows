@@ -1,0 +1,6 @@
+example:
+  registry: ttl.sh
+  repository: foo/bar
+  build_args:
+    REACT_APP_API_URL: prod.local
+  dockerfile: './Dockerfile'

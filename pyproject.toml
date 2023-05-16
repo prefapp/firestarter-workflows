@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "firestarter-workflows"
+version = "0.1.0"
+description = "Firestarter standard Dagger workflows"
+authors = ["Javier Gomez Rodriguez <javier.gomez@prefapp.es>"]
+readme = "README.md"
+packages = [{include = "on_premises"}, {include = "pr_verify"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+anyio = { version = "3.6.2", python = ">=3.6.2" }
+azure-cli = { version = "2.46.0", python = ">=2.7,<2.8 || >=3.6.0" }
+dagger-io = { version = "0.5.3", python = ">=3.10,<4.0" }
+docker = { version = "5.0.3", python = ">=3.6" }
+pyyaml = { version = "5.4.1", python = ">=2.7,<2.8 || >=3.6.0" }
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
