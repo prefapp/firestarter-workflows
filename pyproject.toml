@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "Firestarter standard Dagger workflows"
 authors = ["Javier Gomez Rodriguez <javier.gomez@prefapp.es>"]
 readme = "README.md"
-packages = [{include = "on_premises"}, {include = "pr_verify"}]
+packages = [{include = "firestarter.on_premises"}, {include = "firestarter.pr_verify"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
