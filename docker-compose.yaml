@@ -1,0 +1,30 @@
+---
+version: "3.10"
+
+services:
+  app:
+    build: .
+    volumes:
+      - .:/home/app
+      - /var/run:/var/run
+    working_dir: /home/app
+    command:
+      - tail
+      - -f 
+      - /dev/null
+
+  pypi-server:
+    image: pypiserver/pypiserver:latest
+    volumes:
+         - type: bind
+           source: ./auth
+           target: /data/auth
+    command: -P /data/auth/.htpasswd -a update,download,list /data/packages
+    entrypoint: ["/entrypoint.sh", "run", "--hash-algo", "sha256"]
+
+  test:
+    image: python:3.11
+    command:
+      - tail
+      - -f 
+      - /dev/null
