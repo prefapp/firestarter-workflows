@@ -6,7 +6,7 @@ import dagger
 from .config import Config
 from azure.cli.core import get_default_cli
 
-class OnPremises(FirestarterWorkflow):
+class BuildImages(FirestarterWorkflow):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self._repo_name = self.vars['repo_name']
