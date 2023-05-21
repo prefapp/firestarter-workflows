@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "firestarter"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 anyio = { version = "3.6.2", python = ">=3.6.2" }
 dagger-io = { version = "0.5.3", python = ">=3.10,<4.0" }
 pyyaml = { version = "5.4.1", python = ">=2.7,<2.8 || >=3.6.0" }
