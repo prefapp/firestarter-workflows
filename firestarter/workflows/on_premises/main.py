@@ -1,7 +1,5 @@
-# Import necessary libraries
 import sys
 import dagger
-import argparse
 import yaml
 import datetime
 from anyio import (
@@ -10,24 +8,15 @@ from anyio import (
 )
 from azure.cli.core import get_default_cli
 
+def run(*, vars, secrets, config_file):
+    # Define the path to the on-premises configuration file
+    on_premises_config_path = './firestarter/workflows/on_premises/config.yaml'
 
-# Define command-line arguments
-arg_parser = argparse.ArgumentParser()
+    # Get the repository name from the command-line arguments
+    repo_name = vars.get('repository_name', 'No repository name specified')
 
-arg_parser.add_argument('--vars', type=str, help='name of the current repository')
-arg_parser.add_argument('--secrets', type=str, help='point of the mapping of the code from which the image will be compiled')
-arg_parser.add_argument('--config_file', type=str, help='string with on-premises name separated by commas or * for all')
-args = arg_parser.parse_args()
-
-# Get the path of the on-premises configuration file from the command-line arguments
-on_premises_config_path = args.config_file
-
-# Get the repository name from the command-line arguments
-repo_name = "pepito"
-
-# Get the metadata label from the command-line arguments and print it
-code_mapping_label = "manolito"
-print(f'\nLabel: {code_mapping_label}')
+    # Get the code mapping label from the command-line arguments
+    code_mapping_label = vars.get('code_mapping_label', 'No code mapping label specified'
 
 
 # Read the on-premises configuration file
