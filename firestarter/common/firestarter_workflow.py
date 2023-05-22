@@ -16,5 +16,5 @@ class FirestarterWorkflow:
     def secrets(self):
         return self._secrets
 
-    def run(self):
+    def execute(self):
         raise NotImplementedError
