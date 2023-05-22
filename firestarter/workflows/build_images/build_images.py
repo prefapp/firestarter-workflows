@@ -105,10 +105,9 @@ class BuildImages(FirestarterWorkflow):
             # Log in to the Azure Container Registry
             registry = self.config.images[key].registry
             cli = get_default_cli()
-            cli.invoke(['acr', 'login', '--name', registry])
-
+            success = cli.invoke(['acr', 'login', '--name', registry])
+            if success != 0:
+                raise Exception('Login to the Azure Container Registry failed.')
 
         # Run the coroutine function to execute the compilation process for all on-premises
         anyio.run(self.compile_images_for_all_on_premises)
-
-
