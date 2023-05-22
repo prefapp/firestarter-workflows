@@ -46,7 +46,7 @@ def main():
     result = workflow.run(
         vars=vars,
         secrets=secrets,
-        config_file=args.config_file,
+        config_file=config_file,
     )
 
     print(f"Result : {result}\n")
