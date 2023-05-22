@@ -27,18 +27,13 @@ def main():
     arg_parser.add_argument('--config_file', type=str, help='Optional configuration file for the workflow, located in the repository')
     args = arg_parser.parse_args()
 
-    vars = {}
-    secrets = {}
-    config_file = None
-
     input_vars = os.environ.get("INPUT_VARS", None)
     input_secrets = os.environ.get("INPUT_SECRETS", None)
     input_config_file = os.environ.get("INPUT_CONFIG_FILE", None)
 
-    if None not in (input_vars, input_secrets, input_config_file):
-      vars.update(tomllib.loads(input_vars))
-      secrets.update(tomllib.loads(input_secrets))
-      config_file = input_config_file if input_config_file is not None else args.config_file
+    vars = tomllib.loads(input_vars) if input_vars is not None else {}
+    secrets = tomllib.loads(input_secrets) if input_secrets is not None else {}
+    config_file = input_config_file if input_config_file is not None else args.config_file
 
     if args.vars_inline or args.secrets_inline:
       logger.info(f"Inline args detected")
