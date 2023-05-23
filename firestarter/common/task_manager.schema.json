@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$ref": "#/definitions/root",
+  "definitions": {
+    "root": {
+      "type": "object",
+      "required": ["image", "tasks", "version"],
+      "properties": {
+        "image": {
+          "type": "string",
+          "description": "The name of the Docker image to use for the build process."
+        },
+        "version": {
+          "type": "string",
+          "description": "The workflow version"
+        },
+        "tasks": {
+          "type": "array",
+          "description": "A collection of tasks to be executed during the build process.",
+          "items": {
+            "$ref": "#/definitions/Task"
+          }
+        },
+        "env": {
+          "description": "A collection of env vars",
+          "$ref": "#/definitions/Env"
+        }
+      }
+    },
+    "Env": {
+      "type": "object",
+      "patternProperties": {
+        "^.+$": {
+          "type": "string"
+        }
+      }
+    
+    },
+    "Task": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A collection of 1..N commands to run in a context",
+      "properties":{
+        "name": {
+          "type": "string",
+          "description": "A identificator for the task"
+        },
+        "run":{
+          "type": "string",
+          "description": "A command to run"
+        },
+        "image": {
+          "type": "string",
+          "description": "To use a different image from the common one (It breaks the context)"
+        },
+        "env": {
+          "$ref": "#/definitions/Env"
+        }
+      },
+
+      "required": ["name", "run"]
+    }
+  }
+}

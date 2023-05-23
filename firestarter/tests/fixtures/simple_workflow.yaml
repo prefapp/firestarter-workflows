@@ -1,0 +1,27 @@
+image: node:20-slim
+version: "1"
+vars:
+  NOMBRE: "Toni"
+  TITULO: "Diosin"
+tasks:
+  - name: greetings   
+    run: |
+      echo "Hello world ${NOMBRE}"
+      echo "Hola mundo" >> /home/file
+
+  - name: read
+    run: |
+      cat /home/file
+
+  - name: same context
+    run: |
+      echo "Hello world ${NOMBRE}"
+      ls -lhart /home
+    vars:
+      NOMBRE: "Francisco"
+
+  - name: new context
+    run: |
+      ls -lhart /home
+    image: node:18-slim
+
