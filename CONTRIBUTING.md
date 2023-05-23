@@ -40,3 +40,4 @@ This can be done in the following ways:
     python = "^3.11"
     firestarter-workflows = {path = "../firestarter-workflows"}
     ```
+> Remember to update the dependencies when doing so (`poetry update firestarter-workflows`).
