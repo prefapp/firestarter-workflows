@@ -2,13 +2,16 @@
 
 ## Creating a new workflow
 
+To create a new workflow follow these steps:
+
 1. Create a new folder in the `workflows` directory.
 2. Add a `README.md` file to the new folder. This file should contain a description of the workflow.
 3. Add an `__init__.py` file to the new folder. This file should export a function called `run` with the following signature:
     
     `def run(vars:dict=None, secrets:dict=None, config_file:str=None) -> Integer`.
 
-How to test your workflow locally (check the [example repository](https://github.com/prefapp/test-repo-rundagger) for more details):
+
+To test your workflow locally follow the below steps (check the [example repository](https://github.com/prefapp/test-repo-rundagger) for more details):
 1. Create a new folder.
 2. Create a `pyproject.toml` using `poetry init`.
 3. Update the `pyproject.toml` namespace to "firestarter":
