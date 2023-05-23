@@ -21,8 +21,8 @@ COPY . .
 
 WORKDIR /home/app
 
-RUN pip install --upgrade pip && \
-    pip install poetry==1.4
-RUN poetry config virtualenvs.create false
-RUN poetry install
+#RUN pip install --upgrade pip && \
+#    pip install poetry==1.4.2
+#RUN poetry config virtualenvs.create false
+#RUN poetry install
 
