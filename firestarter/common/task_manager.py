@@ -1,5 +1,5 @@
-from dagger_helper import validations
-from dagger_helper.tasks import Tasks, Task
+from .validations import validate_task_manager
+from .tasks import TaskGroup, Task
 
 
 def task_scheduler(task_manager_data, tasks_instance, context):
@@ -11,7 +11,7 @@ def task_scheduler(task_manager_data, tasks_instance, context):
 class TaskManager:
 
     def __init__(self):
-        self.tasks = Tasks()
+        self.tasks = TaskGroup()
         self._context = False
 
     @property
@@ -23,11 +23,11 @@ class TaskManager:
         self._context = context
 
     def load(self, path):
-        task_manager_data = validations.validate_task_manager(path)
+        task_manager_data = validate_task_manager(path)
 
         # init the context properly
         self.context.default_image = task_manager_data["image"]
-        self.context.default_env = task_manager_data.get("env", {})
+        self.context.default_env = task_manager_data.get("vars", {})
 
         # let's run the tasks
         task_scheduler(task_manager_data, self.tasks, self.context)

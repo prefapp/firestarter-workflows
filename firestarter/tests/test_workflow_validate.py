@@ -1,5 +1,5 @@
-from firestarter.common.validations import validations
-from firestarter.common.task_manager import TaskManager
+from firestarter.common import validations
+from firestarter.common import task_manager
 import os
 
 
@@ -12,7 +12,7 @@ def test_validate_schema():
     )
 
 def test_validate_from_workflow():
-    tm = TaskManager()
+    tm = task_manager.TaskManager()
     tm.context = MockContext()
     tm.load(os.path.join(os.path.dirname(__file__), 'fixtures/workflow.yaml'))
 

@@ -1,4 +1,4 @@
-from firestarter.common.bash_runner import exec_run_in_container
+from .bash_runner import exec_run_in_container
 
 class Task:
 
@@ -7,7 +7,7 @@ class Task:
         self.name = args["name"]
         self.commands = args["run"]
         self.image = args.get("image", None)
-        self.env = args.get("env", {})
+        self.env = args.get("vars", {})
 
     def execute(self, ctx):
         container = self.prepare_ctx(ctx)

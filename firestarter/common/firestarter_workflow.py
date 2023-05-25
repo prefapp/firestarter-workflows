@@ -1,4 +1,4 @@
-from tasks import Tasks
+from .tasks import Tasks
 
 class FirestarterWorkflow:
     def __init__(self, **kwargs) -> None:
