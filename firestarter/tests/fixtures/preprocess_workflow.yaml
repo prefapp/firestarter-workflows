@@ -1,0 +1,6 @@
+a:
+  value: ${{ secret.SECRET1}}
+b:
+  - name: ${{ env.NAME }}
+    value: ${{ var.VALUE }}
+

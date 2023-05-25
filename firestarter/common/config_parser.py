@@ -17,6 +17,7 @@ class Parser:
         reSub = re.compile("\$\{\{\s*" + symbol + "\s*\}\}")
         self.data = reSub.sub(value, self.data)
 
+
 # with open("./a.yaml", "r") as file:
 
 #     data = file.read()
