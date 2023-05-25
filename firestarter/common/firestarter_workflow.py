@@ -1,5 +1,3 @@
-from .tasks import Tasks
-
 class FirestarterWorkflow:
     def __init__(self, **kwargs) -> None:
         self._config_file = kwargs.get('config_file', None)
