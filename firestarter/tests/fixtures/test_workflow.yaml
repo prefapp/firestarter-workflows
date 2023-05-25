@@ -5,8 +5,7 @@ image: node:20-slim
 version: "1"
 vars:
   VAR1: "VALUE_1"
-  VAR2: "VALUE_2"
-  VARN: ${{ env.VARN }}
+  VARN: "VALUE_N"
 tasks:
   - name: check1
     run: |
@@ -23,8 +22,7 @@ tasks:
 
   - name: check2
     vars:
-      # VAR1: "VALUE_2"
-      VAR1: ${{ vars.VAR2 }}
+      VAR1: "VALUE_2"
     run: |
       if [[ $VAR1 != "VALUE_2" ]];
         then exit 1

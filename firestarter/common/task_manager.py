@@ -1,6 +1,5 @@
 from .validations import validate_task_manager
 from .tasks import TaskGroup, Task
-from .config_parser import parse_vars
 
 
 def task_scheduler(task_manager_data, tasks_instance, context):
@@ -28,9 +27,7 @@ class TaskManager:
 
         # init the context properly
         self.context.default_image: str = task_manager_data["image"]
-        self.context.default_env: dict = parse_vars(
-            task_manager_data.get("vars", {})
-        )
+        self.context.default_env: dict = task_manager_data.get("vars", {})
 
         # let's run the tasks
         task_scheduler(task_manager_data, self.tasks, self.context)
