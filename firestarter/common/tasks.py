@@ -34,6 +34,7 @@ class Task:
 
 
 class TaskGroup:
+
     def __init__(self):
         self.__tasks = {}
 
