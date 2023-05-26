@@ -29,7 +29,7 @@ class TaskManager:
         self.context.default_image = task_manager_data["image"]
         self.context.default_env = task_manager_data.get("vars", {})
 
-        # let's run the tasks
+        # let's load the tasks
         task_scheduler(task_manager_data, self.tasks)
 
     def run(self) -> None:
