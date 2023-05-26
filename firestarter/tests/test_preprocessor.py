@@ -28,7 +28,7 @@ def test_parser() -> None:
     assert result.get("b", {})[0].get("value", "") == "VAR_VALUE"
 
 def test_error() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Unknown context"):
         result: dict = yaml.load(
             process_file("fixtures/preprocess_workflow_error.yaml"),
             Loader=yaml.Loader,
