@@ -5,12 +5,14 @@ from typing import Callable
 
 class Context:
 
-    def __init__(self) -> None:
+    def __init__(self, vars: dict = None, secrets: dict = None) -> None:
         self.container: dagger.Container = False
         self._dagger_client: dagger.Client = False
         self._default_image: str = False
         self._default_env: dict = {}
         self.outputs: dict = {}
+        self.vars: dict = vars if vars else {}
+        self.secrets: dict = secrets if secrets else {}
 
     async def start(self, fn: Callable) -> None:
         with dagger.Connection(dagger.Config(log_output=sys.stderr)) as client:

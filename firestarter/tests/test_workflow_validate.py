@@ -1,4 +1,4 @@
-from firestarter.common.validations import validate_task_manager
+from firestarter.common.validations import validate_config
 from firestarter.workflows.ci.task_manager import TaskManager
 import os
 
@@ -12,7 +12,7 @@ class MockContext:
     pass
 
 def test_validate_schema() -> None:
-    validate_task_manager(CONFIG_FILE_PATH, SCHEMA_FILE_PATH)
+    validate_config(CONFIG_FILE_PATH, SCHEMA_FILE_PATH)
 
 def test_validate_from_workflow() -> None:
     tm: TaskManager = TaskManager()
