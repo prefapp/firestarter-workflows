@@ -13,8 +13,8 @@ def process_file(file_path: str) -> str:
     )))
 
     return pp.preprocess({
-        "resolveVar": lambda v: f"VAR_{v}",
-        "resolveSecret": lambda s: f"VAR_{s}",
+        "resolve_var": lambda v: f"VAR_{v}",
+        "resolve_secret": lambda s: f"VAR_{s}",
     })
 
 
