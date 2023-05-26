@@ -11,6 +11,13 @@ class Context:
         self._default_env = {}
         self.outputs = {}
 
+    def __init__(self, **kwargs):
+        self.container = kwargs.get("vars", {}).get("container", False)
+        self._dagger_client = kwargs.get("vars", {}).get("dagger_client", False)
+        self._default_image = kwargs.get("vars", {}).get("default_image", False)
+        self._default_env = kwargs.get("vars", {}).get("default_env", {})
+        self.outputs = kwargs.get("vars", {}).get("outputs", {})
+
     async def start(self, fn):
         with dagger.Connection(dagger.Config(log_output=sys.stderr)) as client:
             self.dagger_client = client
