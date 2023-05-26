@@ -1,6 +1,7 @@
 import sys
 import anyio
 import dagger
+from typing import Callable
 
 class Context:
 

@@ -1,5 +1,6 @@
 """This module contains functions for working with dagger containers."""
 import tempfile
+from typing import List, TextIO
 
 def create_script_from_commands(commands: List[str], file: TextIO) -> None:
     """Builds a bash script from a list of commands.

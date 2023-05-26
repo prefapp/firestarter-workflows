@@ -1,6 +1,4 @@
 from .bash_runner import exec_run_in_container
-if TYPE_CHECKING:
-    from dagger import Container
 
 class Task:
 
@@ -12,7 +10,7 @@ class Task:
         self.env: dict = args.get("vars", {})
 
     def execute(self, ctx: dict) -> None:
-        container: Container = self.prepare_ctx(ctx)
+        container = self.prepare_ctx(ctx)
         container = exec_run_in_container(
             self.commands, container, ctx.dagger_client
         )
@@ -22,12 +20,12 @@ class Task:
 
         ctx.set_output(self.name, container)
 
-    def prepare_ctx(self, ctx: dict) -> Container:
-        container: Container = ctx.next_container(self.image)
+    def prepare_ctx(self, ctx: dict):
+        container = ctx.next_container(self.image)
         return self.add_env(container, ctx)
 
-    def add_env(self, container: Container, ctx: dict) -> Container:
-        env = dict(ctx.default_env, **self.env)
+    def add_env(self, container, ctx: dict):
+        env: dict = dict(ctx.default_env, **self.env)
 
         for env_name, env_value in env.items():
             container = container.with_env_variable(env_name, env_value)
