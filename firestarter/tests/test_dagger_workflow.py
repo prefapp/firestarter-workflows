@@ -4,10 +4,10 @@ import anyio
 import os
 
 
-def test_dagger_workflow():
+def test_dagger_workflow() -> None:
 
-    def myTestFunc(context):
-        tm = TaskManager()
+    def myTestFunc(context: Context) -> None:
+        tm: TaskManager = TaskManager()
         tm.context = context
         tm.load(
             os.path.join(

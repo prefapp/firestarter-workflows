@@ -2,24 +2,26 @@ from firestarter.common.validations import validate_task_manager
 from .tasks import TaskGroup, Task
 
 
-def task_scheduler(task_manager_data, tasks_instance, context):
+def task_scheduler(
+    task_manager_data: str, tasks_instance: TaskGroup, context: dict
+) -> None:
     for index, task in enumerate(task_manager_data["tasks"]):
-        task_obj = Task(task, index)
+        task_obj: Task = Task(task, index)
         tasks_instance.add_task(task_obj)
 
 
 class TaskManager:
 
-    def __init__(self):
-        self.tasks = TaskGroup()
-        self._context = False
+    def __init__(self) -> None:
+        self.tasks: TaskGroup = TaskGroup()
+        self._context: dict = False
 
     @property
-    def context(self):
+    def context(self) -> dict:
         return self._context
 
     @context.setter
-    def context(self, context):
+    def context(self, context: dict) -> None:
         self._context = context
 
     def load(self, path: str, schema_path: str) -> None:
@@ -32,6 +34,6 @@ class TaskManager:
         # let's run the tasks
         task_scheduler(task_manager_data, self.tasks, self.context)
 
-    def run(self):
+    def run(self) -> None:
         self.tasks.run_tasks(self.context)
 

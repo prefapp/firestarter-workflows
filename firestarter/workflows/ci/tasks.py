@@ -1,16 +1,18 @@
 from .bash_runner import exec_run_in_container
+if TYPE_CHECKING:
+    from dagger import Container
 
 class Task:
 
-    def __init__(self, args, order=0):
-        self.order = order
-        self.name = args["name"]
-        self.commands = args["run"]
-        self.image = args.get("image", None)
-        self.env = args.get("vars", {})
+    def __init__(self, args: dict, order: int = 0):
+        self.order: int = order
+        self.name: str = args["name"]
+        self.commands: List[str] = args["run"]
+        self.image: str = args.get("image", None)
+        self.env: dict = args.get("vars", {})
 
-    def execute(self, ctx):
-        container = self.prepare_ctx(ctx)
+    def execute(self, ctx: dict) -> None:
+        container: Container = self.prepare_ctx(ctx)
         container = exec_run_in_container(
             self.commands, container, ctx.dagger_client
         )
@@ -20,11 +22,11 @@ class Task:
 
         ctx.set_output(self.name, container)
 
-    def prepare_ctx(self, ctx):
-        container = ctx.next_container(self.image)
+    def prepare_ctx(self, ctx: dict) -> Container:
+        container: Container = ctx.next_container(self.image)
         return self.add_env(container, ctx)
 
-    def add_env(self, container, ctx):
+    def add_env(self, container: Container, ctx: dict) -> Container:
         env = dict(ctx.default_env, **self.env)
 
         for env_name, env_value in env.items():
@@ -35,10 +37,10 @@ class Task:
 
 class TaskGroup:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.__tasks = {}
 
-    def add_task(self, task):
+    def add_task(self, task: Task) -> None:
         if not isinstance(task, Task):
             raise f"Added task is not of type Task"
 
@@ -47,7 +49,7 @@ class TaskGroup:
 
         self.__tasks[task.name] = task
 
-    def run_tasks(self, context):
+    def run_tasks(self, context: dict) -> None:
         ctx = context
 
         for task in sorted(self.__tasks.values(), key=lambda t: t.order):

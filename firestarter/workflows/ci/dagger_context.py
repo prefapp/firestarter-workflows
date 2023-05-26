@@ -4,43 +4,43 @@ import dagger
 
 class Context:
 
-    def __init__(self):
-        self.container = False
-        self._dagger_client = False
-        self._default_image = False
-        self._default_env = {}
-        self.outputs = {}
+    def __init__(self) -> None:
+        self.container: dagger.Container = False
+        self._dagger_client: dagger.Client = False
+        self._default_image: str = False
+        self._default_env: dict = {}
+        self.outputs: dict = {}
 
-    async def start(self, fn):
+    async def start(self, fn: Callable) -> None:
         with dagger.Connection(dagger.Config(log_output=sys.stderr)) as client:
             self.dagger_client = client
             fn(self)
 
     @property
-    def dagger_client(self):
+    def dagger_client(self) -> dagger.Client:
         return self._dagger_client
 
     @property
-    def default_image(self):
+    def default_image(self) -> str:
         return self._default_image
 
     @property
-    def default_env(self):
+    def default_env(self) -> dict:
         return self._default_env
 
     @dagger_client.setter
-    def dagger_client(self, dagger_client):
+    def dagger_client(self, dagger_client: dagger.Client) -> None:
         self._dagger_client = dagger_client
 
     @default_image.setter
-    def default_image(self, image):
+    def default_image(self, image: str) -> None:
         self._default_image = image
 
     @default_env.setter
-    def default_env(self, env):
+    def default_env(self, env: dict) -> None:
         self._default_env = env
 
-    def next_container(self, image=None):
+    def next_container(self, image: str = None) -> dagger.Container:
         if not image:
             image = self.default_image
         else:
@@ -51,9 +51,9 @@ class Context:
         else:
             return self.new_container(image)
 
-    def new_container(self, image):
+    def new_container(self, image: str) -> dagger.Container:
         return self.dagger_client.container().from_(image)
 
-    def set_output(self, name, container):
+    def set_output(self, name: str, container: dagger.Container) -> None:
         self.container = container
         self.outputs[name] = container.stdout()

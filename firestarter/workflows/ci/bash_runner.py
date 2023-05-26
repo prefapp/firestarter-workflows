@@ -1,19 +1,19 @@
 """This module contains functions for working with dagger containers."""
 import tempfile
 
-def create_script_from_commands(commands, file):
+def create_script_from_commands(commands: List[str], file: TextIO) -> None:
     """Builds a bash script from a list of commands.
 
     Args:
         commands: A list of strings representing commands.
         file: A file object where the script will be written.
     """
-    script = "\n".join(["#!/bin/bash"] + commands)
+    script: str = "\n".join(["#!/bin/bash"] + commands)
 
     file.write(script.encode())
     file.close()
 
-def exec_run_in_container(commands, container, dagger_client):
+def exec_run_in_container(commands: List[str], container, dagger_client):
     """
     Executes commands in a container
 
@@ -34,10 +34,10 @@ def exec_run_in_container(commands, container, dagger_client):
     )
 
     # Create a temporary directory
-    temp_dir = tempfile.mkdtemp()
+    temp_dir: str = tempfile.mkdtemp()
 
     # Create a file within the temporary directory
-    temp_file = tempfile.NamedTemporaryFile(dir=temp_dir, delete=False)
+    temp_file: TextIO = tempfile.NamedTemporaryFile(dir=temp_dir, delete=False)
 
     # Build the bash script
     create_script_from_commands(commands.split("\n"), temp_file)
