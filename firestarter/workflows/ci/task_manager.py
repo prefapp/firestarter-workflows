@@ -1,4 +1,4 @@
-from .validations import validate_task_manager
+from firestarter.common.validations import validate_task_manager
 from .tasks import TaskGroup, Task
 
 
@@ -22,8 +22,8 @@ class TaskManager:
     def context(self, context):
         self._context = context
 
-    def load(self, path: str) -> None:
-        task_manager_data: dict = validate_task_manager(path)
+    def load(self, path: str, schema_path: str) -> None:
+        task_manager_data: dict = validate_task_manager(path, schema_path)
 
         # init the context properly
         self.context.default_image: str = task_manager_data["image"]

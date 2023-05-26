@@ -1,5 +1,5 @@
-from firestarter.common.dagger_context import Context
-from firestarter.common.task_manager import TaskManager
+from .dagger_context import Context
+from .task_manager import TaskManager
 import anyio
 
 

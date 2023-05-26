@@ -21,20 +21,24 @@
             "$ref": "#/definitions/Task"
           }
         },
-        "env": {
+        "vars": {
           "description": "A collection of env vars",
-          "$ref": "#/definitions/Env"
+          "$ref": "#/definitions/Var"
+        },
+        "secrets": {
+          "description": "A collection of secret vars",
+          "$ref": "#/definitions/Var"
         }
       }
     },
-    "Env": {
+    "Var": {
       "type": "object",
       "patternProperties": {
         "^.+$": {
           "type": "string"
         }
       }
-    
+
     },
     "Task": {
       "type": "object",
@@ -53,8 +57,8 @@
           "type": "string",
           "description": "To use a different image from the common one (It breaks the context)"
         },
-        "env": {
-          "$ref": "#/definitions/Env"
+        "vars": {
+          "$ref": "#/definitions/Var"
         }
       },
 
