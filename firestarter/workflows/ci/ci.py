@@ -1,6 +1,10 @@
 from .dagger_context import Context
 from .task_manager import TaskManager
 import anyio
+import os
+
+
+SCHEMA_FILE_PATH: str = os.path.join(os.path.dirname(__file__), 'schema.json')
 
 
 class CI:
@@ -14,7 +18,7 @@ class CI:
         def init_task_manager(context):
             tm = TaskManager()
             tm.context = self.context
-            tm.load(self.file_path)
+            tm.load(self.file_path, SCHEMA_FILE_PATH)
             tm.run()
 
         anyio.run(lambda: self.context.start(init_task_manager))

@@ -1,12 +1,15 @@
 image: node:20-slim
 version: "1"
 vars:
-  NOMBRE: "Toni"
-  TITULO: "Diosin"
+  NOMBRE: ${{ vars.NOMBRE }}
+  TITULO: ${{ secrets.TITULO }}
+  SHELL: ${{ env.SHELL }}
 tasks:
   - name: greetings   
     run: |
       echo "Hello world ${NOMBRE}"
+      echo "New Movie ${TITULO}"
+      echo "ENV SHELL ${SHELL}"
       echo "Hola mundo" >> /home/file
 
   - name: read
