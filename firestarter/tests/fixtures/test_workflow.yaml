@@ -1,0 +1,63 @@
+#
+# A test workflow to check envs and contexts
+#
+image: node:20-slim
+version: "1"
+vars:
+  VAR1: "VALUE_1"
+  VARN: "VALUE_N"
+tasks:
+  - name: check1
+    run: |
+      if [[ $VAR1 != "VALUE_1" ]];
+        then exit 1
+      fi
+
+      if [[ $VARN != "VALUE_N" ]];
+        then exit 1
+      fi
+
+      echo "CHECK 1 OK!"
+      exit 0
+
+  - name: check2
+    vars:
+      VAR1: "VALUE_2"
+    run: |
+      if [[ $VAR1 != "VALUE_2" ]];
+        then exit 1
+      fi
+
+      if [[ $VARN != "VALUE_N" ]];
+        then exit 1
+      fi
+
+      echo "CHECK 2 OK!"
+      exit 0
+
+  - name: check3
+    run: |
+      echo "TEST" > /home/file
+
+
+  - name: check4
+    run: |
+      if [ ! -f "/home/file" ]; 
+        then exit 1
+      fi
+
+      echo "CHECK 4 OK!"
+      exit 0
+
+  #
+  # This task breaks the context (it is run in a different image)
+  #
+  - name: check5
+    image: node:18-slim
+    run: |
+      if [ -f "/home/file" ]; 
+        then exit 1
+      fi
+
+      echo "CHECK 5 OK!"
+      exit 0
