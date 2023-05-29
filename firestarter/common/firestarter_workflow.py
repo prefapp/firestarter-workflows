@@ -1,4 +1,5 @@
 class FirestarterWorkflow:
+
     def __init__(self, **kwargs) -> None:
         self._config_file = kwargs.get('config_file', None)
         self._vars = kwargs.get('vars', None)
