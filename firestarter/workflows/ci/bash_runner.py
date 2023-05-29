@@ -2,17 +2,23 @@
 import tempfile
 from typing import List, TextIO
 
-def create_script_from_commands(commands: List[str], file: TextIO) -> None:
-    """Builds a bash script from a list of commands.
+def create_script_from_commands(commands: List[str], temp_dir: str) -> None:
+    """
+    Builds a bash script from a list of commands.
 
     Args:
         commands: A list of strings representing commands.
         file: A file object where the script will be written.
     """
+    # Create a file within the temporary directory
+    temp_file: TextIO = tempfile.NamedTemporaryFile(dir=temp_dir, delete=False)
+
     script: str = "\n".join(["#!/bin/bash"] + commands)
 
-    file.write(script.encode())
-    file.close()
+    temp_file.write(script.encode())
+    temp_file.close()
+
+    return temp_file.name
 
 def exec_run_in_container(commands: List[str], container, dagger_client):
     """
@@ -37,11 +43,8 @@ def exec_run_in_container(commands: List[str], container, dagger_client):
     # Create a temporary directory
     temp_dir: str = tempfile.mkdtemp()
 
-    # Create a file within the temporary directory
-    temp_file: TextIO = tempfile.NamedTemporaryFile(dir=temp_dir, delete=False)
-
     # Build the bash script
-    create_script_from_commands(commands.split("\n"), temp_file)
+    file_name: str = create_script_from_commands(commands.split("\n"), temp_dir)
 
     # Get the id of the host current directory
     src = dagger_client.host().directory(temp_dir)
@@ -51,7 +54,7 @@ def exec_run_in_container(commands: List[str], container, dagger_client):
         # Mount the script directory
         .with_mounted_directory(temp_dir, src)
         # Execute the bash script
-        .exec([f"{temp_file.name}"])
+        .exec([f"{file_name}"])
     )
 
     return container

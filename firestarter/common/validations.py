@@ -26,7 +26,7 @@ def validate_config(config_path: str, schema_path: str, context = None) -> dict:
         else:
             config_str: str = config_file.read()
 
-        config_data: dict = yaml.load(config_str, Loader=yaml.Loader)
+        config_data: dict = yaml.safe_load(config_str)
 
         validate(
             instance=config_data,

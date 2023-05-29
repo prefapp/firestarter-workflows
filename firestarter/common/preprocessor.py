@@ -24,5 +24,5 @@ class PreProcessor:
         if var_context not in context.keys():
             raise ValueError(f"Unknown context {context} for symbol {symbol}")
 
-        return context[var_context](var_name)
+        return f'"{context[var_context](var_name)}"'
 
