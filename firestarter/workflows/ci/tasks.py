@@ -9,7 +9,7 @@ class Task:
         self.image: str = args.get("image", None)
         self.env: dict = args.get("vars", {})
 
-    def execute(self, ctx: dict) -> None:
+    def execute(self, ctx) -> None:
         container = self.prepare_ctx(ctx)
         container = exec_run_in_container(
             self.commands, container, ctx.dagger_client
@@ -20,11 +20,11 @@ class Task:
 
         ctx.set_output(self.name, container)
 
-    def prepare_ctx(self, ctx: dict):
+    def prepare_ctx(self, ctx):
         container = ctx.next_container(self.image)
         return self.add_env(container, ctx)
 
-    def add_env(self, container, ctx: dict):
+    def add_env(self, container, ctx):
         env: dict = dict(ctx.default_env, **self.env)
 
         for env_name, env_value in env.items():
@@ -47,7 +47,7 @@ class TaskGroup:
 
         self.__tasks[task.name] = task
 
-    def run_tasks(self, context: dict) -> None:
+    def run_tasks(self, context) -> None:
         ctx = context
 
         for task in sorted(self.__tasks.values(), key=lambda t: t.order):

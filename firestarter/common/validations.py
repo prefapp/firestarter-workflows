@@ -1,27 +1,36 @@
 from jsonschema import validate
+from .preprocessor import PreProcessor
 import os
 import json
 import yaml
 
 
-def helper_get_task_manager_schema(schema_path: str) -> dict:
-    TASK_MANAGER_SCHEMA = False
+def helper_get_config_schema(schema_path: str) -> dict:
+    CONFIG_SCHEMA = False
 
     with open(os.path.join(os.path.dirname(__file__), schema_path)) as schema:
-        TASK_MANAGER_SCHEMA = json.load(schema)
+        CONFIG_SCHEMA = json.load(schema)
 
-    return TASK_MANAGER_SCHEMA
+    return CONFIG_SCHEMA
 
 
-def validate_task_manager(task_manager_path: str, schema_path: str) -> dict:
-    with open(task_manager_path, 'r') as task_manager:
-        task_manager_data: dict = yaml.load(
-            task_manager.read(), Loader=yaml.Loader
-        )
+def validate_config(config_path: str, schema_path: str, context = None) -> dict:
+    with open(config_path, 'r') as config_file:
+        if context:
+            preprocessor: PreProcessor = PreProcessor(config_file.read())
+            config_str: str = preprocessor.preprocess({
+                "vars": lambda v: context.vars[v],
+                "secrets": lambda s: context.secrets[s],
+                "env": lambda e: os.environ[e],
+            })
+        else:
+            config_str: str = config_file.read()
+
+        config_data: dict = yaml.load(config_str, Loader=yaml.Loader)
 
         validate(
-            instance=task_manager_data,
-            schema=helper_get_task_manager_schema(schema_path),
+            instance=config_data,
+            schema=helper_get_config_schema(schema_path),
         )
 
-        return task_manager_data
+        return config_data
