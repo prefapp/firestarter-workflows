@@ -14,6 +14,7 @@ def process_env_var(var_name: str) -> str:
 
     return FAKE_OS_ENVIRON[var_name]
 
+
 FAKE_OS_ENVIRON: dict = {
     "SHELL": "/bin/fake_shell",
     "PATH": "fake_path;fake_path2;pake_fath",
@@ -42,8 +43,8 @@ def test_parser() -> None:
     )
 
     assert result.get("a", {}).get("value", "") == "SECRET_SECRET1"
-    assert result.get("b", {})[0].get("name", "") == process_env_var("SHELL")
-    assert result.get("b", {})[0].get("value", "") == "VAR_VALUE"
+    assert result.get("b", [{}])[0].get("name", "") == process_env_var("SHELL")
+    assert result.get("b", [{}])[0].get("value", "") == "VAR_VALUE"
 
 def test_unknown_context_error() -> None:
     with pytest.raises(ValueError, match="Unknown context"):
