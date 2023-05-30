@@ -5,19 +5,15 @@ import json
 import yaml
 
 
-def process_var(context, var_name: str) -> str:
-    if var_name not in context.vars.keys():
-        raise ValueError(f"{var_name} could not be found in the VARS context")
+def process_context_var(context: dict, var_name: str, context_name: str) -> str:
+    if var_name not in context.keys():
+        raise ValueError(
+            f"{var_name} could not be found in the {context_name} context"
+        )
 
-    return context.vars[var_name]
+    return context[var_name]
 
-def process_secret(context, var_name: str) -> str:
-    if var_name not in context.secrets.keys():
-        raise ValueError(f"{var_name} could not be found in the SECRETS context")
-
-    return context.secrets[var_name]
-
-def process_env(context, var_name: str) -> str:
+def process_env_var(var_name: str) -> str:
     if var_name not in os.environ.keys():
         raise ValueError(f"{var_name} could not be found in the ENV context")
 
@@ -37,9 +33,10 @@ def validate_config(config_path: str, schema_path: str, context = None) -> dict:
         if context:
             preprocessor: PreProcessor = PreProcessor(config_file.read())
             config_str: str = preprocessor.preprocess({
-                "vars": lambda v: process_var(context, v),
-                "secrets": lambda s: process_secret(context, s),
-                "env": lambda e: process_env(context, e),
+                "vars": lambda v: process_context_var(context.vars, v, "VARS"),
+                "secrets":
+                    lambda s: process_context_var(context.secrets, s, "SECRETS"),
+                "env": lambda e: process_env_var(e),
             })
         else:
             config_str: str = config_file.read()
