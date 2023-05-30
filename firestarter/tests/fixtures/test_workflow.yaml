@@ -17,6 +17,13 @@ tasks:
         then exit 1
       fi
 
+      # If the current directory is not /workspace something went wrong
+      if [[ $PWD != "/workspace" ]];
+        then
+          echo "Current directory is not /workspace, got instead $PWD"
+          exit 1
+      fi
+
       echo "CHECK 1 OK!"
       exit 0
 

@@ -2,6 +2,8 @@
 import tempfile
 from typing import List, TextIO
 
+WORKSPACE_PATH: str = "/workspace"
+
 def create_script_from_commands(commands: List[str], temp_dir: str) -> None:
     """
     Builds a bash script from a list of commands.
@@ -38,7 +40,9 @@ def exec_run_in_container(commands: List[str], container, dagger_client):
     container = (
         container
         # Mount current dir
-        .with_mounted_directory("/workspace", current_dir)
+        .with_mounted_directory(WORKSPACE_PATH, current_dir)
+        # Set as workdir
+        .with_workdir(WORKSPACE_PATH)
         # Set the entrypoint to bash -e to exit on error
         .with_entrypoint(["bash", "-e"])
     )
