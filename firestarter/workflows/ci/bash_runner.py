@@ -47,6 +47,15 @@ def exec_run_in_container(commands: List[str], container, dagger_client):
         .with_entrypoint(["bash", "-e"])
     )
 
+    if container.workdir() != WORKSPACE_PATH:
+        container = (
+            container
+            # Mount current dir
+            .with_mounted_directory(WORKSPACE_PATH, current_dir)
+            # Set as workdir
+            .with_workdir(WORKSPACE_PATH)
+        )
+
     # Create a temporary directory
     temp_dir: str = tempfile.mkdtemp()
 
