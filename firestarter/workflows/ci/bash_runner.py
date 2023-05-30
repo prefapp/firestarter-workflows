@@ -32,10 +32,13 @@ def exec_run_in_container(commands: List[str], container, dagger_client):
     Returns:
     object: Dagger container instance
     """
+    current_dir = dagger_client.host().directory(".")
 
     # Create a temporary directory
     container = (
         container
+        # Mount current dir
+        .with_mounted_directory("/workspace", current_dir)
         # Set the entrypoint to bash -e to exit on error
         .with_entrypoint(["bash", "-e"])
     )
