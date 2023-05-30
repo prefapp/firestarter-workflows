@@ -38,7 +38,7 @@ def validate_config(config_path: str, schema_path: str, context = None) -> dict:
             preprocessor: PreProcessor = PreProcessor(config_file.read())
             config_str: str = preprocessor.preprocess({
                 "vars": lambda v: process_var(context, v),
-                "secrets": lambda s: process_secrets(context, s),
+                "secrets": lambda s: process_secret(context, s),
                 "env": lambda e: process_env(context, e),
             })
         else:
