@@ -1,0 +1,25 @@
+image: build-image-node:18
+version: "1"
+vars:
+  a: "a_value"
+  b: "b_value"
+  c: "c_value"
+
+tasks:
+  - name: install
+    run: npm install
+    additional_property: error
+
+  - name: lint
+    run: npm run lint
+
+  - name: unit-test
+    run: |
+        npm run test
+    vars:
+      a: "override_a_value"
+
+    image: <overrides default build image>
+
+  - name: publish     
+    run: npm publish

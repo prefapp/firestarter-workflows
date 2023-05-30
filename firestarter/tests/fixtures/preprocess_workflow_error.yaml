@@ -1,6 +1,6 @@
 a:
   value: ${{ inexistent.SECRET1}}
 b:
-  - name: ${{ env.SHELL }}
+  - name: ${{ env.SHILL }}
     value: ${{ vars.VALUE }}
 
