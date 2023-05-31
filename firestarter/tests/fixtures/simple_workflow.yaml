@@ -1,9 +1,9 @@
 image: node:20-slim
 version: "1"
 vars:
-  NOMBRE: ${{ vars.NOMBRE }}
-  TITULO: ${{ secrets.TITULO }}
-  SHELL: ${{ env.SHELL }}
+  NOMBRE: $vars_NOMBRE
+  TITULO: $secrets_TITULO
+  SHELL: $env_SHELL
 tasks:
   - name: greetings   
     run: |

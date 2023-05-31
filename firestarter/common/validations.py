@@ -1,5 +1,6 @@
 from jsonschema import validate
 from .preprocessor import PreProcessor
+from string import Template
 import os
 import json
 import yaml
@@ -31,13 +32,9 @@ def helper_get_config_schema(schema_path: str) -> dict:
 def validate_config(config_path: str, schema_path: str, context = None) -> dict:
     with open(config_path, 'r') as config_file:
         if context:
-            preprocessor: PreProcessor = PreProcessor(config_file.read())
-            config_str: str = preprocessor.preprocess({
-                "vars": lambda v: process_context_var(context.vars, v, "VARS"),
-                "secrets":
-                    lambda s: process_context_var(context.secrets, s, "SECRETS"),
-                "env": lambda e: process_env_var(e),
-            })
+            print(context.vars_context)
+            config_tpl: Template = Template(config_file.read())
+            config_str: str = config_tpl.substitute(context.vars_context)
         else:
             config_str: str = config_file.read()
 
