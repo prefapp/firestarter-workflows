@@ -8,9 +8,9 @@ class Context:
 
     def _prepare_vars_context(self, vars: dict, secrets: dict) -> dict:
         final_context: dict = {}
-        vars_context: dict = {f"vars_{n}":v for n, v in vars.items()}
-        secrets_context: dict = {f"secrets_{n}":v for n, v in secrets.items()}
-        env_context: dict = {f"env_{n}":v for n, v in os.environ.items()}
+        vars_context: dict = {f"vars_{n}":f'"{v}"' for n, v in vars.items()}
+        secrets_context: dict = {f"secrets_{n}":f'"{v}"' for n, v in secrets.items()}
+        env_context: dict = {f"env_{n}":f'"{v}"' for n, v in os.environ.items()}
 
         # Merge dictionaries
         final_context = final_context | vars_context
@@ -28,8 +28,6 @@ class Context:
         self.vars_context: dict = self._prepare_vars_context(
             vars if vars else {}, secrets if secrets else {}
         )
-        # self.vars: dict = vars if vars else {}
-        # self.secrets: dict = secrets if secrets else {}
 
     async def start(self, fn: Callable) -> None:
         with dagger.Connection(dagger.Config(log_output=sys.stderr)) as client:

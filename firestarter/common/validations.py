@@ -34,7 +34,7 @@ def validate_config(config_path: str, schema_path: str, context = None) -> dict:
         if context:
             print(context.vars_context)
             config_tpl: Template = Template(config_file.read())
-            config_str: str = config_tpl.substitute(context.vars_context)
+            config_str: str = config_tpl.safe_substitute(context.vars_context)
         else:
             config_str: str = config_file.read()
 
