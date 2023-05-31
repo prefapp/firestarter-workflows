@@ -8,7 +8,7 @@ from azure.cli.core import get_default_cli
 import docker
 import subprocess
 import uuid
-from os import remove
+from os import remove, getcwd
 
 class BuildImages(FirestarterWorkflow):
     def __init__(self, **kwargs) -> None:
@@ -17,6 +17,9 @@ class BuildImages(FirestarterWorkflow):
         self._from_point = self.vars['from_point']
         self._on_premises = self.vars['on_premises']
         self._container_structure_filename = self.vars['container_structure_filename']
+        self._login_required = self.vars['login_required'] if 'login_required' in self.vars else True
+        self._test_enabled = self.vars['test_enabled'] if 'test_enabled' in self.vars else True
+        self._publish = self.vars['publish'] if 'publish' in self.vars else False
 
         # Read the on-premises configuration file
         self._config = Config.from_yaml(self.config_file)
@@ -40,6 +43,18 @@ class BuildImages(FirestarterWorkflow):
     @property
     def config(self):
         return self._config
+    
+    @property
+    def login_required(self):
+        return self._login_required
+
+    @property
+    def test_enabled(self):
+        return self._test_enabled
+    
+    @property
+    def publish(self):
+        return self._publish
 
     def filter_on_premises(self):
         # Get the on-premises name from the command-line arguments and filter the on-premises data accordingly
@@ -51,7 +66,7 @@ class BuildImages(FirestarterWorkflow):
             self._on_premises = self.on_premises.replace(' ', '').split(',')
 
 
-    async def test(self, ctx, container_structure_filename):
+    async def test_image(self, ctx, container_structure_filename):
         try:
             file_name = f"{str(uuid.uuid4())}.tar"
             await ctx.export(file_name)
@@ -61,7 +76,20 @@ class BuildImages(FirestarterWorkflow):
                 data = f.read()
                 image  = client.images.load(data)
 
-            subprocess.run(["container-structure-test", "test", "--image", image[0].id, "--config", container_structure_filename])
+            stdout = client.containers.run(
+                'gcr.io/gcp-runtimes/container-structure-test', f'test -i {image[0].id} --config /tmp/cwd/{container_structure_filename}',
+                detach=False,
+                mounts=[{
+                    'source': '/var/run/docker.sock', 'target': '/var/run/docker.sock', 'type': 'bind'
+                    }, {
+                    'source': getcwd(), 'target': '/tmp/cwd', 'type': 'bind'
+                    }]
+                )
+
+            print(stdout)
+
+        except docker.errors.ContainerError as e:
+            raise Exception("Structure test failed.")
         except Exception as e:
             print(e)
         finally:
@@ -69,10 +97,10 @@ class BuildImages(FirestarterWorkflow):
 
 
     # Define a coroutine function to compile an image using Docker
-    async def compile_image_and_publish(self, ctx, build_args, dockerfile, image, container_structure_filename, test=True, publish=False):
+    async def compile_image_and_publish(self, ctx, build_args, dockerfile, image, container_structure_filename, test_enabled=True, publish=False):
         # Set a current working directory
         src = ctx.host().directory(".")
-
+        
         ctx = (
             ctx.container()
                 .build(context=src, dockerfile=dockerfile, build_args=build_args)
@@ -81,8 +109,8 @@ class BuildImages(FirestarterWorkflow):
                 .with_label("build.date", datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S_UTC"))
         )
 
-        if test:
-            await self.test(ctx, container_structure_filename)
+        if test_enabled:
+            await self.test_image(ctx, container_structure_filename)
         
         if publish:
             await ctx.publish(address=f"{image}")
@@ -122,7 +150,7 @@ class BuildImages(FirestarterWorkflow):
                     print(f'\tDockerfile: {dockerfile}')
                     print(f'\tImage name: {address}:{self.from_point}')
 
-                    await tg.spawn(self.compile_image_and_publish, client, build_args_list, dockerfile, image, self.container_structure_filename)
+                    await tg.spawn(self.compile_image_and_publish, client, build_args_list, dockerfile, image, self.container_structure_filename, self.test_enabled, self.publish)
 
 
     def execute(self):
@@ -130,14 +158,15 @@ class BuildImages(FirestarterWorkflow):
 
         print(f"Building '{self.repo_name}' from '{self.from_point}' for '{self.on_premises}'")
 
-        # Log in to the Azure Container Registry for each on-premises active in the configuration file
-        for key in self.on_premises:
-            # Log in to the Azure Container Registry
-            registry = self.config.images[key].registry
-            cli = get_default_cli()
-            success = cli.invoke(['acr', 'login', '--name', registry])
-            if success != 0:
-                raise Exception('Login to the Azure Container Registry failed.')
+        if self.login_required:
+            # Log in to the Azure Container Registry for each on-premises active in the configuration file
+            for key in self.on_premises:
+                # Log in to the Azure Container Registry
+                registry = self.config.images[key].registry
+                cli = get_default_cli()
+                success = cli.invoke(['acr', 'login', '--name', registry])
+                if success != 0:
+                    raise Exception('Login to the Azure Container Registry failed.')
 
         # Run the coroutine function to execute the compilation process for all on-premises
         anyio.run(self.compile_images_for_all_on_premises)
