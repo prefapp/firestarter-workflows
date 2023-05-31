@@ -32,7 +32,6 @@ def helper_get_config_schema(schema_path: str) -> dict:
 def validate_config(config_path: str, schema_path: str, context = None) -> dict:
     with open(config_path, 'r') as config_file:
         if context:
-            print(context.vars_context)
             config_tpl: Template = Template(config_file.read())
             config_str: str = config_tpl.safe_substitute(context.vars_context)
         else:
