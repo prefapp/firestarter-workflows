@@ -86,7 +86,7 @@ class BuildImages(FirestarterWorkflow):
                     }]
                 )
 
-            print(stdout)
+            print(stdout.decode('utf-8'))
 
         except docker.errors.ContainerError as e:
             raise Exception("Structure test failed.")
