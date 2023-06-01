@@ -4,19 +4,32 @@ Python package for [run-dagger-py](https://github.com/prefapp/run-dagger-py) tha
 
 ## Configuration file
 
+The configuration file needed by this package needs the following structure.
+```
+images:
+  example:
+    registry: ttl.sh # Specify where to publish images
+    repository: foo/bar # Used to generate the docker image name
+    build_args: # List of build args used in the dockerfile
+      REACT_APP_API_URL: prod.local
+    dockerfile: './Dockerfile'# Path to the dockerfile used in the build process
+```
+
 ## Variables
 
 Beyond the configuration file which is mandatory, there are some other extra variables that must be set.
 
-* repo_name:
-* from_point:
-* on_premises:
+* repo_name: Used to label the container
+* from_point: Used to tag and label the container
+* on_premises: List of premises to build (separated by commas)
 
 Additionally there are some variables:
 
-* container_structure_filename:
-* test_enabled:
-* publish:
+* container_structure_filename: path of the docker [container-structure-test](https://github.com/GoogleContainerTools/container-structure-test) filename (if not set no tests are checked)
+    
+    > Highly recommended! ⚠️
+* publish: publish the docker image to the registry
+
 
 ## Secrets
 
