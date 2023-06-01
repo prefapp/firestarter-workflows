@@ -17,6 +17,7 @@ class BuildImages(FirestarterWorkflow):
         self._from_point = self.vars['from_point']
         self._on_premises = self.vars['on_premises']
         self._container_structure_filename = self.vars['container_structure_filename']
+        self._dagger_secrets = []
         self._login_required = self.vars['login_required'] if 'login_required' in self.vars else True
         self._test_enabled = self.vars['test_enabled'] if 'test_enabled' in self.vars else True
         self._publish = self.vars['publish'] if 'publish' in self.vars else False
@@ -44,6 +45,10 @@ class BuildImages(FirestarterWorkflow):
     def config(self):
         return self._config
     
+    @property
+    def dagger_secrets(self):
+        return self._dagger_secrets
+
     @property
     def login_required(self):
         return self._login_required
@@ -103,7 +108,7 @@ class BuildImages(FirestarterWorkflow):
         
         ctx = (
             ctx.container()
-                .build(context=src, dockerfile=dockerfile, build_args=build_args)
+                .build(context=src, dockerfile=dockerfile, build_args=build_args, secrets=self.dagger_secrets)
                 .with_label("source.code.revision", self.from_point)
                 .with_label("repository.name", self.repo_name)
                 .with_label("build.date", datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S_UTC"))
@@ -123,6 +128,9 @@ class BuildImages(FirestarterWorkflow):
         # Connect to Dagger
         async with dagger.Connection(config) as client:
             client.container()
+
+            for key, value in self.secrets.items():
+                self._dagger_secrets.append(client.set_secret(key, value))
 
             # Set up a task group to execute the compilation process for all on-premises in parallel
             async with anyio.create_task_group() as tg:
