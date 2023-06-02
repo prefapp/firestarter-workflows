@@ -16,10 +16,10 @@ class BuildImages(FirestarterWorkflow):
         self._repo_name = self.vars['repo_name']
         self._from_point = self.vars['from_point']
         self._on_premises = self.vars['on_premises']
-        self._container_structure_filename = self.vars['container_structure_filename']
+        self._container_structure_filename = self.vars['container_structure_filename'] if 'container_structure_filename' in self.vars else None
+        self._dagger_secrets = []
         self._login_required = self.vars['login_required'] if 'login_required' in self.vars else True
-        self._test_enabled = self.vars['test_enabled'] if 'test_enabled' in self.vars else True
-        self._publish = self.vars['publish'] if 'publish' in self.vars else False
+        self._publish = self.vars['publish'] if 'publish' in self.vars else True
 
         # Read the on-premises configuration file
         self._config = Config.from_yaml(self.config_file)
@@ -45,13 +45,13 @@ class BuildImages(FirestarterWorkflow):
         return self._config
     
     @property
+    def dagger_secrets(self):
+        return self._dagger_secrets
+
+    @property
     def login_required(self):
         return self._login_required
 
-    @property
-    def test_enabled(self):
-        return self._test_enabled
-    
     @property
     def publish(self):
         return self._publish
@@ -66,7 +66,7 @@ class BuildImages(FirestarterWorkflow):
             self._on_premises = self.on_premises.replace(' ', '').split(',')
 
 
-    async def test_image(self, ctx, container_structure_filename):
+    async def test_image(self, ctx):
         try:
             file_name = f"{str(uuid.uuid4())}.tar"
             await ctx.export(file_name)
@@ -77,7 +77,7 @@ class BuildImages(FirestarterWorkflow):
                 image  = client.images.load(data)
 
             stdout = client.containers.run(
-                'gcr.io/gcp-runtimes/container-structure-test', f'test -i {image[0].id} --config /tmp/cwd/{container_structure_filename}',
+                'gcr.io/gcp-runtimes/container-structure-test', f'test -i {image[0].id} --config /tmp/cwd/{self.container_structure_filename}',
                 detach=False,
                 mounts=[{
                     'source': '/var/run/docker.sock', 'target': '/var/run/docker.sock', 'type': 'bind'
@@ -97,22 +97,22 @@ class BuildImages(FirestarterWorkflow):
 
 
     # Define a coroutine function to compile an image using Docker
-    async def compile_image_and_publish(self, ctx, build_args, dockerfile, image, container_structure_filename, test_enabled=True, publish=False):
+    async def compile_image_and_publish(self, ctx, build_args, dockerfile, image):
         # Set a current working directory
         src = ctx.host().directory(".")
         
         ctx = (
             ctx.container()
-                .build(context=src, dockerfile=dockerfile, build_args=build_args)
+                .build(context=src, dockerfile=dockerfile, build_args=build_args, secrets=self.dagger_secrets)
                 .with_label("source.code.revision", self.from_point)
                 .with_label("repository.name", self.repo_name)
                 .with_label("build.date", datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S_UTC"))
         )
 
-        if test_enabled:
-            await self.test_image(ctx, container_structure_filename)
+        if self.container_structure_filename is not None:
+            await self.test_image(ctx)
         
-        if publish:
+        if self.publish:
             await ctx.publish(address=f"{image}")
 
     # Define a coroutine function to execute the compilation process for all on-premises
@@ -123,6 +123,9 @@ class BuildImages(FirestarterWorkflow):
         # Connect to Dagger
         async with dagger.Connection(config) as client:
             client.container()
+
+            for key, value in self.secrets.items():
+                self._dagger_secrets.append(client.set_secret(key, value))
 
             # Set up a task group to execute the compilation process for all on-premises in parallel
             async with anyio.create_task_group() as tg:
@@ -150,7 +153,7 @@ class BuildImages(FirestarterWorkflow):
                     print(f'\tDockerfile: {dockerfile}')
                     print(f'\tImage name: {address}:{self.from_point}')
 
-                    await tg.spawn(self.compile_image_and_publish, client, build_args_list, dockerfile, image, self.container_structure_filename, self.test_enabled, self.publish)
+                    await tg.spawn(self.compile_image_and_publish, client, build_args_list, dockerfile, image)
 
 
     def execute(self):
