@@ -1,10 +1,10 @@
 # Build images
 
-Python package for [run-dagger-py](https://github.com/prefapp/run-dagger-py) that allows users to build multiple docker images using dagger based on a configuration file.
+Dagger workflow in a Python package, to be executed locally or from Github actions, with [run-dagger-py](https://github.com/prefapp/run-dagger-py). Allows users to build and publish multiple docker images, based on a configuration file.
 
 ## Configuration file
 
-The configuration file needed by this package needs the following structure.
+The configuration file needed by this package has the following structure.
 ```
 images:
   example:
@@ -19,23 +19,23 @@ images:
 
 Beyond the configuration file which is mandatory, there are some other extra variables that must be set.
 
-* repo_name: Used to label the container
-* from_point: Used to tag and label the container
-* on_premises: List of premises to build (separated by commas)
+* `repo_name`: The image_name to be used.
+* `from_point` : The commit SHA, tag or branch used to create the image, from the user's repository. This point will define the image tag.
+* `on_premises`: List of flavours to build (separated by commas). An `*` is accepted to build and publish all of them.
 
-Additionally there are some variables:
+Additionally there are some optional variables:
 
-* container_structure_filename: path of the docker [container-structure-test](https://github.com/GoogleContainerTools/container-structure-test) filename (if not set no tests are checked)
+* `container_structure_filename`: path of the [container-structure-test](https://github.com/GoogleContainerTools/container-structure-test) filename (if not set, no tests are checked)
     
     > Highly recommended! ⚠️
-* publish: publish the docker image to the registry
+* `publish`: publish the docker image to the registry
 
 
 ## Secrets
 
-Secrets can be used the same way is recommended in [docker documentation](https://docs.docker.com/build/ci/github-actions/secrets/).
+Secrets can be used the same way that recommends [docker documentation](https://docs.docker.com/build/ci/github-actions/secrets/).
 
-To do so add secret variables similarly as you would do with any other [run-dagger-py] module. Then mount the secret using buildkit secrets feature:
+To do so add a secret variables similarly as you would do with any other firestarter-workflows packages. In your Dockerfile you must mount the secret following the `secrets` specification:
 
 ```Dockerfile
 RUN --mount=type=secret,id=github_token,dst=/run/secrets/github_token \
@@ -47,7 +47,7 @@ RUN --mount=type=secret,id=github_token,dst=/run/secrets/github_token \
 ## Example
 
 1. Create a repository that uses run-dagger-py (check [docs](https://github.com/prefapp/run-dagger-py/blob/main/docs/index.md) for more details).
-2. Add a github workflow that uses this particular module, see example below.
+2. Add a github workflow that uses this particular pacakge, see example below.
   ```yaml
   name: Build image
   on:
@@ -95,6 +95,7 @@ RUN --mount=type=secret,id=github_token,dst=/run/secrets/github_token \
             secrets: |
               github_token="${{ github.token }}"
   ```
-  > Note that in the example it checkouts twice the repo to use the configuration file updated with HEAD.
+  > Note that in the example the checkout action runs twice, one to clone the repo in the `from_point`, and another to geht the configuration file from the HEAD.
 4. Create a configuration file (e.g. `.dagger/firestarter_build_images.yaml`)
+5. Manually launch de workflow
 
