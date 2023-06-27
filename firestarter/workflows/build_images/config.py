@@ -9,6 +9,7 @@ class Image:
     repository: str
     build_args: dict = field(default_factory=dict)
     dockerfile: str = field(default="Dockerfile")
+    auth_strategy: str = field(default="none")
 
     @classmethod
     def from_dict(cls: t.Type["Image"], obj: dict):
@@ -17,6 +18,7 @@ class Image:
             repository=obj.get("repository"),
             build_args=obj.get("build_args"),
             dockerfile=obj.get("dockerfile"),
+            auth_strategy=obj.get("auth_strategy"),
         )
 
     def to_dict(self):
@@ -25,6 +27,7 @@ class Image:
             "repository": self.repository,
             "build_args": self.build_args,
             "dockerfile": self.dockerfile,
+            "auth_strategy": self.auth_strategy,
         }
 
 @dataclass
@@ -35,7 +38,7 @@ class Config:
     def from_dict(cls: t.Type["Config"], obj: dict):
         return cls(
             images={id: Image.from_dict(image) for id, image in obj.get("images", {}).items()}
-            )
+        )
 
     @classmethod
     def from_yaml(cls: t.Type["Config"], file: str):

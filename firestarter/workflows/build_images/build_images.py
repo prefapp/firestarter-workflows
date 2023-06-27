@@ -6,9 +6,9 @@ import dagger
 from .config import Config
 from azure.cli.core import get_default_cli
 import docker
-import subprocess
 import uuid
 from os import remove, getcwd
+from . import auth
 
 class BuildImages(FirestarterWorkflow):
     def __init__(self, **kwargs) -> None:
@@ -161,15 +161,14 @@ class BuildImages(FirestarterWorkflow):
 
         print(f"Building '{self.repo_name}' from '{self.from_point}' for '{self.on_premises}'")
 
-        if self.login_required:
-            # Log in to the Azure Container Registry for each on-premises active in the configuration file
-            for key in self.on_premises:
-                # Log in to the Azure Container Registry
-                registry = self.config.images[key].registry
-                cli = get_default_cli()
-                success = cli.invoke(['acr', 'login', '--name', registry])
-                if success != 0:
-                    raise Exception('Login to the Azure Container Registry failed.')
+        client = docker.from_env()
+
+        
+        # Log in to the Azure Container Registry for each on-premises active in the configuration file
+        for key in self.on_premises:
+            print(self.config.images[key])
+            provider = auth.provider_from_str(self.config.images[key].auth_strategy)
+            auth.login_registry(self.config.images[key].registry, provider.get_registry_auth())
 
         # Run the coroutine function to execute the compilation process for all on-premises
         anyio.run(self.compile_images_for_all_on_premises)
