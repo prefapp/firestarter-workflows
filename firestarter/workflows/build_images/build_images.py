@@ -8,7 +8,7 @@ from azure.cli.core import get_default_cli
 import docker
 import uuid
 from os import remove, getcwd
-from . import auth
+from .providers import DockerRegistryAuthFactory
 
 class BuildImages(FirestarterWorkflow):
     def __init__(self, **kwargs) -> None:
@@ -160,15 +160,12 @@ class BuildImages(FirestarterWorkflow):
         self.filter_on_premises()
 
         print(f"Building '{self.repo_name}' from '{self.from_point}' for '{self.on_premises}'")
-
-        client = docker.from_env()
-
         
         # Log in to the Azure Container Registry for each on-premises active in the configuration file
         for key in self.on_premises:
             print(self.config.images[key])
-            provider = auth.provider_from_str(self.config.images[key].auth_strategy)
-            auth.login_registry(self.config.images[key].registry, provider.get_registry_auth())
+            provider = DockerRegistryAuthFactory.provider_from_str(self.config.images[key].auth_strategy)
+            provider.login_registry(self.config.images[key].registry, provider.get_registry_auth())
 
         # Run the coroutine function to execute the compilation process for all on-premises
         anyio.run(self.compile_images_for_all_on_premises)
