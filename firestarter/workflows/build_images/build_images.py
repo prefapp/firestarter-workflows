@@ -3,16 +3,18 @@ import sys
 from firestarter.common.firestarter_workflow import FirestarterWorkflow
 import anyio
 import dagger
+from .providers.registries.factory import DockerRegistryAuthFactory
+from .providers.secrets.resolver import SecretResolver
 from .config import Config
 from azure.cli.core import get_default_cli
 import docker
-import subprocess
 import uuid
 from os import remove, getcwd
 
 class BuildImages(FirestarterWorkflow):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+        self._secrets = self.resolve_secrets()
         self._repo_name = self.vars['repo_name']
         self._from_point = self.vars['from_point']
         self._on_premises = self.vars['on_premises']
@@ -55,6 +57,11 @@ class BuildImages(FirestarterWorkflow):
     @property
     def publish(self):
         return self._publish
+
+    def resolve_secrets(self):
+        sr = SecretResolver(self.secrets)
+        print(sr.resolve())
+        return sr.resolve()
 
     def filter_on_premises(self):
         # Get the on-premises name from the command-line arguments and filter the on-premises data accordingly
@@ -160,16 +167,12 @@ class BuildImages(FirestarterWorkflow):
         self.filter_on_premises()
 
         print(f"Building '{self.repo_name}' from '{self.from_point}' for '{self.on_premises}'")
-
-        if self.login_required:
-            # Log in to the Azure Container Registry for each on-premises active in the configuration file
-            for key in self.on_premises:
-                # Log in to the Azure Container Registry
-                registry = self.config.images[key].registry
-                cli = get_default_cli()
-                success = cli.invoke(['acr', 'login', '--name', registry])
-                if success != 0:
-                    raise Exception('Login to the Azure Container Registry failed.')
+        
+        # Log in to the Azure Container Registry for each on-premises active in the configuration file
+        for key in self.on_premises:
+            on_prem = self.config.images[key]
+            provider = DockerRegistryAuthFactory.provider_from_str(on_prem.auth_strategy, on_prem.registry)
+            provider.login_registry()
 
         # Run the coroutine function to execute the compilation process for all on-premises
         anyio.run(self.compile_images_for_all_on_premises)
