@@ -8,7 +8,8 @@ from azure.cli.core import get_default_cli
 import docker
 import uuid
 from os import remove, getcwd
-from .providers import DockerRegistryAuthFactory, SecretResolver
+from .providers.registry import DockerRegistryAuthFactory
+from .providers.secrets import SecretResolver
 
 class BuildImages(FirestarterWorkflow):
     def __init__(self, **kwargs) -> None:
