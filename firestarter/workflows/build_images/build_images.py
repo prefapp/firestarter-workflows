@@ -3,13 +3,13 @@ import sys
 from firestarter.common.firestarter_workflow import FirestarterWorkflow
 import anyio
 import dagger
+from .providers.registries.factory import DockerRegistryAuthFactory
+from .providers.secrets.resolver import SecretResolver
 from .config import Config
 from azure.cli.core import get_default_cli
 import docker
 import uuid
 from os import remove, getcwd
-from .providers.registry import DockerRegistryAuthFactory
-from .providers.secrets import SecretResolver
 
 class BuildImages(FirestarterWorkflow):
     def __init__(self, **kwargs) -> None:
