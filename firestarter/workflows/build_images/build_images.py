@@ -175,4 +175,4 @@ class BuildImages(FirestarterWorkflow):
             provider.login_registry()
 
         # Run the coroutine function to execute the compilation process for all on-premises
-        # anyio.run(self.compile_images_for_all_on_premises)
+        anyio.run(self.compile_images_for_all_on_premises)
