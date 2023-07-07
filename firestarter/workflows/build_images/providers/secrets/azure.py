@@ -6,6 +6,7 @@ class AzureKeyVault():
     def __init__(self, secret) -> None:
         self._vault_name = secret.split('https://')[1].split('.vault.azure.net')[0]
         self._secret_name = secret.split('.vault.azure.net/secrets/')[-1].split('/')[0]
+        self._version = None if secret[-1] != '/' else secret.split('/')[-1]
 
     @property
     def vault_name(self):
@@ -14,6 +15,10 @@ class AzureKeyVault():
     @property
     def secret_name(self):
         return self._secret_name
+
+    @property
+    def version(self):
+        return self._version
 
 class AzureKeyVaultManager(SecretProvider):
 
@@ -29,4 +34,4 @@ class AzureKeyVaultManager(SecretProvider):
     def get_secret(self):
         key_vault = AzureKeyVault(self.secret)
         client = SecretClient(vault_url=f"https://{key_vault.vault_name}.vault.azure.net", credential=self.credential)
-        return client.get_secret(key_vault.secret_name).value
+        return client.get_secret(key_vault.secret_name, key_vault.version).value
