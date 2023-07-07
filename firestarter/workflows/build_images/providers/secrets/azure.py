@@ -29,4 +29,4 @@ class AzureKeyVaultManager(SecretProvider):
     def get_secret(self):
         key_vault = AzureKeyVault(self.secret)
         client = SecretClient(vault_url=f"https://{key_vault.vault_name}.vault.azure.net", credential=self.credential)
-        return client.get_secret(key_vault.secret_name)
+        return client.get_secret(key_vault.secret_name).value
