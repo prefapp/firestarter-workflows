@@ -1,5 +1,6 @@
 import boto3
-from .base import RegistryProvider
+from .base import RegistryProvider, RegistryAuth
+import base64
 
 class AwsOidcDockerRegistryAuth(RegistryProvider):
 
@@ -7,5 +8,9 @@ class AwsOidcDockerRegistryAuth(RegistryProvider):
         session = boto3.session.Session()
         ecr = session.client('ecr')
         auth = ecr.get_authorization_token()
-        authorization_token = auth['authorizationData'][0]['authorizationToken']
-        return authorization_token
+        authorization_token = base64.b64decode(
+            auth['authorizationData'][0]['authorizationToken'].encode()
+        )
+        
+        username, token = authorization_token.decode().split(':')
+        return RegistryAuth(username=username, token=token)

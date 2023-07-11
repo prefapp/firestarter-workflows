@@ -60,7 +60,6 @@ class BuildImages(FirestarterWorkflow):
 
     def resolve_secrets(self):
         sr = SecretResolver(self.secrets)
-        print(sr.resolve())
         return sr.resolve()
 
     def filter_on_premises(self):
