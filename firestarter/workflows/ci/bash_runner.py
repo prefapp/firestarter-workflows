@@ -66,7 +66,7 @@ def exec_run_in_container(commands: List[str], container, dagger_client):
         # Mount the script directory
         .with_mounted_directory(temp_dir, src)
         # Execute the bash script
-        .exec([f"{file_name}"])
+        .withExec([f"{file_name}"])
     )
 
     return container
