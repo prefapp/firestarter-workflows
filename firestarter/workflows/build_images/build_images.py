@@ -14,7 +14,7 @@ from os import remove, getcwd
 class BuildImages(FirestarterWorkflow):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self._secrets = self.resolve_secrets()
+        self._secrets = self.resolve_secrets(self.secrets)
         self._repo_name = self.vars['repo_name']
         self._snapshots_registry = self.vars['snapshots_registry']
         self._releases_registry = self.vars['releases_registry']
@@ -75,8 +75,8 @@ class BuildImages(FirestarterWorkflow):
     def publish(self):
         return self._publish
 
-    def resolve_secrets(self):
-        sr = SecretResolver(self.secrets)
+    def resolve_secrets(self, secrets=None):
+        sr = SecretResolver(secrets)
         return sr.resolve()
 
     def filter_flavors(self):
@@ -120,13 +120,16 @@ class BuildImages(FirestarterWorkflow):
 
 
     # Define a coroutine function to compile an image using Docker
-    async def compile_image_and_publish(self, ctx, build_args, dockerfile, image):
+
+    async def compile_image_and_publish(self, ctx, build_args, custom_secrets, dockerfile, image):
         # Set a current working directory
         src = ctx.host().directory(".")
         
+        secrets = self.dagger_secrets + custom_secrets
+
         ctx = (
             ctx.container()
-                .build(context=src, dockerfile=dockerfile, build_args=build_args, secrets=self.dagger_secrets)
+            .build(context=src, dockerfile=dockerfile, build_args=build_args, secrets=secrets)
                 .with_label("source.code.revision", self.from_version)
                 .with_label("repository.name", self.repo_name)
                 .with_label("build.date", datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S_UTC"))
@@ -175,7 +178,16 @@ class BuildImages(FirestarterWorkflow):
                     print(f'\tDockerfile: {dockerfile}')
                     print(f'\tImage name: {image}')
 
-                    await tg.spawn(self.compile_image_and_publish, client, build_args_list, dockerfile, image)
+                    custom_secrets = self.config.images[flavor].secrets or {}
+                    custom_secrets = self.resolve_secrets(custom_secrets)
+
+                    custom_dagger_secrets = []
+
+                    for key, value in self.secrets.items():
+                        custom_dagger_secrets.append(
+                            client.set_secret(key, value))
+
+                    await tg.spawn(self.compile_image_and_publish, client, build_args_list, custom_dagger_secrets, dockerfile, image)
 
 
     def execute(self):
