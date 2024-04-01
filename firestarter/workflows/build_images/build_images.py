@@ -207,13 +207,5 @@ class BuildImages(FirestarterWorkflow):
 
             provider.login_registry()
 
-            # Log in to the Azure Container Registry for each on-premises active in the configuration file
-            # for key in self.flavors:
-            #     flavor = self.config.images[key]
-            #     print(flavor)
-            # provider = DockerRegistryAuthFactory.provider_from_str(
-            #     flavor.auth_strategy, flavor.registry)
-            # provider.login_registry()
-
-        # # Run the coroutine function to execute the compilation process for all on-premises
-        # anyio.run(self.compile_images_for_all_flavors)
+        # Run the coroutine function to execute the compilation process for all on-premises
+        anyio.run(self.compile_images_for_all_flavors)
