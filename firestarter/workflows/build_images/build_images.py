@@ -18,6 +18,7 @@ class BuildImages(FirestarterWorkflow):
         self._repo_name = self.vars['repo_name']
         self._snapshots_registry = self.vars['snapshots_registry']
         self._releases_registry = self.vars['releases_registry']
+        self._auth_strategy = self.vars['auth_strategy']
         self._type = self.vars['type']
         self._from = self.vars['from']
         self._flavors = self.vars['flavors'] if 'flavors' in self.vars else 'default'
@@ -41,6 +42,10 @@ class BuildImages(FirestarterWorkflow):
     @property
     def releases_registry(self):
         return self._releases_registry
+
+    @property
+    def auth_strategy(self):
+        return self._auth_strategy
 
     @property
     def type(self):
@@ -194,12 +199,21 @@ class BuildImages(FirestarterWorkflow):
         self.filter_flavors()
 
         if self.login_required:
-            # Log in to the Azure Container Registry for each on-premises active in the configuration file
-            for key in self.flavors:
-                flavor = self.config.images[key]
-                provider = DockerRegistryAuthFactory.provider_from_str(
-                    flavor.auth_strategy, flavor.registry)
-                provider.login_registry()
 
-        # Run the coroutine function to execute the compilation process for all on-premises
-        anyio.run(self.compile_images_for_all_flavors)
+            # Log in to the default registry
+            provider = DockerRegistryAuthFactory.provider_from_str(
+                self.auth_strategy, getattr(self, f"{self.type}_registry")
+            )
+
+            provider.login_registry()
+
+            # Log in to the Azure Container Registry for each on-premises active in the configuration file
+            # for key in self.flavors:
+            #     flavor = self.config.images[key]
+            #     print(flavor)
+            # provider = DockerRegistryAuthFactory.provider_from_str(
+            #     flavor.auth_strategy, flavor.registry)
+            # provider.login_registry()
+
+        # # Run the coroutine function to execute the compilation process for all on-premises
+        # anyio.run(self.compile_images_for_all_flavors)
