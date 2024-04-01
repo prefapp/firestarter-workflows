@@ -5,29 +5,29 @@ import yaml
 
 @dataclass
 class Image:
-    registry: str
-    repository: str
+    build_always: bool = field(default=True)
+    extra_registries: dict = field(default_factory=dict)
     build_args: dict = field(default_factory=dict)
+    secrets: dict = field(default_factory=dict)
     dockerfile: str = field(default="Dockerfile")
-    auth_strategy: str = field(default="none")
 
     @classmethod
     def from_dict(cls: t.Type["Image"], obj: dict):
         return cls(
-            registry=obj.get("registry"),
-            repository=obj.get("repository"),
+            build_always=obj.get("build_always"),
+            extra_registries=obj.get("extra_registries"),
             build_args=obj.get("build_args"),
+            secrets=obj.get("secrets"),
             dockerfile=obj.get("dockerfile"),
-            auth_strategy=obj.get("auth_strategy"),
         )
 
     def to_dict(self):
         return {
-            "registry": self.registry,
-            "repository": self.repository,
+            "build_always": self.build_always,
+            "extra_registries": self.extra_registries,
             "build_args": self.build_args,
+            "secrets": self.secrets,
             "dockerfile": self.dockerfile,
-            "auth_strategy": self.auth_strategy,
         }
 
 @dataclass
@@ -37,14 +37,15 @@ class Config:
     @classmethod
     def from_dict(cls: t.Type["Config"], obj: dict):
         return cls(
-            images={id: Image.from_dict(image) for id, image in obj.get("images", {}).items()}
+            images={id: Image.from_dict(image) for id, image in obj.items()}
         )
 
     @classmethod
-    def from_yaml(cls: t.Type["Config"], file: str):
+    def from_yaml(cls: t.Type["Config"], file: str, type: str):
         with open(file, "r") as f:
             raw_config = yaml.safe_load(f)
-        return cls.from_dict(raw_config)
+        config = cls.from_dict(raw_config[type])
+        return config
 
     def to_dict(self):
         return {

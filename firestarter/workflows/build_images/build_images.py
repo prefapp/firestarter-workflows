@@ -7,35 +7,58 @@ from .providers.registries.factory import DockerRegistryAuthFactory
 from .providers.secrets.resolver import SecretResolver
 from .config import Config
 import docker
+from ast import literal_eval
 import uuid
 from os import remove, getcwd
 
 class BuildImages(FirestarterWorkflow):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self._secrets = self.resolve_secrets()
+        self._secrets = self.resolve_secrets(self.secrets)
         self._repo_name = self.vars['repo_name']
-        self._from_point = self.vars['from_point']
-        self._on_premises = self.vars['on_premises']
+        self._snapshots_registry = self.vars['snapshots_registry']
+        self._releases_registry = self.vars['releases_registry']
+        self._auth_strategy = self.vars['auth_strategy']
+        self._type = self.vars['type']
+        self._from = self.vars['from']
+        self._flavors = self.vars['flavors'] if 'flavors' in self.vars else 'default'
         self._container_structure_filename = self.vars['container_structure_filename'] if 'container_structure_filename' in self.vars else None
         self._dagger_secrets = []
-        self._login_required = self.vars['login_required'] if 'login_required' in self.vars else True
+        self._login_required = literal_eval(
+            self.vars['login_required'].capitalize()) if 'login_required' in self.vars else True
         self._publish = self.vars['publish'] if 'publish' in self.vars else True
 
         # Read the on-premises configuration file
-        self._config = Config.from_yaml(self.config_file)
+        self._config = Config.from_yaml(self.config_file, self.type)
 
     @property
     def repo_name(self):
         return self._repo_name
 
     @property
-    def from_point(self):
-        return self._from_point
+    def snapshots_registry(self):
+        return self._snapshots_registry
 
     @property
-    def on_premises(self):
-        return self._on_premises
+    def releases_registry(self):
+        return self._releases_registry
+
+    @property
+    def auth_strategy(self):
+        return self._auth_strategy
+
+    @property
+    def type(self):
+        return self._type
+
+    # Cannot use from property as it is a reserved keyword
+    @property
+    def from_version(self):
+        return self._from
+
+    @property
+    def flavors(self):
+        return self._flavors
 
     @property
     def container_structure_filename(self):
@@ -57,18 +80,18 @@ class BuildImages(FirestarterWorkflow):
     def publish(self):
         return self._publish
 
-    def resolve_secrets(self):
-        sr = SecretResolver(self.secrets)
+    def resolve_secrets(self, secrets=None):
+        sr = SecretResolver(secrets)
         return sr.resolve()
 
-    def filter_on_premises(self):
+    def filter_flavors(self):
         # Get the on-premises name from the command-line arguments and filter the on-premises data accordingly
-        if self.on_premises is not None:
-            if self.on_premises == '*':
-                print('Publishing to all on-premises:')
-                self._on_premises = ",".join(list(self.config.images.keys()))
+        if self.flavors is not None:
+            if self.flavors == '*':
+                print('Publishing all flavors:')
+                self._flavors = ",".join(list(self.config[self.type].keys()))
 
-            self._on_premises = self.on_premises.replace(' ', '').split(',')
+            self._flavors = self.flavors.replace(' ', '').split(',')
 
 
     async def test_image(self, ctx):
@@ -102,14 +125,17 @@ class BuildImages(FirestarterWorkflow):
 
 
     # Define a coroutine function to compile an image using Docker
-    async def compile_image_and_publish(self, ctx, build_args, dockerfile, image):
+
+    async def compile_image_and_publish(self, ctx, build_args, custom_secrets, dockerfile, image):
         # Set a current working directory
         src = ctx.host().directory(".")
         
+        secrets = self.dagger_secrets + custom_secrets
+
         ctx = (
             ctx.container()
-                .build(context=src, dockerfile=dockerfile, build_args=build_args, secrets=self.dagger_secrets)
-                .with_label("source.code.revision", self.from_point)
+            .build(context=src, dockerfile=dockerfile, build_args=build_args, secrets=secrets)
+                .with_label("source.code.revision", self.from_version)
                 .with_label("repository.name", self.repo_name)
                 .with_label("build.date", datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S_UTC"))
         )
@@ -121,7 +147,7 @@ class BuildImages(FirestarterWorkflow):
             await ctx.publish(address=f"{image}")
 
     # Define a coroutine function to execute the compilation process for all on-premises
-    async def compile_images_for_all_on_premises(self):
+    async def compile_images_for_all_flavors(self):
         # Set up the Dagger configuration object
         config = dagger.Config(log_output=sys.stdout)
 
@@ -132,13 +158,12 @@ class BuildImages(FirestarterWorkflow):
             for key, value in self.secrets.items():
                 self._dagger_secrets.append(client.set_secret(key, value))
 
-            # Set up a task group to execute the compilation process for all on-premises in parallel
+            # Set up a task group to execute the compilation process for all flavors in parallel
             async with anyio.create_task_group() as tg:
-                for on_prem in self.on_premises:
-                    value = self.config.images[on_prem]
+                for flavor in self.flavors:
+                    value = self.config.images[flavor]
                     # Get the registry, repository, build arguments, Dockerfile path, and address for the current on-premises
-                    registry = value.registry
-                    repository = value.repository
+                    registry = self.vars[f"{self.type}_registry"]
                     build_args = value.build_args or {}
                     dockerfile = value.dockerfile or ""
 
@@ -146,31 +171,49 @@ class BuildImages(FirestarterWorkflow):
                     build_args_list = [dagger.BuildArg(name=key, value=value) for key, value in build_args.items()]
 
                     # Set the address for the current on-premises
-                    address = f"{registry}/{repository}"
-                    image = f"{address}:{self.from_point}"
+                    address = f"{registry}/{self.repo_name}"
+                    image = f"{address}:{self.from_version}_{flavor}"
 
                     # Print the current on-premises data
-                    print(f'\nOn-premise: {on_prem.upper()}')
+                    print(f'\nOn-premise: {flavor.upper()}')
                     print(f'\tRegistry: {registry}')
-                    print(f'\tRepository: {repository}')
+                    print(f'\tRepository: {self.repo_name}')
                     if build_args != {}:
                         print(f'\tBuild args: {build_args}')
                     print(f'\tDockerfile: {dockerfile}')
-                    print(f'\tImage name: {address}:{self.from_point}')
+                    print(f'\tImage name: {image}')
 
-                    await tg.spawn(self.compile_image_and_publish, client, build_args_list, dockerfile, image)
+                    custom_secrets = self.config.images[flavor].secrets or {}
+                    custom_secrets = self.resolve_secrets(custom_secrets)
+
+                    custom_dagger_secrets = []
+
+                    for key, value in self.secrets.items():
+                        custom_dagger_secrets.append(
+                            client.set_secret(key, value))
+
+                    await tg.spawn(self.compile_image_and_publish, client, build_args_list, custom_dagger_secrets, dockerfile, image)
 
 
     def execute(self):
-        self.filter_on_premises()
+        self.filter_flavors()
 
-        print(f"Building '{self.repo_name}' from '{self.from_point}' for '{self.on_premises}'")
-        
-        # Log in to the Azure Container Registry for each on-premises active in the configuration file
-        for key in self.on_premises:
-            on_prem = self.config.images[key]
-            provider = DockerRegistryAuthFactory.provider_from_str(on_prem.auth_strategy, on_prem.registry)
+        if self.login_required:
+
+            # Log in to the default registry
+            provider = DockerRegistryAuthFactory.provider_from_str(
+                self.auth_strategy, getattr(self, f"{self.type}_registry")
+            )
+
             provider.login_registry()
 
-        # Run the coroutine function to execute the compilation process for all on-premises
-        anyio.run(self.compile_images_for_all_on_premises)
+            # Log in to the Azure Container Registry for each on-premises active in the configuration file
+            # for key in self.flavors:
+            #     flavor = self.config.images[key]
+            #     print(flavor)
+            # provider = DockerRegistryAuthFactory.provider_from_str(
+            #     flavor.auth_strategy, flavor.registry)
+            # provider.login_registry()
+
+        # # Run the coroutine function to execute the compilation process for all on-premises
+        # anyio.run(self.compile_images_for_all_flavors)
