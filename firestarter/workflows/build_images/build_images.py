@@ -10,6 +10,16 @@ import docker
 from ast import literal_eval
 import uuid
 from os import remove, getcwd
+import string
+
+
+def normalize_image_tag(tag):
+    valid_chars = string.ascii_letters + string.digits + '.-'
+
+    # replace invalid characters with '-'
+    tag = ''.join(c if c in valid_chars else '-' for c in tag)
+
+    return tag
 
 class BuildImages(FirestarterWorkflow):
     def __init__(self, **kwargs) -> None:
@@ -172,7 +182,7 @@ class BuildImages(FirestarterWorkflow):
 
                     # Set the address for the current on-premises
                     address = f"{registry}/{self.repo_name}"
-                    image = f"{address}:{self.from_version}_{flavor}"
+                    image = f"{address}:{normalize_image_tag(self.from_version + "_" + flavor)}"
 
                     # Print the current on-premises data
                     print(f'\nOn-premise: {flavor.upper()}')
