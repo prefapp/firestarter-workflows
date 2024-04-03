@@ -182,7 +182,7 @@ class BuildImages(FirestarterWorkflow):
 
                     # Set the address for the current on-premises
                     address = f"{registry}/{self.repo_name}"
-                    image = f"{address}:{normalize_image_tag(self.from_version + "_" + flavor)}"
+                    image = f"{address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
 
                     # Print the current on-premises data
                     print(f'\nOn-premise: {flavor.upper()}')
