@@ -37,6 +37,7 @@ class BuildImages(FirestarterWorkflow):
         self._login_required = literal_eval(
             self.vars['login_required'].capitalize()) if 'login_required' in self.vars else True
         self._publish = self.vars['publish'] if 'publish' in self.vars else True
+        self._already_logged_in_providers = {}
 
         # Read the on-premises configuration file
         self._config = Config.from_yaml(self.config_file, self.type)
@@ -89,6 +90,10 @@ class BuildImages(FirestarterWorkflow):
     @property
     def publish(self):
         return self._publish
+
+    @property
+    def already_logged_in_providers(self):
+        return self._already_logged_in_providers
 
     def resolve_secrets(self, secrets=None):
         sr = SecretResolver(secrets)
@@ -211,6 +216,9 @@ class BuildImages(FirestarterWorkflow):
 
                         registry_list.append(new_image)
 
+                        if extra_registry.auth_strategy:
+                            self.login(extra_registry.auth_strategy)
+
                     for image in registry_list:
                         await tg.spawn(
                             self.compile_image_and_publish, client,
@@ -222,14 +230,20 @@ class BuildImages(FirestarterWorkflow):
     def execute(self):
         self.filter_flavors()
 
-        if self.login_required:
+        self.login(self.auth_strategy)
+
+        # Run the coroutine function to execute the compilation process for all on-premises
+        anyio.run(self.compile_images_for_all_flavors)
+
+    def login(self, auth_strategy):
+        if self.login_required and auth_strategy not in self.already_logged_in_providers:
 
             # Log in to the default registry
             provider = DockerRegistryAuthFactory.provider_from_str(
-                self.auth_strategy, getattr(self, f"{self.type}_registry")
+                auth_strategy, getattr(self, f"{self.type}_registry")
             )
 
             provider.login_registry()
 
-        # Run the coroutine function to execute the compilation process for all on-premises
-        anyio.run(self.compile_images_for_all_flavors)
+            self.already_logged_in_providers(auth_strategy)
+
