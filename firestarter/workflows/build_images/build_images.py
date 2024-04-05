@@ -37,7 +37,7 @@ class BuildImages(FirestarterWorkflow):
         self._login_required = literal_eval(
             self.vars['login_required'].capitalize()) if 'login_required' in self.vars else True
         self._publish = self.vars['publish'] if 'publish' in self.vars else True
-        self._already_logged_in_providers = {}
+        self._already_logged_in_providers = []
 
         # Read the on-premises configuration file
         self._config = Config.from_yaml(self.config_file, self.type)
@@ -245,5 +245,5 @@ class BuildImages(FirestarterWorkflow):
 
             provider.login_registry()
 
-            self.already_logged_in_providers(auth_strategy)
+            self.already_logged_in_providers.append(auth_strategy)
 
