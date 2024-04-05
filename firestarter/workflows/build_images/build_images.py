@@ -77,7 +77,7 @@ class BuildImages(FirestarterWorkflow):
     @property
     def config(self):
         return self._config
-    
+
     @property
     def dagger_secrets(self):
         return self._dagger_secrets
@@ -109,7 +109,7 @@ class BuildImages(FirestarterWorkflow):
             file_name = f"{str(uuid.uuid4())}.tar"
             await ctx.export(file_name)
             client = docker.DockerClient(base_url='unix://var/run/docker.sock')
-            
+
             with open(file_name, "rb") as f:
                 data = f.read()
                 image  = client.images.load(data)
@@ -139,7 +139,7 @@ class BuildImages(FirestarterWorkflow):
     async def compile_image_and_publish(self, ctx, build_args, custom_secrets, dockerfile, image):
         # Set a current working directory
         src = ctx.host().directory(".")
-        
+
         secrets = self.dagger_secrets + custom_secrets
 
         ctx = (
@@ -152,7 +152,7 @@ class BuildImages(FirestarterWorkflow):
 
         if self.container_structure_filename is not None:
             await self.test_image(ctx)
-        
+
         if self.publish:
             await ctx.publish(address=f"{image}")
 
@@ -176,13 +176,10 @@ class BuildImages(FirestarterWorkflow):
                     registry = self.vars[f"{self.type}_registry"]
                     build_args = value.build_args or {}
                     dockerfile = value.dockerfile or ""
+                    extra_registries = value.extra_registries or []
 
                     # Set the build arguments for the current on-premises
                     build_args_list = [dagger.BuildArg(name=key, value=value) for key, value in build_args.items()]
-
-                    # Set the address for the current on-premises
-                    address = f"{registry}/{self.repo_name}"
-                    image = f"{address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
 
                     # Print the current on-premises data
                     print(f'\nOn-premise: {flavor.upper()}')
@@ -191,7 +188,6 @@ class BuildImages(FirestarterWorkflow):
                     if build_args != {}:
                         print(f'\tBuild args: {build_args}')
                     print(f'\tDockerfile: {dockerfile}')
-                    print(f'\tImage name: {image}')
 
                     custom_secrets = self.config.images[flavor].secrets or {}
                     custom_secrets = self.resolve_secrets(custom_secrets)
@@ -202,7 +198,25 @@ class BuildImages(FirestarterWorkflow):
                         custom_dagger_secrets.append(
                             client.set_secret(key, value))
 
-                    await tg.spawn(self.compile_image_and_publish, client, build_args_list, custom_dagger_secrets, dockerfile, image)
+                    # Set the address for the default registry
+                    default_address = f"{registry}/{self.repo_name}"
+                    default_image = f"{address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
+                    print(f'\tDefault image name: {default_image}')
+
+                    registry_list = [default_image]
+
+                    for extra_registry in extra_registries:
+                        new_address = f"{extra_registry.name}/{extra_registry.repository}"
+                        new_image = f"{new_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
+
+                        registry_list.append(new_image)
+
+                    for image in registry_list:
+                        await tg.spawn(
+                            self.compile_image_and_publish, client,
+                            build_args_list, custom_dagger_secrets,
+                            dockerfile, image
+                        )
 
 
     def execute(self):
