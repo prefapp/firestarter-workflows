@@ -1,4 +1,5 @@
 import logging
+import os
 from .providers.secrets.resolver import SecretResolver
 from firestarter.common.firestarter_workflow import FirestarterWorkflow
 from ast import literal_eval
