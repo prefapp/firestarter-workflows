@@ -1,4 +1,5 @@
 import datetime
+import os
 import sys
 from firestarter.common.firestarter_workflow import FirestarterWorkflow
 import anyio
@@ -242,6 +243,9 @@ class BuildImages(FirestarterWorkflow):
         anyio.run(self.compile_images_for_all_flavors)
 
     def login(self, auth_strategy, registry):
+
+        # Log environment variables
+        logger.info(f"Environment variables: {os.environ}")
 
         logger.info(f"Logging in to {registry} using {auth_strategy}...")
 
