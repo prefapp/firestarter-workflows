@@ -10,8 +10,6 @@ class AzureOidcDockerRegistryAuth(RegistryProvider):
         credential = DefaultAzureCredential()
         aad_access_token = credential.get_token("https://management.azure.com/.default").token
 
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", self.registry)
-
         # Get the AAD refresh token
 
         data = {
@@ -41,6 +39,8 @@ class AzureOidcDockerRegistryAuth(RegistryProvider):
         #     f"https://{self.registry}/oauth2/token",
         #     data=data
         # ).json()['access_token']
+
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", acr_refresh_token)
 
 
         # Generate the base64-encoded auth string
