@@ -204,11 +204,11 @@ class BuildImages(FirestarterWorkflow):
                             client.set_secret(key, value))
 
                     # Set the address for the default registry
-                    default_address = f"{registry}/{self.repo_name}"
-                    default_image = f"{default_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
-                    print(f'\tDefault image name: {default_image}')
+                    # default_address = f"{registry}/{self.repo_name}"
+                    # default_image = f"{default_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
+                    # print(f'\tDefault image name: {default_image}')
 
-                    registry_list = [default_image]
+                    # registry_list = [default_image]
 
                     for extra_registry in extra_registries:
                         new_address = f"{extra_registry['name']}/prefapp/{extra_registry['repository']}"
@@ -233,7 +233,7 @@ class BuildImages(FirestarterWorkflow):
     def execute(self):
         self.filter_flavors()
 
-        self.login(self.auth_strategy, getattr(self, f"{self.type}_registry"))
+        # self.login(self.auth_strategy, getattr(self, f"{self.type}_registry"))
 
         # Run the coroutine function to execute the compilation process for all on-premises
         anyio.run(self.compile_images_for_all_flavors)
