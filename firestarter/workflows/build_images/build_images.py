@@ -205,7 +205,7 @@ class BuildImages(FirestarterWorkflow):
 
                     # Set the address for the default registry
                     default_address = f"{registry}/{self.repo_name}"
-                    default_image = f"{address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
+                    default_image = f"{default_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
                     print(f'\tDefault image name: {default_image}')
 
                     registry_list = [default_image]
