@@ -209,9 +209,10 @@ class BuildImages(FirestarterWorkflow):
                     # print(f'\tDefault image name: {default_image}')
 
                     # registry_list = [default_image]
+                    registry_list = []
 
                     for extra_registry in extra_registries:
-                        new_address = f"{extra_registry['name']}/prefapp/{extra_registry['repository']}"
+                        new_address = f"{extra_registry['name']}/{extra_registry['repository']}"
                         new_image = f"{new_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
 
                         registry_list.append(new_image)
