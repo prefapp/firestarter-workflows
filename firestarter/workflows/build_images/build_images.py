@@ -1,4 +1,5 @@
 import logging
+from .providers.secrets.resolver import SecretResolver
 from firestarter.common.firestarter_workflow import FirestarterWorkflow
 
 logger = logging.getLogger(__name__)
@@ -24,5 +25,8 @@ class BuildImages(FirestarterWorkflow):
 
         # Read the on-premises configuration file
         self._config = Config.from_yaml(self.config_file, self.type)
+    def resolve_secrets(self, secrets=None):
+        sr = SecretResolver(secrets)
+        return sr.resolve()
     def execute(self):
         print(self)
