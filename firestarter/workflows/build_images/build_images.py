@@ -39,7 +39,8 @@ class BuildImages(FirestarterWorkflow):
         self._publish = self.vars['publish'] if 'publish' in self.vars else True
 
         # Read the on-premises configuration file
-        self._config = Config.from_yaml(self.config_file, self.type)
+        self._config = Config.from_yaml(
+            self.config_file, self.type, self.secrets)
 
     @property
     def repo_name(self):

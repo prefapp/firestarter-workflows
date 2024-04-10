@@ -41,13 +41,29 @@ class Config:
         )
 
     @classmethod
-    def from_yaml(cls: t.Type["Config"], file: str, type: str):
+    def from_yaml(cls: t.Type["Config"], file: str, type: str, secrets: dict):
+        print(secrets)
+
         with open(file, "r") as f:
             raw_config = yaml.safe_load(f)
         config = cls.from_dict(raw_config[type])
+
+        # find all values that follow the pattern {{ secrets.name }}
+        # and replace them with the value from the secrets dict
+        replace_secrets(config.to_dict(), secrets)
+        print(config)
         return config
 
     def to_dict(self):
         return {
             "images": {id: image.to_dict() for id, image in self.images.items()},
         }
+
+
+def replace_secrets(dict, secrets) -> dict:
+    for key, val in dict.items():
+        if isinstance(val, dict):
+            replace_secrets(val, secrets)
+        elif isinstance(val, str):
+            if val.startswith("{{") and val.endswith("}}"):
+                dict[key] = secrets[val[2:-2]]
