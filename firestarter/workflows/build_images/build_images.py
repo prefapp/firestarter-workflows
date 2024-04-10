@@ -30,10 +30,18 @@ class BuildImages(FirestarterWorkflow):
         sr = SecretResolver(secrets)
         return sr.resolve()
 
+    def filter_flavors(self):
+        # Get the on-premises name from the command-line arguments and filter the on-premises data accordingly
+        if self.flavors is not None:
+            if self.flavors == '*':
+                print('Publishing all flavors:')
+                self._flavors = ",".join(list(self.config[self.type].keys()))
+
+            self._flavors = self.flavors.replace(' ', '').split(',')
+
     def execute(self):
-        print(f"EIQUI")
-        print(self.__dir__())
-        print(vars(self))
+        self.filter_flavors()
+        print(self._flavors)
 
     @property
     def repo_name(self):
