@@ -40,7 +40,7 @@ class AzureOidcDockerRegistryAuth(RegistryProvider):
         ).json()['access_token']
 
         # Generate the base64-encoded auth string
-        auth = RegistryAuth(username="00000000-0000-0000-0000-000000000000", token=acr_refresh_token)
+        auth = RegistryAuth(username="00000000-0000-0000-0000-000000000000", token=acr_access_token)
         return auth
 
 
