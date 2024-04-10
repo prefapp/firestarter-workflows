@@ -218,8 +218,8 @@ class BuildImages(FirestarterWorkflow):
 
                         registry_list.append(new_image)
 
-                        if extra_registry.auth_strategy:
-                            self.login(extra_registry.auth_strategy)
+                        if extra_registry['auth_strategy']:
+                            self.login(extra_registry['auth_strategy'])
 
                     for image in registry_list:
                         await tg.spawn(
