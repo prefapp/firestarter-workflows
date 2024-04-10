@@ -6,7 +6,6 @@ from .config import Config
 
 logger = logging.getLogger(__name__)
 
-
 class BuildImages(FirestarterWorkflow):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -30,7 +29,9 @@ class BuildImages(FirestarterWorkflow):
     def resolve_secrets(self, secrets=None):
         sr = SecretResolver(secrets)
         return sr.resolve()
+
     def execute(self):
+        print(f"EIQUI")
         print(self)
 
     @property
