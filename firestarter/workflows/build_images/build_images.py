@@ -210,6 +210,8 @@ class BuildImages(FirestarterWorkflow):
 
                     registry_list = [default_image]
 
+                    print(extra_registries)
+
                     for extra_registry in extra_registries:
                         new_address = f"{extra_registry.name}/{extra_registry.repository}"
                         new_image = f"{new_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
