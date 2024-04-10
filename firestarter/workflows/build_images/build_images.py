@@ -33,6 +33,7 @@ class BuildImages(FirestarterWorkflow):
     def execute(self):
         print(f"EIQUI")
         print(self.__dir__())
+        print(vars(self))
 
     @property
     def repo_name(self):
