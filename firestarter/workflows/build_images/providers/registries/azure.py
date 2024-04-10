@@ -22,10 +22,10 @@ class AzureOidcDockerRegistryAuth(RegistryProvider):
         request_result = requests.post(
             f"https://{self.registry}/oauth2/exchange",
             data=data
-        )
+        ).json()
 
         print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", request_result)
-        acr_refresh_token = request_result.json()['refresh_token']
+        acr_refresh_token = request_result['refresh_token']
 
         # We should be able to use the access token. However, it doesn't work. So we use the refresh token instead.
 
