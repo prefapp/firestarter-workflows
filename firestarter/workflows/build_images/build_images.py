@@ -51,8 +51,6 @@ class BuildImages(FirestarterWorkflow):
     def login(self, auth_strategy, registry):
 
         # Log environment variables
-        logger.info(f"Environment variables: {os.environ}")
-
         logger.info(f"Logging in to {registry} using {auth_strategy}...")
 
         if self.login_required and auth_strategy not in self.already_logged_in_providers:
@@ -63,6 +61,8 @@ class BuildImages(FirestarterWorkflow):
             )
 
             provider.login_registry()
+
+            print(self.provider)
 
             self.already_logged_in_providers.append(auth_strategy)
         else:
