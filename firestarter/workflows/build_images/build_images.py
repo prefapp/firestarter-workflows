@@ -11,6 +11,9 @@ from ast import literal_eval
 import uuid
 from os import remove, getcwd
 import string
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def normalize_image_tag(tag):
@@ -239,6 +242,9 @@ class BuildImages(FirestarterWorkflow):
         anyio.run(self.compile_images_for_all_flavors)
 
     def login(self, auth_strategy, registry):
+
+        logger.info(f"Logging in to {registry} using {auth_strategy}...")
+
         if self.login_required and auth_strategy not in self.already_logged_in_providers:
 
             # Log in to the default registry
@@ -249,4 +255,6 @@ class BuildImages(FirestarterWorkflow):
             provider.login_registry()
 
             self.already_logged_in_providers.append(auth_strategy)
-
+        else:
+            logger.info(
+                f"Skipping login to {registry} as is already logged in.")
