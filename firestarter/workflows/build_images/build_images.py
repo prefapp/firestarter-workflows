@@ -4,6 +4,9 @@ from firestarter.common.firestarter_workflow import FirestarterWorkflow
 from ast import literal_eval
 from .config import Config
 
+from .providers.registries.factory import DockerRegistryAuthFactory
+from .providers.secrets.resolver import SecretResolver
+
 logger = logging.getLogger(__name__)
 
 class BuildImages(FirestarterWorkflow):
@@ -42,6 +45,29 @@ class BuildImages(FirestarterWorkflow):
     def execute(self):
         self.filter_flavors()
         print(self._flavors)
+        self.login(self.auth_strategy, getattr(self, f"{self.type}_registry"))
+
+    def login(self, auth_strategy, registry):
+
+        # Log environment variables
+        logger.info(f"Environment variables: {os.environ}")
+
+        logger.info(f"Logging in to {registry} using {auth_strategy}...")
+
+        if self.login_required and auth_strategy not in self.already_logged_in_providers:
+
+            # Log in to the default registry
+            provider = DockerRegistryAuthFactory.provider_from_str(
+                auth_strategy, registry
+            )
+
+            provider.login_registry()
+
+            self.already_logged_in_providers.append(auth_strategy)
+        else:
+            logger.info(
+                f"Skipping login to {registry} as is already logged in.")
+
 
     @property
     def repo_name(self):
