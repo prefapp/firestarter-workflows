@@ -32,3 +32,56 @@ class BuildImages(FirestarterWorkflow):
         return sr.resolve()
     def execute(self):
         print(self)
+
+    @property
+    def repo_name(self):
+        return self._repo_name
+
+    @property
+    def snapshots_registry(self):
+        return self._snapshots_registry
+
+    @property
+    def releases_registry(self):
+        return self._releases_registry
+
+    @property
+    def auth_strategy(self):
+        return self._auth_strategy
+
+    @property
+    def type(self):
+        return self._type
+
+    # Cannot use from property as it is a reserved keyword
+    @property
+    def from_version(self):
+        return self._from
+
+    @property
+    def flavors(self):
+        return self._flavors
+
+    @property
+    def container_structure_filename(self):
+        return self._container_structure_filename
+
+    @property
+    def config(self):
+        return self._config
+
+    @property
+    def dagger_secrets(self):
+        return self._dagger_secrets
+
+    @property
+    def login_required(self):
+        return self._login_required
+
+    @property
+    def publish(self):
+        return self._publish
+
+    @property
+    def already_logged_in_providers(self):
+        return self._already_logged_in_providers
