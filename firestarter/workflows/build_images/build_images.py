@@ -214,6 +214,12 @@ class BuildImages(FirestarterWorkflow):
 
                     registry_list = [default_image]
 
+                    for extra_registry in extra_registries:
+                        new_address = f"{extra_registry['name']}/{extra_registry['repository']}"
+                        new_image = f"{new_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
+
+                        registry_list.append(new_image)
+
 
                     for image in registry_list:
                         await tg.spawn(
@@ -228,18 +234,11 @@ class BuildImages(FirestarterWorkflow):
 
         self.login(self.auth_strategy, getattr(self, f"{self.type}_registry"))
                     
-        extra_registries = []
-
         for flavor in self.flavors:
             value = self.config.images[flavor]
             extra_registries = value.extra_registries or []
 
         for extra_registry in extra_registries:
-            new_address = f"{extra_registry['name']}/{extra_registry['repository']}"
-            new_image = f"{new_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
-
-            registry_list.append(new_image)
-
             if extra_registry['auth_strategy']:
                 self.login(
                     extra_registry['auth_strategy'],
