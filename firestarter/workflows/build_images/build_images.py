@@ -159,6 +159,7 @@ class BuildImages(FirestarterWorkflow):
             await self.test_image(ctx)
 
         if self.publish:
+            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", image)
             await ctx.publish(address=f"{image}")
 
     # Define a coroutine function to execute the compilation process for all on-premises
