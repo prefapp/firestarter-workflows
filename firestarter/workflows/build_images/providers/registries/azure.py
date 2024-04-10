@@ -12,33 +12,32 @@ class AzureOidcDockerRegistryAuth(RegistryProvider):
 
         # Get the AAD refresh token
 
-        data = {
-            "grant_type": "access_token",
-            "service": self.registry,
-            "tenant": "common",
-            "access_token": aad_access_token
-        }
+        # data = {
+        #     "grant_type": "access_token",
+        #     "service": self.registry,
+        #     "tenant": "common",
+        #     "access_token": aad_access_token
+        # }
 
-        request_result = requests.post(
-            f"https://{self.registry}/oauth2/exchange",
-            data=data
-        )
-        acr_refresh_token = request_result.json()['refresh_token']
+        # request_result = requests.post(
+        #     f"https://{self.registry}/oauth2/exchange",
+        #     data=data
+        # ).json()['refresh_token']
 
         # We should be able to use the access token. However, it doesn't work. So we use the refresh token instead.
 
         # Get the ACR access token
-        # data = {
-        #     "grant_type": "refresh_token",
-        #     "service": self.registry,
-        #     "scope": "registry:catalog:*",
-        #     "refresh_token": acr_refresh_token
-        # }
+        data = {
+            "grant_type": "refresh_token",
+            "service": self.registry,
+            "scope": "registry:catalog:*",
+            "refresh_token": acr_refresh_token
+        }
 
-        # acr_access_token = requests.post(
-        #     f"https://{self.registry}/oauth2/token",
-        #     data=data
-        # ).json()['access_token']
+        acr_access_token = requests.post(
+            f"https://{self.registry}/oauth2/token",
+            data=data
+        ).json()['access_token']
 
         # Generate the base64-encoded auth string
         auth = RegistryAuth(username="00000000-0000-0000-0000-000000000000", token=acr_refresh_token)
