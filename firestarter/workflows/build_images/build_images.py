@@ -217,7 +217,10 @@ class BuildImages(FirestarterWorkflow):
                         registry_list.append(new_image)
 
                         if extra_registry['auth_strategy']:
-                            self.login(extra_registry['auth_strategy'])
+                            self.login(
+                                extra_registry['auth_strategy'],
+                                extra_registry['name']
+                            )
 
                     for image in registry_list:
                         await tg.spawn(
@@ -230,17 +233,17 @@ class BuildImages(FirestarterWorkflow):
     def execute(self):
         self.filter_flavors()
 
-        self.login(self.auth_strategy)
+        self.login(self.auth_strategy, getattr(self, f"{self.type}_registry"))
 
         # Run the coroutine function to execute the compilation process for all on-premises
         anyio.run(self.compile_images_for_all_flavors)
 
-    def login(self, auth_strategy):
+    def login(self, auth_strategy, registry):
         if self.login_required and auth_strategy not in self.already_logged_in_providers:
 
             # Log in to the default registry
             provider = DockerRegistryAuthFactory.provider_from_str(
-                auth_strategy, getattr(self, f"{self.type}_registry")
+                auth_strategy, registry
             )
 
             provider.login_registry()
