@@ -159,7 +159,6 @@ class BuildImages(FirestarterWorkflow):
             await self.test_image(ctx)
 
         if self.publish:
-            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", image)
             await ctx.publish(address=f"{image}")
 
     # Define a coroutine function to execute the compilation process for all on-premises
@@ -212,7 +211,7 @@ class BuildImages(FirestarterWorkflow):
                     registry_list = [default_image]
 
                     for extra_registry in extra_registries:
-                        new_address = f"{extra_registry['name']}/{extra_registry['repository']}"
+                        new_address = f"{extra_registry['name']}/prefapp/{extra_registry['repository']}"
                         new_image = f"{new_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
 
                         registry_list.append(new_image)
