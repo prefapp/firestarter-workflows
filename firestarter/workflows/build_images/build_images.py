@@ -62,7 +62,7 @@ class BuildImages(FirestarterWorkflow):
 
             provider.login_registry()
 
-            print(self.provider)
+            print(provider)
 
             self.already_logged_in_providers.append(auth_strategy)
         else:
