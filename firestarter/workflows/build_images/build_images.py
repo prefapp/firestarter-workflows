@@ -233,7 +233,7 @@ class BuildImages(FirestarterWorkflow):
         self.filter_flavors()
 
         self.login(self.auth_strategy, getattr(self, f"{self.type}_registry"))
-                    
+
         for flavor in self.flavors:
             value = self.config.images[flavor]
             extra_registries = value.extra_registries or []
