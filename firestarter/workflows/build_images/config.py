@@ -1,7 +1,8 @@
 import typing as t
 from dataclasses import dataclass, field
-
+from sys import exit
 import yaml
+import re
 
 @dataclass
 class Image:
@@ -42,7 +43,6 @@ class Config:
 
     @classmethod
     def from_yaml(cls: t.Type["Config"], file: str, type: str, secrets: dict):
-        print(secrets)
 
         with open(file, "r") as f:
             raw_config = yaml.safe_load(f)
@@ -51,7 +51,6 @@ class Config:
         # find all values that follow the pattern {{ secrets.name }}
         # and replace them with the value from the secrets dict
         replace_secrets(config.to_dict(), secrets)
-        print(config)
         return config
 
     def to_dict(self):
@@ -60,10 +59,14 @@ class Config:
         }
 
 
-def replace_secrets(dict, secrets) -> dict:
-    for key, val in dict.items():
+def replace_secrets(data, secrets) -> dict:
+    # check first if dict is a dictionary
+    for key, val in data.items():
         if isinstance(val, dict):
             replace_secrets(val, secrets)
         elif isinstance(val, str):
-            if val.startswith("{{") and val.endswith("}}"):
-                dict[key] = secrets[val[2:-2]]
+            m = re.search(
+                r'^\{\{\ssecrets\.([a-zA-Z][a-zA-Z0-9-_]+)\s\}\}$', val)
+            if m:
+                data[key] = secrets[m.group(1)]
+    return data
