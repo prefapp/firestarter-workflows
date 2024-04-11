@@ -1,6 +1,5 @@
 import typing as t
 from dataclasses import dataclass, field
-from sys import exit
 import yaml
 import re
 
