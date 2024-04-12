@@ -52,7 +52,7 @@ jobs:
      - name: Checkout repository
        uses: actions/checkout@v4
        with:
-         ref: ${{ github.event.inputs.ref }}
+         ref: ${{ inputs.ref }}
          path: build
 
      - name: Checkout repository to get config file
