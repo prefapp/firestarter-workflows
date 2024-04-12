@@ -1,0 +1,80 @@
+name: Build images
+on:
+  workflow_call:
+    inputs:
+      type:
+        type: string
+        description: Type of image to build 
+      auth_strategy:
+        type: string
+        description: Type of strategy to authenticate against the registries (aws_oidc, azure_oidc)
+      from:
+        type: string
+        description: Source short-sha, tag, branch-ref that will be used in the image tag
+        required: true
+      ref:
+        type: string
+        description: Checkout git ref
+        required: true
+      flavors:
+        type: string
+        description: Flavor name/s | one (alone), several (separated by commas)
+        required: true
+      secrets:
+        type: string
+        description: Secrets to pass to the image
+        
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-images:
+    runs-on: ubuntu-22.04
+    steps:
+    
+     - name: Configure Azure Credentials
+       uses: azure/login@v1
+       if: ${{ vars.AZURE_CLIENT_ID != "" }}
+       with:
+         client-id: ${{ vars.AZURE_CLIENT_ID }}
+         tenant-id: ${{ vars.AZURE_TENANT_ID }}
+         subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+     
+     - name: Configure AWS Credentials
+       uses: aws-actions/configure-aws-credentials@v1
+       if: ${{ vars.AWS_OIDC_ECR_ROLE != "" }}
+       with:
+         aws-region: ${{ vars.AWS_REGION }}
+         role-to-assume: ${{ vars.AWS_OIDC_ECR_ROLE }}
+         role-session-name: OIDCSession
+
+     - name: Checkout repository
+       uses: actions/checkout@v4
+       with:
+         ref: ${{ github.event.inputs.ref }}
+         path: build
+
+     - name: Checkout repository to get config file
+       uses: actions/checkout@v4
+       with:
+         path: config
+   
+     - name: Call run-dagger-py action
+       uses: prefapp/run-dagger-py@main
+       with:
+         working_directory: build
+         pyproject_path: .dagger
+         workflow: build_images
+         config_file: ../config/.github/build_images.yaml
+         vars: |
+           repo_name="${{ github.repository }}"
+           flavors="${{ inputs.flavors }}"
+           auth_strategy="${{ inputs.auth_strategy }}"
+           snapshots_registry="${{ vars.DOCKER_REGISTRY_SNAPSHOTS }}"
+           releases_registry="${{ vars.DOCKER_REGISTRY_RELEASES }}"
+           type="${{ inputs.type }}"
+           from="${{ inputs.from }}"
+           login_required="true"
+         secrets: ${{ inputs.secrets }}
+         
