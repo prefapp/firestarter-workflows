@@ -114,7 +114,7 @@ class BuildImages(FirestarterWorkflow):
             self._flavors = self.flavors.replace(' ', '').split(',')
 
 
-    def async test_image(self, ctx):
+    async def test_image(self, ctx):
         try:
             file_name = f"{str(uuid.uuid4())}.tar"
             await ctx.export(file_name)
