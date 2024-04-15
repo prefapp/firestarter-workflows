@@ -146,14 +146,9 @@ class BuildImages(FirestarterWorkflow):
 
     # Define a coroutine function to compile an image using Docker
 
-    async def compile_image_and_publish(self, ctx, build_args, custom_secrets, dockerfile, image):
+    async def compile_image_and_publish(self, ctx, build_args, secrets, dockerfile, image):
         # Set a current working directory
         src = ctx.host().directory(".")
-
-        logger.info(f"Generic secrets: {self.dagger_secrets}")
-        logger.info(f"Custom secrets: {custom_secrets}")
-
-        secrets = self.dagger_secrets + custom_secrets
 
         logger.info(f"Using secrets: {secrets}")
 
@@ -180,8 +175,9 @@ class BuildImages(FirestarterWorkflow):
         async with dagger.Connection(config) as client:
             client.container()
 
+            generic_secrets = []
             for key, value in self.secrets.items():
-                self._dagger_secrets.append(client.set_secret(key, value))
+                generic_secrets.append(client.set_secret(key, value))
 
             # Set up a task group to execute the compilation process for all flavors in parallel
             async with anyio.create_task_group() as tg:
@@ -215,6 +211,10 @@ class BuildImages(FirestarterWorkflow):
                         custom_dagger_secrets.append(
                             client.set_secret(key, value))
 
+
+                    # Combine generic and custom secrets for this flavor
+                    flavor_secrets = generic_secrets + custom_dagger_secrets
+
                     # Set the address for the default registry
                     default_address = f"{registry}/{self.repo_name}"
                     default_image = f"{default_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
@@ -232,7 +232,7 @@ class BuildImages(FirestarterWorkflow):
                     for image in registry_list:
                         await tg.spawn(
                             self.compile_image_and_publish, client,
-                            build_args_list, custom_dagger_secrets,
+                            build_args_list, flavor_secrets,
                             dockerfile, image
                         )
 
