@@ -230,8 +230,7 @@ class BuildImages(FirestarterWorkflow):
 
 
                     for image in registry_list:
-                        await tg.spawn(
-                            self.compile_image_and_publish, client,
+                        compile_image_and_publish(client,
                             build_args_list, custom_dagger_secrets,
                             dockerfile, image
                         )
