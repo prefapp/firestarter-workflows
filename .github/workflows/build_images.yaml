@@ -19,6 +19,7 @@ on:
       secrets:
         type: string
         description: Secrets to pass to the image
+        default: ""
         
 permissions:
   id-token: write
