@@ -114,7 +114,7 @@ class BuildImages(FirestarterWorkflow):
             self._flavors = self.flavors.replace(' ', '').split(',')
 
 
-    def test_image(self, ctx):
+    def async test_image(self, ctx):
         try:
             file_name = f"{str(uuid.uuid4())}.tar"
             await ctx.export(file_name)
@@ -146,7 +146,7 @@ class BuildImages(FirestarterWorkflow):
 
     # Define a coroutine function to compile an image using Docker
 
-    def compile_image_and_publish(self, ctx, build_args, custom_secrets, dockerfile, image):
+    def await compile_image_and_publish(self, ctx, build_args, custom_secrets, dockerfile, image):
         # Set a current working directory
         src = ctx.host().directory(".")
 
