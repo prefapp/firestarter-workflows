@@ -201,6 +201,7 @@ class BuildImages(FirestarterWorkflow):
                     print(f'\tDockerfile: {dockerfile}')
 
                     custom_secrets = self.config.images[flavor].secrets or {}
+                    
                     custom_secrets = self.resolve_secrets(custom_secrets)
 
                     logger.info(f"Setting flavor {flavor} custom secrets: {custom_secrets.keys()}")
@@ -208,6 +209,7 @@ class BuildImages(FirestarterWorkflow):
                     custom_dagger_secrets = []
 
                     for key, value in custom_secrets.items():
+                        logger.info(f"Setting secret {key} with value {value}")
                         custom_dagger_secrets.append(
                             client.set_secret(key, value))
 
@@ -218,6 +220,7 @@ class BuildImages(FirestarterWorkflow):
                     # Set the address for the default registry
                     default_address = f"{registry}/{self.repo_name}"
                     default_image = f"{default_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
+                    
                     print(f'\tDefault image name: {default_image}')
 
                     registry_list = [default_image]
