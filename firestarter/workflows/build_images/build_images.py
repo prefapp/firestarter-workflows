@@ -209,10 +209,8 @@ class BuildImages(FirestarterWorkflow):
                     custom_dagger_secrets = []
 
                     for key, value in custom_secrets.items():
-                        logger.info(f"Setting secret {key} with value {value}")
                         custom_dagger_secrets.append(
                             client.set_secret(key, value))
-
 
                     # Combine generic and custom secrets for this flavor
                     flavor_secrets = generic_secrets + custom_dagger_secrets
@@ -231,18 +229,11 @@ class BuildImages(FirestarterWorkflow):
 
                         registry_list.append(new_image)
 
-                    print(f'\tFlavor secrets🐣: {flavor_secrets}')
-
                     for image in registry_list:
                         await self.compile_image_and_publish(
                             client, build_args_list, flavor_secrets,
                             dockerfile, image
                         )
-                        # await tg.spawn(
-                        #     self.compile_image_and_publish, client,
-                        #     build_args_list, flavor_secrets,
-                        #     dockerfile, image
-                        # )
 
 
     def execute(self):
