@@ -150,6 +150,9 @@ class BuildImages(FirestarterWorkflow):
         # Set a current working directory
         src = ctx.host().directory(".")
 
+        logger.info(f"Generic secrets: {self.dagger_secrets}")
+        logger.info(f"Custom secrets: {custom_secrets}")
+
         secrets = self.dagger_secrets + custom_secrets
 
         logger.info(f"Using secrets: {secrets}")
