@@ -234,11 +234,15 @@ class BuildImages(FirestarterWorkflow):
                     print(f'\tFlavor secrets🐣: {flavor_secrets}')
 
                     for image in registry_list:
-                        await tg.spawn(
-                            self.compile_image_and_publish, client,
-                            build_args_list, flavor_secrets,
+                        await self.compile_image_and_publish(
+                            client, build_args_list, flavor_secrets,
                             dockerfile, image
                         )
+                        # await tg.spawn(
+                        #     self.compile_image_and_publish, client,
+                        #     build_args_list, flavor_secrets,
+                        #     dockerfile, image
+                        # )
 
 
     def execute(self):
