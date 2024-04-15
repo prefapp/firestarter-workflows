@@ -114,7 +114,7 @@ class BuildImages(FirestarterWorkflow):
             self._flavors = self.flavors.replace(' ', '').split(',')
 
 
-    async def test_image(self, ctx):
+    def test_image(self, ctx):
         try:
             file_name = f"{str(uuid.uuid4())}.tar"
             await ctx.export(file_name)
@@ -146,7 +146,7 @@ class BuildImages(FirestarterWorkflow):
 
     # Define a coroutine function to compile an image using Docker
 
-    async def compile_image_and_publish(self, ctx, build_args, custom_secrets, dockerfile, image):
+    def compile_image_and_publish(self, ctx, build_args, custom_secrets, dockerfile, image):
         # Set a current working directory
         src = ctx.host().directory(".")
 
@@ -184,56 +184,55 @@ class BuildImages(FirestarterWorkflow):
                 self._dagger_secrets.append(client.set_secret(key, value))
 
             # Set up a task group to execute the compilation process for all flavors in parallel
-            async with anyio.create_task_group() as tg:
-                for flavor in self.flavors:
-                    value = self.config.images[flavor]
-                    # Get the registry, repository, build arguments, Dockerfile path, and address for the current on-premises
-                    registry = self.vars[f"{self.type}_registry"]
-                    build_args = value.build_args or {}
-                    dockerfile = value.dockerfile or ""
-                    extra_registries = value.extra_registries or []
+            for flavor in self.flavors:
+                value = self.config.images[flavor]
+                # Get the registry, repository, build arguments, Dockerfile path, and address for the current on-premises
+                registry = self.vars[f"{self.type}_registry"]
+                build_args = value.build_args or {}
+                dockerfile = value.dockerfile or ""
+                extra_registries = value.extra_registries or []
 
-                    # Set the build arguments for the current on-premises
-                    build_args_list = [dagger.BuildArg(name=key, value=value) for key, value in build_args.items()]
+                # Set the build arguments for the current on-premises
+                build_args_list = [dagger.BuildArg(name=key, value=value) for key, value in build_args.items()]
 
-                    # Print the current on-premises data
-                    print(f'\nOn-premise: {flavor.upper()}')
-                    print(f'\tRegistry: {registry}')
-                    print(f'\tRepository: {self.repo_name}')
-                    if build_args != {}:
-                        print(f'\tBuild args: {build_args}')
-                    print(f'\tDockerfile: {dockerfile}')
+                # Print the current on-premises data
+                print(f'\nOn-premise: {flavor.upper()}')
+                print(f'\tRegistry: {registry}')
+                print(f'\tRepository: {self.repo_name}')
+                if build_args != {}:
+                    print(f'\tBuild args: {build_args}')
+                print(f'\tDockerfile: {dockerfile}')
 
-                    custom_secrets = self.config.images[flavor].secrets or {}
-                    custom_secrets = self.resolve_secrets(custom_secrets)
+                custom_secrets = self.config.images[flavor].secrets or {}
+                custom_secrets = self.resolve_secrets(custom_secrets)
 
-                    logger.info(f"Setting flavor {flavor} custom secrets: {custom_secrets.keys()}")
+                logger.info(f"Setting flavor {flavor} custom secrets: {custom_secrets.keys()}")
 
-                    custom_dagger_secrets = []
+                custom_dagger_secrets = []
 
-                    for key, value in self.secrets.items():
-                        custom_dagger_secrets.append(
-                            client.set_secret(key, value))
+                for key, value in self.secrets.items():
+                    custom_dagger_secrets.append(
+                        client.set_secret(key, value))
 
-                    # Set the address for the default registry
-                    default_address = f"{registry}/{self.repo_name}"
-                    default_image = f"{default_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
-                    print(f'\tDefault image name: {default_image}')
+                # Set the address for the default registry
+                default_address = f"{registry}/{self.repo_name}"
+                default_image = f"{default_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
+                print(f'\tDefault image name: {default_image}')
 
-                    registry_list = [default_image]
+                registry_list = [default_image]
 
-                    for extra_registry in extra_registries:
-                        new_address = f"{extra_registry['name']}/{extra_registry['repository']}"
-                        new_image = f"{new_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
+                for extra_registry in extra_registries:
+                    new_address = f"{extra_registry['name']}/{extra_registry['repository']}"
+                    new_image = f"{new_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
 
-                        registry_list.append(new_image)
+                    registry_list.append(new_image)
 
 
-                    for image in registry_list:
-                        self.compile_image_and_publish(client,
-                            build_args_list, custom_dagger_secrets,
-                            dockerfile, image
-                        )
+                for image in registry_list:
+                    self.compile_image_and_publish(client,
+                        build_args_list, custom_dagger_secrets,
+                        dockerfile, image
+                    )
 
 
     def execute(self):
