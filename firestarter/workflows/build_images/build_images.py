@@ -228,6 +228,7 @@ class BuildImages(FirestarterWorkflow):
 
                         registry_list.append(new_image)
 
+                    print(f'\tFlavor secrets🐣: {flavor_secrets}')
 
                     for image in registry_list:
                         await tg.spawn(
