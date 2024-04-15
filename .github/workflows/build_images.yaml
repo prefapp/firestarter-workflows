@@ -17,6 +17,7 @@ on:
       flavors:
         type: string
         description: Flavor name/s | one (alone), several (separated by commas)
+        default: "*"
         required: true
       secrets:
         type: string
