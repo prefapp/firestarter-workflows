@@ -109,7 +109,7 @@ class BuildImages(FirestarterWorkflow):
         if self.flavors is not None:
             if self.flavors.replace(' ', '') == '*':
                 print('Publishing all flavors:')
-                self._flavors = ",".join(list(self.config[self.type].keys()))
+                self._flavors = ",".join(list(self.config.to_json()[self.type].keys()))
 
             self._flavors = self.flavors.replace(' ', '').split(',')
 
