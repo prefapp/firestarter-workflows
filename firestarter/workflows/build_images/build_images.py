@@ -230,7 +230,7 @@ class BuildImages(FirestarterWorkflow):
 
 
                     for image in registry_list:
-                        compile_image_and_publish(client,
+                        self.compile_image_and_publish(client,
                             build_args_list, custom_dagger_secrets,
                             dockerfile, image
                         )
