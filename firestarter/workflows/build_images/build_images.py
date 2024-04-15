@@ -107,7 +107,7 @@ class BuildImages(FirestarterWorkflow):
     def filter_flavors(self):
         # Get the on-premises name from the command-line arguments and filter the on-premises data accordingly
         if self.flavors is not None:
-            if self.flavors == '*':
+            if self.flavors.replace(' ', '') == '*':
                 print('Publishing all flavors:')
                 self._flavors = ",".join(list(self.config[self.type].keys()))
 
