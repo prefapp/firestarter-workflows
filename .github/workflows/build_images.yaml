@@ -4,17 +4,13 @@ on:
     inputs:
       type:
         type: string
-        description: Type of image to build 
+        description: Type of image to build (snapshots, releases)
       auth_strategy:
         type: string
         description: Type of strategy to authenticate against the registries (aws_oidc, azure_oidc)
       from:
         type: string
         description: Source short-sha, tag, branch-ref that will be used in the image tag
-        required: true
-      ref:
-        type: string
-        description: Checkout git ref
         required: true
       flavors:
         type: string
@@ -35,7 +31,7 @@ jobs:
     
      - name: Configure Azure Credentials
        uses: azure/login@v1
-       if: ${{ vars.AZURE_CLIENT_ID != "" }}
+       if: ${{ vars.AZURE_CLIENT_ID }}
        with:
          client-id: ${{ vars.AZURE_CLIENT_ID }}
          tenant-id: ${{ vars.AZURE_TENANT_ID }}
@@ -43,7 +39,7 @@ jobs:
      
      - name: Configure AWS Credentials
        uses: aws-actions/configure-aws-credentials@v1
-       if: ${{ vars.AWS_OIDC_ECR_ROLE != "" }}
+       if: ${{ vars.AWS_OIDC_ECR_ROLE }}
        with:
          aws-region: ${{ vars.AWS_REGION }}
          role-to-assume: ${{ vars.AWS_OIDC_ECR_ROLE }}
@@ -52,8 +48,21 @@ jobs:
      - name: Checkout repository
        uses: actions/checkout@v4
        with:
-         ref: ${{ inputs.ref }}
+         ref: ${{ inputs.from }}
          path: build
+
+     - name: Get tag
+       id: get-tag
+       shell: bash
+       run: |
+        ref=${{ inputs.from }}
+        if [[ $ref =~ ^[0-9a-fA-F]{40}$ ]]; then
+            substring=$(echo $ref | cut -c1-7)
+            echo "TAG=${substring}" >> $GITHUB_ENV
+            echo "Input is a Git SHA."
+        else
+            echo "TAG=${ref}" >> $GITHUB_ENV
+        fi
 
      - name: Checkout repository to get config file
        uses: actions/checkout@v4
@@ -74,7 +83,7 @@ jobs:
            snapshots_registry="${{ vars.DOCKER_REGISTRY_SNAPSHOTS }}"
            releases_registry="${{ vars.DOCKER_REGISTRY_RELEASES }}"
            type="${{ inputs.type }}"
-           from="${{ inputs.from }}"
+           from="${{ steps.get-tag.outputs.TAG }}"
            login_required="true"
          secrets: ${{ inputs.secrets }}
          
