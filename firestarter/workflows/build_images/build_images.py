@@ -152,6 +152,8 @@ class BuildImages(FirestarterWorkflow):
 
         secrets = self.dagger_secrets + custom_secrets
 
+        logger.info(f"Using secrets: {secrets}")
+
         ctx = (
             ctx.container()
             .build(context=src, dockerfile=dockerfile, build_args=build_args, secrets=secrets)
