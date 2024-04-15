@@ -81,7 +81,7 @@ jobs:
          workflow: build_images
          config_file: ../config/.github/build_images.yaml
          vars: |
-           repo_name="${{ github.repository }}"
+           repo_name="service/${{ github.repository }}"
            flavors="${{ inputs.flavors }}"
            auth_strategy="${{ inputs.auth_strategy }}"
            snapshots_registry="${{ vars.DOCKER_REGISTRY_SNAPSHOTS }}"
