@@ -58,10 +58,10 @@ jobs:
         ref=${{ inputs.from }}
         if [[ $ref =~ ^[0-9a-fA-F]{40}$ ]]; then
             short_sha=$(echo $ref | cut -c1-7)
-            echo "TAG=${short_sha}" >> $GITHUB_ENV
+            echo "tag=${short_sha}" >> $GITHUB_ENV
             echo "Ref $ref is a Git SHA, $short_sha is used as a tag."
         else
-            echo "TAG=${ref}" >> $GITHUB_ENV
+            echo "tag=${ref}" >> $GITHUB_ENV
             echo "Ref is not a Git SHA, $ref is used as a tag or branch name."
         fi
 
@@ -84,7 +84,7 @@ jobs:
            snapshots_registry="${{ vars.DOCKER_REGISTRY_SNAPSHOTS }}"
            releases_registry="${{ vars.DOCKER_REGISTRY_RELEASES }}"
            type="${{ inputs.type }}"
-           from="${{ steps.get-tag.outputs.TAG }}"
+           from="${{ steps.get-tag.outputs.tag }}"
            login_required="true"
          secrets: ${{ inputs.secrets }}
          
