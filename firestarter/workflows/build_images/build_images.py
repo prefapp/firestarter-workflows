@@ -202,6 +202,8 @@ class BuildImages(FirestarterWorkflow):
                     custom_secrets = self.config.images[flavor].secrets or {}
                     custom_secrets = self.resolve_secrets(custom_secrets)
 
+                    logger.info(f"Setting flavor {flavor} custom secrets: {custom_secrets.keys()}}")
+
                     custom_dagger_secrets = []
 
                     for key, value in self.secrets.items():
@@ -250,9 +252,6 @@ class BuildImages(FirestarterWorkflow):
         anyio.run(self.compile_images_for_all_flavors)
 
     def login(self, auth_strategy, registry):
-
-        # Log environment variables
-        logger.info(f"Environment variables: {os.environ}")
 
         logger.info(f"Logging in to {registry} using {auth_strategy}...")
 
