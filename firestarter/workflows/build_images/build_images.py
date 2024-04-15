@@ -202,7 +202,7 @@ class BuildImages(FirestarterWorkflow):
                     custom_secrets = self.config.images[flavor].secrets or {}
                     custom_secrets = self.resolve_secrets(custom_secrets)
 
-                    logger.info(f"Setting flavor {flavor} custom secrets: {custom_secrets.keys()}}")
+                    logger.info(f"Setting flavor {flavor} custom secrets: {custom_secrets.keys()}")
 
                     custom_dagger_secrets = []
 
