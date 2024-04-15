@@ -79,6 +79,7 @@ jobs:
        with:
          working_directory: build
          pyproject_path: .dagger
+         ref: fix/secrets
          workflow: build_images
          config_file: ../config/.github/build_images.yaml
          vars: |
