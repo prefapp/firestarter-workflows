@@ -173,8 +173,6 @@ class BuildImages(FirestarterWorkflow):
 
         # Connect to Dagger
         async with dagger.Connection(config) as client:
-            
-            client.container()
 
             secrets_for_all_flavors = []
             for key, value in self.secrets.items():
