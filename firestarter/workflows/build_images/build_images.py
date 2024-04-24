@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 def normalize_image_tag(tag):
-    valid_chars = string.ascii_letters + string.digits + '.-'
+    valid_chars = string.ascii_letters + string.digits + '_.-'
 
     # replace invalid characters with '-'
     tag = ''.join(c if c in valid_chars else '-' for c in tag)
@@ -127,12 +127,11 @@ class BuildImages(FirestarterWorkflow):
             stdout = client.containers.run(
                 'gcr.io/gcp-runtimes/container-structure-test', f'test -i {image[0].id} --config /tmp/cwd/{self.container_structure_filename}',
                 detach=False,
-                mounts=[{
-                    'source': '/var/run/docker.sock', 'target': '/var/run/docker.sock', 'type': 'bind'
-                    }, {
-                    'source': getcwd(), 'target': '/tmp/cwd', 'type': 'bind'
-                    }]
-                )
+                mounts=[
+                    { 'source': '/var/run/docker.sock', 'target': '/var/run/docker.sock', 'type': 'bind' },
+                    { 'source': getcwd(), 'target': '/tmp/cwd', 'type': 'bind' }
+                ]
+            )
 
             print(stdout.decode('utf-8'))
 
@@ -186,9 +185,9 @@ class BuildImages(FirestarterWorkflow):
                 build_args_list = [dagger.BuildArg(name=key, value=value) for key, value in build_args.items()]
 
                 resolved_secret_refs = self.resolve_secrets(
-                    
+
                     self.config.images[flavor].secrets or {}
-                    
+
                 )
 
                 logger.info(f"Setting flavor {flavor} custom secrets: {resolved_secret_refs.keys()}")
@@ -197,17 +196,17 @@ class BuildImages(FirestarterWorkflow):
                 flavor_secrets = []
 
                 for key, value in resolved_secret_refs.items():
-                    
+
                     flavor_secrets.append(
-                        
+
                         client.set_secret(
-                        
-                            key, 
-                        
+
+                            key,
+
                             value
-                        
+
                         )
-                    
+
                     )
 
                 # Combine generic and custom secrets for this flavor
@@ -221,9 +220,9 @@ class BuildImages(FirestarterWorkflow):
                 registry_list = [full_registry_adress]
 
                 for extra_registry in extra_registries:
-                    
+
                     extra_registry_adress = f"{extra_registry['name']}/{extra_registry['repository']}"
-                    
+
                     extra_full_registry_adress = f"{extra_registry_adress}:{normalize_image_tag(self.from_version + '_' + flavor)}"
 
                     registry_list.append(extra_full_registry_adress)
@@ -231,29 +230,29 @@ class BuildImages(FirestarterWorkflow):
                 for image in registry_list:
 
                     await self.compile_image_and_publish(
-                        client, 
+                        client,
 
-                        build_args_list, 
-                        
+                        build_args_list,
+
                         secrets,
-                        
-                        dockerfile, 
-                        
+
+                        dockerfile,
+
                         image
                     )
 
     def get_flavor_data(self, flavor):
-        
+
         value = self.config.images[flavor]
-                
+
         registry = self.vars[f"{self.type}_registry"]
-        
+
         build_args = value.build_args or {}
-        
+
         dockerfile = value.dockerfile or ""
-        
+
         extra_registries = value.extra_registries or []
-        
+
         return registry, build_args, dockerfile, extra_registries
 
 
