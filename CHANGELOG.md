@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/prefapp/firestarter-workflows/compare/v1.0.0...v1.0.1) (2024-04-24)
+
+
+### Bug Fixes
+
+* Fixed normalize_image_tag function so it also accepts the _ character ([#53](https://github.com/prefapp/firestarter-workflows/issues/53)) ([78a56e1](https://github.com/prefapp/firestarter-workflows/commit/78a56e19c8758ba2d775976a0406f4ba9fa86b8d))
+
 ## [1.0.0](https://github.com/prefapp/firestarter-workflows/compare/v0.1.0...v1.0.0) (2024-04-16)
 
 
