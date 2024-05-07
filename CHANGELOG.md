@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/prefapp/firestarter-workflows/compare/v1.0.1...v1.1.0) (2024-05-07)
+
+
+### Features
+
+* Add support for generic auth ([8cdff08](https://github.com/prefapp/firestarter-workflows/commit/8cdff086b39dea58e418cc0636ce3d702ae451a5))
+
 ## [1.0.1](https://github.com/prefapp/firestarter-workflows/compare/v1.0.0...v1.0.1) (2024-04-24)
 
 
