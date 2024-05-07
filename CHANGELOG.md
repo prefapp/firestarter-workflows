@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.1.1](https://github.com/prefapp/firestarter-workflows/compare/v1.1.0...v1.1.1) (2024-05-07)
+
+
+### Bug Fixes
+
+* release-please workflow ([af9431b](https://github.com/prefapp/firestarter-workflows/commit/af9431b01c7c3b25b3b8d4dc6d3fd2f2eb0b50ad))
+* release-please workflow ([b9012df](https://github.com/prefapp/firestarter-workflows/commit/b9012df32cc26e82dfb8b5499dab6975d41d8482))
+* release-please workflow ([1b5f7a7](https://github.com/prefapp/firestarter-workflows/commit/1b5f7a7a86aea9652d45a0bfc49ee033202b7b07))
+* release-please workflow ([9d6e4a5](https://github.com/prefapp/firestarter-workflows/commit/9d6e4a50fee36ea34945f57537b7717847e21cbf))
+
 ## [1.1.0](https://github.com/prefapp/firestarter-workflows/compare/v1.0.1...v1.1.0) (2024-05-07)
 
 
