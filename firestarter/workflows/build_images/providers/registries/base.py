@@ -12,11 +12,20 @@ class RegistryAuth:
 class RegistryProvider():
 
     def __init__(self, registry: str) -> None:
+        self._creds = None
         self._registry = registry
 
     @property
     def registry(self):
         return self._registry
+
+    @property
+    def creds(self):
+        return self._creds
+
+    @creds.setter
+    def creds(self, value):
+        self._creds = value
 
     @abstractmethod
     def get_registry_auth(self):
