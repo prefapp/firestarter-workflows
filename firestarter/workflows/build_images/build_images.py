@@ -32,6 +32,7 @@ class BuildImages(FirestarterWorkflow):
         self._repo_name = self.vars['repo_name']
         self._snapshots_registry = self.vars['snapshots_registry']
         self._releases_registry = self.vars['releases_registry']
+        self._registry_creds = self.vars.get('registry_creds')
         self._auth_strategy = self.vars['auth_strategy']
         self._type = self.vars['type']
         self._from = self.vars['from']
@@ -58,6 +59,12 @@ class BuildImages(FirestarterWorkflow):
     @property
     def releases_registry(self):
         return self._releases_registry
+
+    # There is only one shared cred for both snapshots and releases as for now
+    # because there is no way to specify a custom auth strategy for each of them
+    @property
+    def registry_creds(self):
+        return self._registry_creds
 
     @property
     def auth_strategy(self):
@@ -259,7 +266,8 @@ class BuildImages(FirestarterWorkflow):
     def execute(self):
         self.filter_flavors()
 
-        self.login(self.auth_strategy, getattr(self, f"{self.type}_registry"))
+        self.login(self.auth_strategy, getattr(
+            self, f"{self.type}_registry"), self.registry_creds)
 
         for flavor in self.flavors:
             value = self.config.images[flavor]
@@ -269,13 +277,14 @@ class BuildImages(FirestarterWorkflow):
             if extra_registry['auth_strategy']:
                 self.login(
                     extra_registry['auth_strategy'],
-                    extra_registry['name']
+                    extra_registry['name'],
+                    extra_registry.get('creds')
                 )
 
         # Run the coroutine function to execute the compilation process for all on-premises
         anyio.run(self.compile_images_for_all_flavors)
 
-    def login(self, auth_strategy, registry):
+    def login(self, auth_strategy, registry, creds):
 
         logger.info(f"Logging in to {registry} using {auth_strategy}...")
 
@@ -285,6 +294,9 @@ class BuildImages(FirestarterWorkflow):
             provider = DockerRegistryAuthFactory.provider_from_str(
                 auth_strategy, registry
             )
+
+            print(f"Setting creds {creds}")
+            provider.creds = creds
 
             provider.login_registry()
 
