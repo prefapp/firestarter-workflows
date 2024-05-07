@@ -1,1 +1,1 @@
-# firestarter-workflows v1.0.0
+# firestarter-workflows v1.1.0
