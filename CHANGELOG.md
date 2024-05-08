@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0](https://github.com/prefapp/firestarter-workflows/compare/v1.1.1...v1.2.0) (2024-05-08)
+
+
+### Features
+
+* trigger movement of major tag only on release ([976ed31](https://github.com/prefapp/firestarter-workflows/commit/976ed313c565000630af80ee816d5666da1b7942))
+
+
+### Bug Fixes
+
+* dagger workflow ref ([#59](https://github.com/prefapp/firestarter-workflows/issues/59)) ([4e6fde3](https://github.com/prefapp/firestarter-workflows/commit/4e6fde34c6badc003eb8e88603a951c40c0eabd6))
+
 ## [1.1.1](https://github.com/prefapp/firestarter-workflows/compare/v1.1.0...v1.1.1) (2024-05-07)
 
 
