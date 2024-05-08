@@ -28,5 +28,5 @@ jobs:
         run: |
           git config --global user.name 'Prefapp Bot'
           git config --global user.email 'prefapp-bot@users.noreply.github.com'
-          git tag -fa ${{ steps.release.outputs.major }} -m "Update major version tag"
-          git push origin ${{ steps.release.outputs.major }} --force
+          git tag -fa v${{ steps.release.outputs.major }} -m "Update major version tag"
+          git push origin v${{ steps.release.outputs.major }} --force
