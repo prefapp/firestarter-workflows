@@ -90,5 +90,6 @@ jobs:
            type="${{ inputs.type }}"
            from="${{ steps.get-tag.outputs.tag }}"
            login_required="true"
+           ref="v1"
          secrets: ${{ inputs.secrets }}
          
