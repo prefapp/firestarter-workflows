@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/prefapp/firestarter-workflows/compare/v1.2.0...v1.2.1) (2024-05-08)
+
+
+### Bug Fixes
+
+* major tag format ([c60031e](https://github.com/prefapp/firestarter-workflows/commit/c60031e1f2e46f56c4cf7ee888efa530ffc00ca7))
+
 ## [1.2.0](https://github.com/prefapp/firestarter-workflows/compare/v1.1.1...v1.2.0) (2024-05-08)
 
 
