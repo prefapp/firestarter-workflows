@@ -19,10 +19,12 @@ jobs:
           release-type: python
 
       - uses: actions/checkout@v4
+        if: steps.release.outputs.tag_name != ''
         with:
           ref: ${{ steps.release.outputs.tag_name }}
 
       - name: Get major version num and update tag
+        if: steps.release.outputs.tag_name != ''
         run: |
           git config --global user.name 'Prefapp Bot'
           git config --global user.email 'prefapp-bot@users.noreply.github.com'
