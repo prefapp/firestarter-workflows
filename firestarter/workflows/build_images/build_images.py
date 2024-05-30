@@ -42,7 +42,6 @@ class BuildImages(FirestarterWorkflow):
         self._login_required = literal_eval(
             self.vars['login_required'].capitalize()) if 'login_required' in self.vars else True
         self._publish = self.vars['publish'] if 'publish' in self.vars else True
-        self._already_logged_in_providers = []
 
         # Read the on-premises configuration file
         self._config = Config.from_yaml(
@@ -102,10 +101,6 @@ class BuildImages(FirestarterWorkflow):
     @property
     def publish(self):
         return self._publish
-
-    @property
-    def already_logged_in_providers(self):
-        return self._already_logged_in_providers
 
     def resolve_secrets(self, secrets=None):
         sr = SecretResolver(secrets)
@@ -288,19 +283,13 @@ class BuildImages(FirestarterWorkflow):
 
         logger.info(f"Logging in to {registry} using {auth_strategy}...")
 
-        if self.login_required and auth_strategy not in self.already_logged_in_providers:
+        # Log in to the default registry
+        provider = DockerRegistryAuthFactory.provider_from_str(
+            auth_strategy, registry
+        )
 
-            # Log in to the default registry
-            provider = DockerRegistryAuthFactory.provider_from_str(
-                auth_strategy, registry
-            )
+        print(f"Setting creds {creds}")
+        provider.creds = creds
 
-            print(f"Setting creds {creds}")
-            provider.creds = creds
+        provider.login_registry()
 
-            provider.login_registry()
-
-            self.already_logged_in_providers.append(auth_strategy)
-        else:
-            logger.info(
-                f"Skipping login to {registry} as is already logged in.")
