@@ -1,0 +1,133 @@
+name: State repo helm
+on:
+  workflow_call:
+    inputs:
+      apply:
+        required: true
+        type: boolean
+      environment:
+        required: true
+        type: string
+      config_file:
+        required: false
+        type: string
+        default: .github/deployments-config.yml
+jobs:
+  helm:
+    runs-on: ubuntu-22.04
+    env:
+      HELM_EXPERIMENTAL_OCI: 1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+      - run: npm install js-yaml
+      - name: Parse config file
+        id: parse_config
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+            const path = require("path");
+            const yaml = require('js-yaml');
+
+            const configPath = path.join("${{ github.workspace }}", "${{ inputs.config_file }}");
+
+            console.log(configPath);
+
+            const config = yaml.load(fs.readFileSync(configPath, 'utf8'));
+
+            const providerKind = config.provider.kind;
+            const helm_registries = config.helm_registries
+
+            const { cluster_name, identifier } = config.environments["${{ inputs.environment }}"];
+
+            const result = {
+              provider: providerKind,
+              helm_registries,
+              cluster_name,
+              identifier,
+            }
+
+            switch(providerKind) {
+              case 'azure':
+                core.exportVariable('AZURE_CLIENT_ID', identifier);
+                core.exportVariable('AZURE_TENANT_ID', config.provider.tenant_id);
+                core.exportVariable('AZURE_SUBSCRIPTION_ID', config.provider.subscription_id);
+                
+                result.resource_group_name = config.resource_group_name
+                
+                break;
+              default:
+                throw new Error(`Unknown provider: ${providerKind}`)
+            }
+
+
+            console.log(result);
+
+            return result;
+
+      # Azure setup
+
+      - name: Setup / Azure Login
+        uses: Azure/login@v2
+        if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Set up kubelogin for non-interactive login
+        if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
+        uses: azure/use-kubelogin@v1
+        with:
+          kubelogin-version: 'v0.0.24'
+
+      - name: Setup / AKS Context
+        if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
+        uses: azure/aks-set-context@v1
+        with:
+          resource-group: "${{ steps.parse_config.outputs.result.resource_group_name }}"
+          cluster-name: "${{ steps.parse_config.outputs.result.cluster_name }}"
+
+      - name: Login to ACRs
+        if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
+        run: |
+          registries=${{ toJson(steps.parse_config.outputs.result.helm_registries) }}
+
+          echo "$registries" | jq -r '.[]' | while read registry; do
+            echo "Login in $registry"
+            token=$(az acr login --name $registry --expose-token --output tsv --query accessToken) && \
+            echo $token | helm registry login $registry -u 00000000-0000-0000-0000-000000000000 --password-stdin
+          done
+
+      # Helm logic
+
+      - name: Helm diff
+        if: ${{ inputs.apply != 'true' }}
+        run: |
+          diff_file="/tmp/helmfile.diff"
+
+          deployments=${{ toJson(steps.parse_config.outputs.result.changed) }}
+
+          echo "$deployments" | jq -r '.[]' | while read deployment; do
+            echo "Checking $deployment"
+            
+            cd "${{ github.workspace }}/$deployment"
+
+            helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
+            helmfile --environment ${{ inputs.environment }} diff | grep --color=never "\S" > $diff_file
+
+            gh pr comment ${{ github.event.number }} -F $diff_file
+
+          done
+      
+      - name: Helm apply
+        if: ${{ inputs.apply == 'true' }}
+        run: |
+          cd "${{ github.workspace }}/$deployment"
+          helmfile --environment ${{ inputs.environment }} apply
