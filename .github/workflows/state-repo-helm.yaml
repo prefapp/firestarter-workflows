@@ -91,8 +91,8 @@ jobs:
         if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
         uses: azure/aks-set-context@v1
         with:
-          resource-group: "${{ steps.parse_config.outputs.result.resource_group_name }}"
-          cluster-name: "${{ steps.parse_config.outputs.result.cluster_name }}"
+          resource-group: ${{ steps.parse_config.outputs.result.resource_group_name }}
+          cluster-name: ${{ steps.parse_config.outputs.result.cluster_name }}
 
       - name: Login to ACRs
         if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
