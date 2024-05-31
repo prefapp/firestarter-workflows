@@ -59,7 +59,7 @@ jobs:
                 core.exportVariable('AZURE_TENANT_ID', config.provider.tenant_id);
                 core.exportVariable('AZURE_SUBSCRIPTION_ID', config.provider.subscription_id);
                 
-                result.resource_group_name = config.resource_group_name
+                result.resource_group_name = config.environments["${{ inputs.environment }}"].resource_group_name
                 
                 break;
               default:
