@@ -90,8 +90,8 @@ jobs:
       - name: debug
         if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
         env:
-          RESOURCE_GROUP_NAME: ${{ steps.parse_config.outputs.result.resource_group_name }}
-          CLUSTER_NAME: ${{ steps.parse_config.outputs.result.cluster_name }}
+          RESOURCE_GROUP_NAME: ${{ fromJSON(steps.parse_config.outputs.result).resource_group_name }}
+          CLUSTER_NAME: ${{ fromJSON(steps.parse_config.outputs.result.cluster_name) }}
         run: |
           echo 'RESULT: ${{ steps.parse_config.outputs.result }}'
           echo "RESOURCE GROUP: $RESOURCE_GROUP_NAME"
