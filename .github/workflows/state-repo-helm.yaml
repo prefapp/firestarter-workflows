@@ -142,7 +142,8 @@ jobs:
 
             full_ca=""
             for file in $(ls ./${{ inputs.environment }}/ca-certs/*.crt | sort); do
-              full_ca+="`cat $file | sed 's/^/\t\t\t/'`\n"
+              full_ca+="
+              `cat $file | sed 's/^/\t\t\t/'`"
             done
 
 
