@@ -120,6 +120,8 @@ jobs:
 
           deployments='${{ toJSON(fromJSON(steps.parse_config.outputs.result).changed) }}'
 
+          echo $deployments
+
           echo "$deployments" | jq -r '.[]' | while read deployment; do
             echo "Checking $deployment"
             
