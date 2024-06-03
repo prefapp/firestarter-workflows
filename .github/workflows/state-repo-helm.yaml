@@ -89,6 +89,7 @@ jobs:
 
       - name: debug
         run: |
+          echo 'RESULT: ${{ steps.parse_config.outputs.result }}'
           echo "RESOURCE GROUP: ${{ steps.parse_config.outputs.result.resource_group_name }}"
           echo "CLUSTER NAME: ${{ steps.parse_config.outputs.result.cluster_name }}"
 
