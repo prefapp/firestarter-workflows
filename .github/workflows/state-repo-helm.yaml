@@ -55,8 +55,8 @@ jobs:
 
             switch(provider.kind) {
               case 'azure':
-                if(!provider.config?.tenant_id) throw new Error('AZURE_TENANT_ID not configured')
-                if(!provider.config?.subscription_id) throw new Error('AZURE_SUBSCRIPTION_ID not configured')
+                if(!provider?.tenant_id) throw new Error('AZURE_TENANT_ID not configured')
+                if(!provider?.subscription_id) throw new Error('AZURE_SUBSCRIPTION_ID not configured')
                 
                 result.provider.cluster_name = cluster_name;
                 result.provider.identifier = identifier;
