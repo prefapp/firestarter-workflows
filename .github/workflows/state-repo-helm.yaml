@@ -78,7 +78,7 @@ jobs:
         uses: Azure/login@v2
         if: ${{ steps.parse_config.outputs.result.provider.kind }} == "azure"
         with:
-          client-id: ${{ fromJSON(fromJSON(steps.parse_config.outputs.result).provider).identifier }}
+          client-id: ${{ fromJSON(steps.parse_config.outputs.result.provider).identifier }}
           # tenant-id: ${{ fromJSON(steps.parse_config.outputs.result).provider.tenant_id }}
           # subscription-id: ${{ fromJSON(steps.parse_config.outputs.result).provider.subscription_id }}
 
