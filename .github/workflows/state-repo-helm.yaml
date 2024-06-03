@@ -94,7 +94,7 @@ jobs:
         run: |
           echo 'RESULT: ${{ steps.parse_config.outputs.result }}'
           echo 'PROVIDER: ${{ steps.parse_config.outputs.provider }}'
-          echo 'OUTPUTS: $OUTPUTS'
+          # echo 'OUTPUTS: $OUTPUTS'
           # echo 'FROM JSON: ${{ fromJSON(toJSON(steps.parse_config.outputs.result)).provider }}'
 
       - name: Setup / AKS Context
