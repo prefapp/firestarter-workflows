@@ -116,6 +116,8 @@ jobs:
           done
 
       # Helm logic
+      - name: Setup helmfile
+        uses: mamezou-tech/setup-helmfile@v2.0.0
 
       - name: Helm diff
         if: ${{ inputs.apply != 'true' }}
