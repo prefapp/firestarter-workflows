@@ -150,11 +150,11 @@ jobs:
             done
 
             cat << EOF > "./${{ inputs.environment }}/ca.yaml"
-            councilbox-server:
-              ca_secret:
-                crts: |
-            "$full_ca"
-            EOF
+          councilbox-server:
+            ca_secret:
+              crts: |
+          "$full_ca"
+          EOF
 
             cat "./${{ inputs.environment }}/ca.yaml"
 
