@@ -88,6 +88,7 @@ jobs:
           kubelogin-version: 'v0.0.24'
 
       - name: debug
+        if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
         run: |
           echo 'RESULT: ${{ steps.parse_config.outputs.result }}'
           echo "RESOURCE GROUP: ${{ steps.parse_config.outputs.result.resource_group_name }}"
