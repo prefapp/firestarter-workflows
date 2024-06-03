@@ -41,8 +41,6 @@ jobs:
 
             const config = yaml.load(fs.readFileSync(configPath, 'utf8'));
 
-            console.debug(config);
-
             const provider = config.provider;
             const helm_registries = config.helm_registries
 
@@ -79,8 +77,8 @@ jobs:
       - name: Setup / Azure Login
         uses: Azure/login@v2
         if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
-        with:
-          client-id: ${{ fromJSON(steps.parse_config.outputs.result).identifier }}
+        # with:
+          # client-id: ${{ fromJSON(steps.parse_config.outputs.result).identifier }}
           # tenant-id: ${{ fromJSON(steps.parse_config.outputs.result).tenant_id }}
           # subscription-id: ${{ fromJSON(steps.parse_config.outputs.result).subscription_id }}
 
