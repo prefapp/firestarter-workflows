@@ -152,7 +152,6 @@ jobs:
           councilbox-server:
             ca_secret:
               crts: |
-          $full_ca
           EOF
             echo ./${{ inputs.environment }}/ca.yml
 
