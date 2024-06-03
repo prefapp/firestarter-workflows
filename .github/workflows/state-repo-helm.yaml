@@ -89,13 +89,9 @@ jobs:
 
       - name: debug
         if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
-        env:
-          RESOURCE_GROUP_NAME: ${{ toJson(steps.parse_config.outputs.result).resource_group_name }}
-          CLUSTER_NAME: ${{ toJson(steps.parse_config.outputs.result.cluster_name) }}
         run: |
           echo 'RESULT: ${{ steps.parse_config.outputs.result }}'
-          echo "RESOURCE GROUP: $RESOURCE_GROUP_NAME"
-          echo "CLUSTER NAME: $CLUSTER_NAME"
+          echo "FROM JSON: ${{ fromJson( steps.parse_config.outputs.result )}}
 
       - name: Setup / AKS Context
         if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
