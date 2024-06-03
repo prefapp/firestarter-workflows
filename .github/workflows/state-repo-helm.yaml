@@ -142,9 +142,10 @@ jobs:
 
             full_ca=""
             for file in $(ls ./${{ inputs.environment }}/ca-certs/*.crt | sort); do
-              echo $full_ca
               full_ca+="`cat $file | sed 's/^/\t\t\t/'`\n"
             done
+
+            echo ./${{ inputs.environment }}/ca.yaml
 
             cat << EOF > ./${{ inputs.environment }}/ca.yaml
           councilbox-server:
