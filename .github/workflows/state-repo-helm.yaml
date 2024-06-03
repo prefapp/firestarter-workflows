@@ -90,12 +90,9 @@ jobs:
       - name: debug
         if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
         env:
-          OUTPUTS: ${{ fromJSON(steps.parse_config.outputs.result) }}
+          TEST: ${{fromJSON(steps.parse_config.outputs.result)}}
         run: |
-          echo 'RESULT: ${{ steps.parse_config.outputs.result }}'
-          echo 'PROVIDER: ${{ steps.parse_config.outputs.provider }}'
-          # echo 'OUTPUTS: $OUTPUTS'
-          # echo 'FROM JSON: ${{ fromJSON(toJSON(steps.parse_config.outputs.result)).provider }}'
+          ls
 
       - name: Setup / AKS Context
         if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
