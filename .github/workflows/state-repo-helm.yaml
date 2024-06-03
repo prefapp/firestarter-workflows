@@ -131,7 +131,7 @@ jobs:
           echo "$deployments" | jq -r '.[]' | while read deployment; do
             echo "Checking $deployment"
             
-            cd "${{ github.workspace }}/$deployment"
+            cd ${{ github.workspace }}/$deployment
 
             find . -maxdepth 1 -iname '*.yaml' \
               -not -name 'secrets.yaml' \
@@ -146,14 +146,14 @@ jobs:
               full_ca+=`cat "$file" | sed 's/^/\t\t\t/'`
             done
 
-            cat << EOF > "./${{ inputs.environment }}/ca.yaml"
+            cat << EOF > ./${{ inputs.environment }}/ca.yaml
           councilbox-server:
             ca_secret:
               crts: |
           "$full_ca"
           EOF
 
-            cat "./${{ inputs.environment }}/ca.yaml"
+            cat ./${{ inputs.environment }}/ca.yaml
 
             helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
 
