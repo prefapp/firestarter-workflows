@@ -119,10 +119,6 @@ jobs:
       - name: Setup helmfile
         uses: mamezou-tech/setup-helmfile@v2.0.0
 
-      - name: Concatenate yaml values
-        run: |
-
-
       - name: Helm diff
         if: ${{ inputs.apply != 'true' }}
         run: |
@@ -145,8 +141,9 @@ jobs:
               -exec cat {} \; > "./${{ inputs.environment }}/final.yaml"
 
             full_ca=""
-            for file in $(ls $ca_certs_path/*.crt | sort); do
-                full_ca+=`cat "$file" | sed 's/^/\t\t\t/'`
+            for file in $(ls ./${{ inputs.environment }}/ca-certs/*.crt | sort); do
+              echo $full_ca
+              full_ca+=`cat "$file" | sed 's/^/\t\t\t/'`
             done
 
             cat << EOF > "./${{ inputs.environment }}/ca.yaml"
