@@ -8,6 +8,10 @@ on:
       environment:
         required: true
         type: string
+      # JSON file
+      updated_apps:
+        required: true
+        type: string
       config_file:
         required: false
         type: string
@@ -118,10 +122,8 @@ jobs:
         run: |
           diff_file="/tmp/helmfile.diff"
 
-          deployments='${{ toJSON(fromJSON(steps.parse_config.outputs.result).changed) }}'
+          deployments='${{ inputs.updated_apps) }}'
 
-          echo '${{ fromJSON(steps.parse_config.outputs.result).changed }}'
-          echo '${{ matrix }}'
           echo $deployments
 
           echo "$deployments" | jq -r '.[]' | while read deployment; do
