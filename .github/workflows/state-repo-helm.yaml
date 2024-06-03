@@ -87,6 +87,11 @@ jobs:
         with:
           kubelogin-version: 'v0.0.24'
 
+      - name: debug
+        run: |
+          echo "RESOURCE GROUP: ${{ steps.parse_config.outputs.result.resource_group_name }}"
+          echo "CLUSTER NAME: ${{ steps.parse_config.outputs.result.cluster_name }}"
+
       - name: Setup / AKS Context
         if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
         uses: azure/aks-set-context@v1
