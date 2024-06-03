@@ -82,10 +82,10 @@ jobs:
       - name: Setup / Azure Login
         uses: Azure/login@v2
         if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
-        # with:
-          # client-id: "${{ fromJSON(steps.parse_config.outputs.result).identifier }}"
-          # tenant-id: "${{ fromJSON(steps.parse_config.outputs.result).tenant_id }}"
-          # subscription-id: "${{ fromJSON(steps.parse_config.outputs.result).subscription_id }}"
+        with:
+          client-id: ${{ fromJSON(steps.parse_config.outputs.result).identifier }}
+          tenant-id: ${{ fromJSON(steps.parse_config.outputs.result).tenant_id }}
+          subscription-id: ${{ fromJSON(steps.parse_config.outputs.result).subscription_id }}
 
       - name: Set up kubelogin for non-interactive login
         if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
