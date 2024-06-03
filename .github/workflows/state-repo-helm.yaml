@@ -47,9 +47,9 @@ jobs:
             const { cluster_name, identifier } = config.environments["${{ inputs.environment }}"];
 
             const result = {
-              provider_kind = provider.kind,
-              cluster_name = cluster_name,
-              identifier = identifier,
+              provider_kind,
+              cluster_name,
+              identifier,
               helm_registries,
             }
 
