@@ -122,7 +122,7 @@ jobs:
         run: |
           diff_file="/tmp/helmfile.diff"
 
-          deployments='${{ inputs.updated_apps) }}'
+          deployments='${{ inputs.updated_apps }}'
 
           echo $deployments
 
