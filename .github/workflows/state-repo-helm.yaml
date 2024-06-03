@@ -119,6 +119,10 @@ jobs:
       - name: Setup helmfile
         uses: mamezou-tech/setup-helmfile@v2.0.0
 
+      - name: Concatenate yaml values
+        run: |
+
+
       - name: Helm diff
         if: ${{ inputs.apply != 'true' }}
         run: |
@@ -132,6 +136,13 @@ jobs:
             echo "Checking $deployment"
             
             cd "${{ github.workspace }}/$deployment"
+
+            find . -maxdepth 1 -iname '*.yaml' \
+              -not -name 'secrets.yaml' \
+              -not -name 'images.yaml' \
+              -not -name 'ca.yml' \
+              -not -name 'final.yaml' \
+              -exec cat {} \; > "./${{ inputs.environment }}/final.yaml"
 
             helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
 
