@@ -41,6 +41,8 @@ jobs:
 
             const config = yaml.load(fs.readFileSync(configPath, 'utf8'));
 
+            console.debug(config);
+
             const provider = config.provider;
             const helm_registries = config.helm_registries
 
