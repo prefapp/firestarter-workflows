@@ -83,7 +83,7 @@ jobs:
         uses: Azure/login@v2
         if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
         with:
-          client-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).identifier }}
+          client-id: ${{ fromJSON(steps.parse_config.outputs.result).identifier && steps.parse_config.outputs.result}}
           tenant-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).tenant_id }}
           subscription-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).subscription_id }}
 
@@ -97,8 +97,8 @@ jobs:
         if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
         uses: azure/aks-set-context@v1
         with:
-          resource-group: ${{ fromJSON(steps.parse_config.outputs.result).resource_group_name }}
-          cluster-name: ${{ fromJSON(steps.parse_config.outputs.result).cluster_name }}
+          resource-group: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).resource_group_name }}
+          cluster-name: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).cluster_name }}
 
       - name: Login to ACRs
         if:  ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
