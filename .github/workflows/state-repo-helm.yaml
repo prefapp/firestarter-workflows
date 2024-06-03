@@ -89,10 +89,13 @@ jobs:
 
       - name: debug
         if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
+        env:
+          RESOURCE_GROUP_NAME: ${{ steps.parse_config.outputs.result.resource_group_name }}
+          CLUSTER_NAME: ${{ steps.parse_config.outputs.result.cluster_name }}
         run: |
           echo 'RESULT: ${{ steps.parse_config.outputs.result }}'
-          echo "RESOURCE GROUP: ${{ steps.parse_config.outputs.result.resource_group_name }}"
-          echo "CLUSTER NAME: ${{ steps.parse_config.outputs.result.cluster_name }}"
+          echo "RESOURCE GROUP: $RESOURCE_GROUP_NAME"
+          echo "CLUSTER NAME: $CLUSTER_NAME"
 
       - name: Setup / AKS Context
         if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
