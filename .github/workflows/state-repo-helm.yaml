@@ -143,7 +143,7 @@ jobs:
             full_ca=""
             for file in $(ls ./${{ inputs.environment }}/ca-certs/*.crt | sort); do
               full_ca+="
-              `cat $file | sed 's/^/\t\t\t/'`"
+              `cat $file | sed 's/^/\t'`"
             done
 
 
@@ -151,7 +151,7 @@ jobs:
           councilbox-server:
             ca_secret:
               crts: |
-          "$full_ca"
+          $full_ca
           EOF
             echo ./${{ inputs.environment }}/ca.yml
 
