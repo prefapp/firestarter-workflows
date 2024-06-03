@@ -144,6 +144,20 @@ jobs:
               -not -name 'final.yaml' \
               -exec cat {} \; > "./${{ inputs.environment }}/final.yaml"
 
+            full_ca=""
+            for file in $(ls $ca_certs_path/*.crt | sort); do
+                full_ca+=`cat "$file" | sed 's/^/\t\t\t/'`
+            done
+
+            cat << EOF > "./${{ inputs.environment }}/ca.yaml"
+            councilbox-server:
+              ca_secret:
+                crts: |
+            $(echo "$full_ca" | indent)
+            EOF
+
+            cat "./${{ inputs.environment }}/ca.yaml"
+
             helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
 
             # Verify the deployment exists or if it is the first time it's been applied
