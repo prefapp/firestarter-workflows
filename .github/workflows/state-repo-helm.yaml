@@ -47,19 +47,18 @@ jobs:
             const { cluster_name, identifier } = config.environments["${{ inputs.environment }}"];
 
             const result = {
-              provider: providerKind,
+              provider,
               helm_registries,
-              cluster_name,
-              identifier,
             }
 
             switch(providerKind) {
               case 'azure':
-                core.exportVariable('AZURE_CLIENT_ID', identifier);
-                core.exportVariable('AZURE_TENANT_ID', config.provider.tenant_id);
-                core.exportVariable('AZURE_SUBSCRIPTION_ID', config.provider.subscription_id);
+                if(!provider.config.tenant_id) throw new Error('AZURE_TENANT_ID not configured')
+                if(!provider.config.subscription_id) throw new Error('AZURE_SUBSCRIPTION_ID not configured')
                 
-                result.resource_group_name = config.environments["${{ inputs.environment }}"].resource_group_name
+                result.provider.cluster_name = cluster_name;
+                result.provider.identifier = identifier;
+                result.provider.resource_group_name = config.environments["${{ inputs.environment }}"].resource_group_name
                 
                 break;
               default:
@@ -75,27 +74,27 @@ jobs:
 
       - name: Setup / Azure Login
         uses: Azure/login@v2
-        if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
+        if: ${{ steps.parse_config.outputs.result.provider.kind }} == "azure"
         with:
-          client-id: ${{ env.AZURE_CLIENT_ID }}
-          tenant-id: ${{ env.AZURE_TENANT_ID }}
-          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ fromJSON(steps.parse_config.outputs.result).provider.identifier }}
+          tenant-id: ${{ fromJSON(steps.parse_config.outputs.result).provider.tenant_id }}
+          subscription-id: ${{ fromJSON(steps.parse_config.outputs.result).provider.subscription_id }}
 
       - name: Set up kubelogin for non-interactive login
-        if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
+        if: ${{ steps.parse_config.outputs.result.provider.kind }} == "azure"
         uses: azure/use-kubelogin@v1
         with:
           kubelogin-version: 'v0.0.24'
 
       - name: Setup / AKS Context
-        if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
+        if: ${{ steps.parse_config.outputs.result.provider.kind }} == "azure"
         uses: azure/aks-set-context@v1
         with:
-          resource-group: ${{ fromJSON(steps.parse_config.outputs.result).resource_group_name }}
-          cluster-name: ${{ fromJSON(steps.parse_config.outputs.result).cluster_name }}
+          resource-group: ${{ fromJSON(steps.parse_config.outputs.result).provider.resource_group_name }}
+          cluster-name: ${{ fromJSON(steps.parse_config.outputs.result).provider.cluster_name }}
 
       - name: Login to ACRs
-        if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
+        if:  ${{ steps.parse_config.outputs.result.provider.kind }} == "azure"
         run: |
           registries=${{ toJSON(fromJSON(steps.parse_config.outputs.result).helm_registries) }}
 
