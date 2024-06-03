@@ -74,11 +74,15 @@ jobs:
 
       # Azure setup
 
+      - name: debug
+        run: |
+          echo ${{ fromJSON(steps.parse_config.outputs.result).identifier }}
+
       - name: Setup / Azure Login
         uses: Azure/login@v2
         if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
-        with:
-          client-id: ${{ fromJSON(steps.parse_config.outputs.result).identifier }}
+        # with:
+          # client-id: ${{ fromJSON(steps.parse_config.outputs.result).identifier }}
           # tenant-id: ${{ fromJSON(steps.parse_config.outputs.result).tenant_id }}
           # subscription-id: ${{ fromJSON(steps.parse_config.outputs.result).subscription_id }}
 
