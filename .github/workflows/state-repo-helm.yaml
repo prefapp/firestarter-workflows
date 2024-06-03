@@ -118,7 +118,7 @@ jobs:
         run: |
           diff_file="/tmp/helmfile.diff"
 
-          deployments='${{ toJSON(fromJSON(steps.parse_config.outputs).result.changed) }}'
+          deployments='${{ toJSON(fromJSON(steps.parse_config.outputs.result).changed) }}'
 
           echo "$deployments" | jq -r '.[]' | while read deployment; do
             echo "Checking $deployment"
