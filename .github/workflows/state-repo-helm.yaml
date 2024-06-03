@@ -121,7 +121,6 @@ jobs:
           deployments='${{ toJSON(fromJSON(steps.parse_config.outputs.result).changed) }}'
 
           echo '${{ fromJSON(steps.parse_config.outputs.result).changed }}'
-          echo '${{ steps.parse_config.outputs.result.changed) }}'
 
           echo $deployments
 
