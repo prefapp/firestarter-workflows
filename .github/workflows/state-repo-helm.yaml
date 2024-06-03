@@ -90,7 +90,7 @@ jobs:
       - name: debug
         if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
         env:
-          OUTPUTS: ${{ fromJSON(steps.parse_config.outputs) }}
+          OUTPUTS: ${{ fromJSON(steps.parse_config.outputs.result) }}
         run: |
           echo 'RESULT: ${{ steps.parse_config.outputs.result }}'
           echo 'PROVIDER: ${{ steps.parse_config.outputs.provider }}'
