@@ -41,7 +41,7 @@ jobs:
 
             const config = yaml.load(fs.readFileSync(configPath, 'utf8'));
 
-            const providerKind = config.provider.kind;
+            const provider = config.provider;
             const helm_registries = config.helm_registries
 
             const { cluster_name, identifier } = config.environments["${{ inputs.environment }}"];
@@ -51,7 +51,7 @@ jobs:
               helm_registries,
             }
 
-            switch(providerKind) {
+            switch(provider.kind) {
               case 'azure':
                 if(!provider.config.tenant_id) throw new Error('AZURE_TENANT_ID not configured')
                 if(!provider.config.subscription_id) throw new Error('AZURE_SUBSCRIPTION_ID not configured')
