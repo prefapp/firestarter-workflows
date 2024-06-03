@@ -87,24 +87,17 @@ jobs:
         with:
           kubelogin-version: 'v0.0.24'
 
-      - name: debug
-        if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
-        run: |
-          echo 'RESULT: ${{ steps.parse_config.outputs.result }}'
-          echo 'PROVIDER: ${{ steps.parse_config.outputs.result.provider }}'
-          echo ${{ fromJSON(steps.parse_config.outputs.result).provider }}
-
       - name: Setup / AKS Context
         if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
         uses: azure/aks-set-context@v1
         with:
-          resource-group: ${{ steps.parse_config.outputs.result.resource_group_name }}
-          cluster-name: ${{ steps.parse_config.outputs.result.cluster_name }}
+          resource-group: ${{ fromJSON(steps.parse_config.outputs.result).resource_group_name }}
+          cluster-name: ${{ fromJSON(steps.parse_config.outputs.result).cluster_name }}
 
       - name: Login to ACRs
         if: ${{ steps.parse_config.outputs.result.provider }} == "azure"
         run: |
-          registries=${{ toJson(steps.parse_config.outputs.result.helm_registries) }}
+          registries=${{ toJSON(fromJSON(steps.parse_config.outputs.result).helm_registries) }}
 
           echo "$registries" | jq -r '.[]' | while read registry; do
             echo "Login in $registry"
@@ -119,7 +112,7 @@ jobs:
         run: |
           diff_file="/tmp/helmfile.diff"
 
-          deployments=${{ toJson(steps.parse_config.outputs.result.changed) }}
+          deployments=${{ toJSON(fromJSON(steps.parse_config.outputs).result.changed) }}
 
           echo "$deployments" | jq -r '.[]' | while read deployment; do
             echo "Checking $deployment"
