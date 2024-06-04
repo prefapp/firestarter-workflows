@@ -159,7 +159,7 @@ jobs:
             cat ./${{ inputs.environment }}/final.yaml
 
             # helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
-            # helmfile --environment ${{ inputs.environment }} template --skip-cleanup || true
+            helmfile --environment ${{ inputs.environment }} template --skip-cleanup || true
 
             # for file in /tmp/helmfile*/tgss*; do
             #   echo "File: $file"
