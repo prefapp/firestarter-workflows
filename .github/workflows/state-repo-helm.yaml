@@ -162,7 +162,7 @@ jobs:
             # helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
             helmfile --environment ${{ inputs.environment }} template || true
 
-            for file in /tmp/helmfile2088679903/tgss-core-pre-ovac-values-*; do
+            for file in /tmp/helmfile*/tgss-core-pre-ovac-values-*; do
               echo "File: $file"
               cat "$file"
             done
