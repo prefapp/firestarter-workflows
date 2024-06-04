@@ -91,11 +91,11 @@ jobs:
           tenant-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).tenant_id }}
           subscription-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).subscription_id }}
 
-      # - name: Set up kubelogin for non-interactive login
-      #   if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
-      #   uses: azure/use-kubelogin@v1
-      #   with:
-      #     kubelogin-version: 'v0.0.24'
+      - name: Set up kubelogin for non-interactive login
+        if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
+        uses: azure/use-kubelogin@v1
+        with:
+          kubelogin-version: 'v0.0.24'
 
       - name: Setup / AKS Context
         if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
