@@ -151,16 +151,15 @@ jobs:
             cat << EOF > ./${{ inputs.environment }}/ca.yml
           councilbox-server:
             ca_secret:
-              crts: |
-          $full_ca
+              crts: "a"
           EOF
 
-            cat ./${{ inputs.environment }}/ca.yml
+            # cat ./${{ inputs.environment }}/ca.yml
 
             set -e
 
             # helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
-            helmfile --environment ${{ inputs.environment }} template || true
+            helmfile --environment ${{ inputs.environment }} template --skip-cleanup || true
 
             find /tmp
 
