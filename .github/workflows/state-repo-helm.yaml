@@ -140,12 +140,12 @@ jobs:
               -not -name 'final.yaml' \
               -exec cat {} \; > ./${{ inputs.environment }}/final.yaml
 
-            full_ca=""
-            tabs 2
-            for file in $(ls ./${{ inputs.environment }}/ca-certs/*.crt | sort); do
-              full_ca+="`cat $file | awk  '{ print "      " $0 }'`
-          "
-            done
+            # full_ca=""
+            # tabs 2
+            # for file in $(ls ./${{ inputs.environment }}/ca-certs/*.crt | sort); do
+            #   full_ca+="`cat $file | awk  '{ print "      " $0 }'`
+          # "
+            # done
 
 
             cat << EOF > ./${{ inputs.environment }}/ca.yml
