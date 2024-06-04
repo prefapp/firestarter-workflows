@@ -104,6 +104,10 @@ jobs:
           resource-group: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).resource_group_name }}
           cluster-name: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).cluster_name }}
 
+      # Helm logic
+      - name: Setup helmfile
+        uses: mamezou-tech/setup-helmfile@v2.0.0
+        
       - name: Login to ACRs
         if:  ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
         run: |
@@ -115,9 +119,6 @@ jobs:
             echo $token | helm registry login $registry -u 00000000-0000-0000-0000-000000000000 --password-stdin
           done
 
-      # Helm logic
-      - name: Setup helmfile
-        uses: mamezou-tech/setup-helmfile@v2.0.0
 
       - name: Helm diff
         if: ${{ inputs.apply != 'true' }}
