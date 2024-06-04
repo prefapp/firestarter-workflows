@@ -179,9 +179,11 @@ jobs:
             
             if [ $releases_found -gt 0 ]; then
               diff_output=`helmfile --environment ${{ inputs.environment }} diff | grep --color=never "\S"`
-              gh pr comment ${{ github.event.number }} -b "```
+              gh pr comment ${{ github.event.number }} -b - <<EOF
+          ```
           $diff_output
-          ```"
+          ```
+          EOF
             else
               echo 'Installing for the first time'
             fi
