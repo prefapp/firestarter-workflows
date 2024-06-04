@@ -155,7 +155,7 @@ jobs:
           $full_ca
           EOF
 
-            # cat ./${{ inputs.environment }}/ca.yml
+            cat ./${{ inputs.environment }}/ca.yml
 
             set -e
 
