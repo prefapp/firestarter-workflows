@@ -126,6 +126,8 @@ jobs:
 
       - name: Helm diff
         if: ${{ inputs.apply != 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           diff_file="/tmp/helmfile.diff"
 
