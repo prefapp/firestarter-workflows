@@ -124,17 +124,8 @@ jobs:
           install-kubectl: no
           install-helm: no
 
-      - name: Helm diff
-        if: ${{ inputs.apply != 'true' }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Hydrate helm values
         run: |
-          diff_file="/tmp/helmfile.diff"
-
-          deployments='${{ inputs.updated_apps }}'
-
-          echo $deployments
-
           echo "$deployments" | jq -r '.[]' | while read deployment; do
             echo "Checking $deployment"
             
@@ -159,6 +150,20 @@ jobs:
             ca_secret:
               crts: $full_ca
           EOF
+          done
+
+      - name: Helm diff
+        if: ${{ inputs.apply != 'true' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          diff_file="/tmp/helmfile.diff"
+
+          deployments='${{ inputs.updated_apps }}'
+
+          echo $deployments
+
+          echo "$deployments" | jq -r '.[]' | while read deployment; do
 
             helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
 
@@ -168,8 +173,12 @@ jobs:
             releases_found=`helm list -A -o json | jq "map(select(.name == \"$appname\" and (.namespace | contains(\"${{ inputs.environment }}\")) )) | length"`
             
             if [ $releases_found -gt 0 ]; then
-              helmfile --environment ${{ inputs.environment }} diff | grep --color=never "\S" > $diff_file
-              gh pr comment ${{ github.event.number }} -F $diff_file
+              diff_output=`helmfile --environment ${{ inputs.environment }} diff | grep --color=never "\S"`
+              gh pr comment ${{ github.event.number }} -b "
+              ```
+              $diff_output
+              ```
+              "
             else
               echo 'Installing for the first time'
             fi
