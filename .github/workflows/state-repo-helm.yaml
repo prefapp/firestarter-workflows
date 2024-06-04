@@ -104,13 +104,6 @@ jobs:
           resource-group: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).resource_group_name }}
           cluster-name: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).cluster_name }}
 
-      # Helm logic
-      - name: Setup helmfile
-        uses: mamezou-tech/setup-helmfile@v2.0.0
-        with:
-          install-kubectl: no
-          install-helm: no
-
       - name: Login to ACRs
         if:  ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
         run: |
@@ -122,6 +115,12 @@ jobs:
             echo $token | helm registry login $registry -u 00000000-0000-0000-0000-000000000000 --password-stdin
           done
 
+      # Helm logic
+      - name: Setup helmfile
+        uses: mamezou-tech/setup-helmfile@v2.0.0
+        with:
+          install-kubectl: no
+          install-helm: no
 
       - name: Helm diff
         if: ${{ inputs.apply != 'true' }}
@@ -157,8 +156,10 @@ jobs:
               crts: $full_ca
           EOF
 
-            # helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
-            helmfile --environment ${{ inputs.environment }} template
+            cat ~/.kube/config
+
+            helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
+            # helmfile --environment ${{ inputs.environment }} template
 
 
             # Verify the deployment exists or if it is the first time it's been applied
