@@ -156,8 +156,6 @@ jobs:
 
             # cat ./${{ inputs.environment }}/ca.yml
 
-            set -e
-
             # helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
             helmfile --environment ${{ inputs.environment }} template --skip-cleanup || true
 
@@ -166,19 +164,17 @@ jobs:
               cat "$file"
             done
 
-            set +e
-
             # Verify the deployment exists or if it is the first time it's been applied
-            appname=$(echo $deployment | awk -F"/" '{print $NF}')
+            # appname=$(echo $deployment | awk -F"/" '{print $NF}')
 
-            releases_found=`helm list -A -o json | jq "map(select(.name == \"$appname\" and (.namespace | contains(\"${{ inputs.environment }}\")) )) | length"`
+            # releases_found=`helm list -A -o json | jq "map(select(.name == \"$appname\" and (.namespace | contains(\"${{ inputs.environment }}\")) )) | length"`
             
-            if [ $releases_found -gt 0 ]; then
-              helmfile --environment ${{ inputs.environment }} diff | grep --color=never "\S" > $diff_file
-              gh pr comment ${{ github.event.number }} -F $diff_file
-            else
-              echo 'Installing for the first time'
-            fi
+            # if [ $releases_found -gt 0 ]; then
+            #   helmfile --environment ${{ inputs.environment }} diff | grep --color=never "\S" > $diff_file
+            #   gh pr comment ${{ github.event.number }} -F $diff_file
+            # else
+            #   echo 'Installing for the first time'
+            # fi
 
           done
       
