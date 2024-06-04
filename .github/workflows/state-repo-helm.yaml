@@ -126,6 +126,9 @@ jobs:
 
       - name: Hydrate helm values
         run: |
+
+          deployments='${{ inputs.updated_apps }}'
+
           echo "$deployments" | jq -r '.[]' | while read deployment; do
             echo "Checking $deployment"
             
