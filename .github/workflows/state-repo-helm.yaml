@@ -156,8 +156,8 @@ jobs:
 
             # cat ./${{ inputs.environment }}/ca.yml
 
-            pwd
-            
+            cat ./${{ inputs.environment }}/final.yml
+
             # helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
             # helmfile --environment ${{ inputs.environment }} template --skip-cleanup || true
 
