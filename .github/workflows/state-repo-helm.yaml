@@ -133,9 +133,7 @@ jobs:
             
             cd ${{ github.workspace }}/$deployment
 
-            find . -maxdepth 1 -iwholename
-
-            find . -maxdepth 1 -iwholename './${{ inputs.environment }}/*.yaml' \
+            find ${{ inputs.environment }} -maxdepth 1 -iname '*.yaml' \
               -not -name 'secrets.yaml' \
               -not -name 'images.yaml' \
               -not -name 'ca.yml' \
