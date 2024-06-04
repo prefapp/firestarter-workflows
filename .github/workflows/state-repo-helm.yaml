@@ -154,11 +154,10 @@ jobs:
               crts: |
           $full_ca
           EOF
-            echo ./${{ inputs.environment }}/ca.yml
 
-            find ./${{inputs.environment}}
+            # cat ./${{ inputs.environment }}/ca.yml
 
-            cat ./${{ inputs.environment }}/ca.yml
+            helmfile --environment ${{ inputs.environment }} template
 
             helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
 
