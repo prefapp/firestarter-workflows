@@ -144,7 +144,7 @@ jobs:
             tabs 2
             for file in $(ls ./${{ inputs.environment }}/ca-certs/*.crt | sort); do
               full_ca+="`cat $file | awk  '{ print "      " $0 }'`
-              "
+          "
             done
 
 
