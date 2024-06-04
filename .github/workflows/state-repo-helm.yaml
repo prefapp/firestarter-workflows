@@ -189,5 +189,9 @@ jobs:
       - name: Helm apply
         if: ${{ inputs.apply == 'true' }}
         run: |
-          cd "${{ github.workspace }}/$deployment"
-          helmfile --environment ${{ inputs.environment }} apply
+          echo $deployments
+
+          echo "$deployments" | jq -r '.[]' | while read deployment; do
+            cd ${{ github.workspace }}/$deployment
+            helmfile --environment ${{ inputs.environment }} apply
+          done
