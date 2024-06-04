@@ -138,7 +138,7 @@ jobs:
               -not -name 'images.yaml' \
               -not -name 'ca.yml' \
               -not -name 'final.yaml' \
-              -exec cat {} \; > "./${{ inputs.environment }}/final.yaml"
+              -exec cat {} \; > ./${{ inputs.environment }}/final.yaml
 
             full_ca=""
             tabs 2
