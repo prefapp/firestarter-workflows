@@ -157,9 +157,16 @@ jobs:
 
             # cat ./${{ inputs.environment }}/ca.yml
 
-            helmfile --environment ${{ inputs.environment }} template
+            set -e
 
             helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
+
+            for file in /tmp/helmfile2088679903/tgss-core-pre-ovac-values-*; do
+              echo "File: $file"
+              cat "$file"
+            done
+
+            set +e
 
             # Verify the deployment exists or if it is the first time it's been applied
             appname=$(echo $deployment | awk -F"/" '{print $NF}')
