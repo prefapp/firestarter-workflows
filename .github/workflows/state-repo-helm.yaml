@@ -103,6 +103,8 @@ jobs:
         with:
           resource-group: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).resource_group_name }}
           cluster-name: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).cluster_name }}
+          admin: 'false'
+          use-kubelogin: 'true'
 
       - name: Login to ACRs
         if:  ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
