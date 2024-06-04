@@ -156,13 +156,15 @@ jobs:
 
             # cat ./${{ inputs.environment }}/ca.yml
 
+            pwd
+            
             # helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
-            helmfile --environment ${{ inputs.environment }} template --skip-cleanup || true
+            # helmfile --environment ${{ inputs.environment }} template --skip-cleanup || true
 
-            for file in /tmp/helmfile*/tgss*; do
-              echo "File: $file"
-              cat "$file"
-            done
+            # for file in /tmp/helmfile*/tgss*; do
+            #   echo "File: $file"
+            #   cat "$file"
+            # done
 
             # Verify the deployment exists or if it is the first time it's been applied
             # appname=$(echo $deployment | awk -F"/" '{print $NF}')
