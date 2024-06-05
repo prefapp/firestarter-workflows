@@ -163,9 +163,14 @@ jobs:
       - name: Helm apply
         if: ${{ inputs.apply == 'true' }}
         run: |
+          
+          cd ${{ github.workspace }}/sys_services
+          
           echo $apps
 
           echo "$apps" | jq -r '.[]' | while read app; do
-            cd ${{ github.workspace }}/$app
-            helmfile --environment ${{ inputs.environment }} apply
+
+            appname=$(echo $app | awk -F"/" '{print $NF}')
+            helmfile --environment ${{ inputs.environment }}  --selector release={release} apply
+
           done
