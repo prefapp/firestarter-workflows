@@ -15,7 +15,7 @@ on:
       config_file:
         required: false
         type: string
-        default: .github/deployments-config.yml
+        default: .github/apps-config.yml
 jobs:
   helm:
     runs-on: ubuntu-22.04
@@ -127,12 +127,12 @@ jobs:
       - name: Hydrate helm values
         run: |
 
-          deployments='${{ inputs.updated_apps }}'
+          apps='${{ inputs.updated_apps }}'
 
-          echo "$deployments" | jq -r '.[]' | while read deployment; do
-            echo "Checking $deployment"
+          echo "$apps" | jq -r '.[]' | while read app; do
+            echo "Checking $app"
             
-            cd ${{ github.workspace }}/$deployment
+            cd ${{ github.workspace }}/$app
 
             find ${{ inputs.environment }} -maxdepth 1 -iname '*.yaml' \
               -not -name 'secrets.yaml' \
@@ -162,18 +162,18 @@ jobs:
         run: |
           diff_file="/tmp/helmfile.md"
 
-          deployments='${{ inputs.updated_apps }}'
+          apps='${{ inputs.updated_apps }}'
 
-          echo $deployments
+          echo $apps
 
-          echo "$deployments" | jq -r '.[]' | while read deployment; do
+          echo "$apps" | jq -r '.[]' | while read app; do
 
-            cd ${{ github.workspace }}/$deployment
+            cd ${{ github.workspace }}/$app
 
             helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
 
-            # Verify the deployment exists or if it is the first time it's been applied
-            appname=$(echo $deployment | awk -F"/" '{print $NF}')
+            # Verify the app exists or if it is the first time it's been applied
+            appname=$(echo $app | awk -F"/" '{print $NF}')
 
             releases_found=`helm list -A -o json | jq "map(select(.name == \"$appname\" and (.namespace | contains(\"${{ inputs.environment }}\")) )) | length"`
             
@@ -181,7 +181,7 @@ jobs:
               pwd
               diff_output=`helmfile --environment ${{ inputs.environment }} diff | grep --color=never "\S"`
               cat <<EOF > $diff_file
-          # Helm diff in $deployment
+          # Helm diff in $app
           \`\`\`diff
           $diff_output
           \`\`\`
@@ -196,9 +196,9 @@ jobs:
       - name: Helm apply
         if: ${{ inputs.apply == 'true' }}
         run: |
-          echo $deployments
+          echo $apps
 
-          echo "$deployments" | jq -r '.[]' | while read deployment; do
-            cd ${{ github.workspace }}/$deployment
+          echo "$apps" | jq -r '.[]' | while read app; do
+            cd ${{ github.workspace }}/$app
             helmfile --environment ${{ inputs.environment }} apply
           done
