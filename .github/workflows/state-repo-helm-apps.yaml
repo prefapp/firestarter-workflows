@@ -192,7 +192,7 @@ jobs:
           done
       
       - name: Helm apply
-        if: ${{ inputs.apply == 'true' }}
+        if: ${{ inputs.apply == true || inputs.apply == 'true' }}
         run: |
           echo $apps
 
