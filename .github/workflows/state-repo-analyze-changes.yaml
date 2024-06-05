@@ -92,6 +92,8 @@ jobs:
               return newObj;
             });
 
+            console.log("Testing");
+
             console.debug(result);
 
             return result;
