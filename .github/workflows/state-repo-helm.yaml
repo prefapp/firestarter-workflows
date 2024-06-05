@@ -160,7 +160,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          diff_file="/tmp/helmfile.diff"
+          diff_file="/tmp/helmfile.md"
 
           deployments='${{ inputs.updated_apps }}'
 
@@ -178,11 +178,13 @@ jobs:
             releases_found=`helm list -A -o json | jq "map(select(.name == \"$appname\" and (.namespace | contains(\"${{ inputs.environment }}\")) )) | length"`
             
             if [ $releases_found -gt 0 ]; then
-              diff_output= '\`\`\`'
-              diff_output+="\n"
-              diff_output+=`helmfile --environment ${{ inputs.environment }} diff | grep --color=never "\S"`
-              diff_output+='\`\`\`'
-              gh pr comment ${{ github.event.number }} -b "$diff_output"
+              diff_output=`helmfile --environment ${{ inputs.environment }} diff | grep --color=never "\S"`
+              cat <<EOF > $diff_file
+          \`\`\`
+          $diff_output
+          \`\`\`
+          EOF
+              gh pr comment ${{ github.event.number }} -F $diff_file
             else
               echo 'Installing for the first time'
             fi
