@@ -5,9 +5,6 @@ on:
       apply:
         required: true
         type: boolean
-      is-app:
-        required: true
-        type: boolean
       environment:
         required: true
         type: string
@@ -126,38 +123,6 @@ jobs:
           install-kubectl: no
           install-helm: no
 
-      - name: Hydrate helm values
-        if: ${{ inputs.is-app }}
-        run: |
-
-          apps='${{ inputs.updated_apps }}'
-
-          echo "$apps" | jq -r '.[]' | while read app; do
-            echo "Checking $app"
-            
-            cd ${{ github.workspace }}/$app
-
-            find ${{ inputs.environment }} -maxdepth 1 -iname '*.yaml' \
-              -not -name 'secrets.yaml' \
-              -not -name 'images.yaml' \
-              -not -name 'ca.yml' \
-              -not -name 'final.yaml' \
-              -exec cat {} \; > ./${{ inputs.environment }}/final.yaml
-
-            full_ca=""
-            for file in $(ls ./${{ inputs.environment }}/ca-certs/*.crt | sort); do
-              full_ca+="`cat $file | awk  '{ print "      " $0 }'`
-          "
-            done
-
-
-            cat << EOF > ./${{ inputs.environment }}/ca.yml
-          councilbox-server:
-            ca_secret:
-              crts: $full_ca
-          EOF
-          done
-
       - name: Helm diff
         if: ${{ inputs.apply != 'true' }}
         env:
@@ -165,24 +130,23 @@ jobs:
         run: |
           diff_file="/tmp/helmfile.md"
 
+          cd ${{ github.workspace }}/sys-services
+
           apps='${{ inputs.updated_apps }}'
 
           echo $apps
 
           echo "$apps" | jq -r '.[]' | while read app; do
 
-            cd ${{ github.workspace }}/$app
-
             helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
 
             # Verify the app exists or if it is the first time it's been applied
             appname=$(echo $app | awk -F"/" '{print $NF}')
 
-            releases_found=`helm list -A -o json | jq "map(select(.name == \"$appname\" and (.namespace | contains(\"${{ inputs.environment }}\")) )) | length"`
+            releases_found=`helm list -A -o json | jq "map(select(.name == \"$appname\" )) | length"`
             
             if [ $releases_found -gt 0 ]; then
-              pwd
-              diff_output=`helmfile --environment ${{ inputs.environment }} diff | grep --color=never "\S"`
+              diff_output=`helmfile --environment ${{ inputs.environment }} --selector release=$appname diff --detailed-exitcode | grep --color=never "\S"`
               cat <<EOF > $diff_file
           # Helm diff in app: $appname, env: ${{ inputs.environment }}
           \`\`\`diff
