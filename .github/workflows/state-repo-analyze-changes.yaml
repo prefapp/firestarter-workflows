@@ -52,6 +52,8 @@ jobs:
 
               const pathComponents = path.normalize(f).split(path.sep)
 
+              console.log(f);
+
               if(ignoredDirectories.includes(pathComponents[0])) return;
               if(ignoredFiles.includes(pathComponents.at(-1))) return;
 
@@ -91,8 +93,6 @@ jobs:
               newObj.changed = changedEnvironments[envName];
               return newObj;
             });
-
-            console.log("Testing");
 
             console.debug(result);
 
