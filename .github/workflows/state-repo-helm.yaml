@@ -5,6 +5,9 @@ on:
       apply:
         required: true
         type: boolean
+      is-app:
+        required: true
+        type: boolean
       environment:
         required: true
         type: string
@@ -125,6 +128,7 @@ jobs:
           install-helm: no
 
       - name: Hydrate helm values
+        if: ${{ inputs.is-app }}
         run: |
 
           apps='${{ inputs.updated_apps }}'
