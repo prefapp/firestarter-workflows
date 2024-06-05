@@ -130,7 +130,7 @@ jobs:
         run: |
           diff_file="/tmp/helmfile.md"
 
-          cd ${{ github.workspace }}/sys-services
+          cd ${{ github.workspace }}/sys_services
 
           apps='${{ inputs.updated_apps }}'
 
