@@ -180,7 +180,7 @@ jobs:
             if [ $releases_found -gt 0 ]; then
               diff_output=`helmfile --environment ${{ inputs.environment }} diff | grep --color=never "\S"`
               cat <<EOF > $diff_file
-          \# Helm diff in $deployment
+          # Helm diff in $deployment
           \`\`\`diff
           $diff_output
           \`\`\`
