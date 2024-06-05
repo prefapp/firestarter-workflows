@@ -16,9 +16,8 @@ on:
         required: true
         type: string
       config_file:
-        required: false
+        required: true
         type: string
-        default: .github/apps-config.yml
 jobs:
   helm:
     runs-on: ubuntu-22.04
