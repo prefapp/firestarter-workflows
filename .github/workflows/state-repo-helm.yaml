@@ -185,7 +185,7 @@ jobs:
               pwd
               diff_output=`helmfile --environment ${{ inputs.environment }} diff | grep --color=never "\S"`
               cat <<EOF > $diff_file
-          # Helm diff in $app
+          # Helm diff in app: $appname, env: ${{ inputs.environment }}
           \`\`\`diff
           $diff_output
           \`\`\`
