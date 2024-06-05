@@ -173,6 +173,6 @@ jobs:
           echo "$apps" | jq -r '.[]' | while read app; do
 
             appname=$(echo $app | awk -F"/" '{print $NF}')
-            helmfile --environment ${{ inputs.environment }}  --selector release={release} apply
+            helmfile --environment ${{ inputs.environment }}  --selector release=$appname apply
 
           done
