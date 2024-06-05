@@ -163,6 +163,8 @@ jobs:
       - name: Helm apply
         if: ${{ inputs.apply == 'true' }}
         run: |
+
+          apps='${{ inputs.updated_apps }}'
           
           cd ${{ github.workspace }}/sys_services
           

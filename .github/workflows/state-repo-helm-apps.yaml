@@ -194,6 +194,10 @@ jobs:
       - name: Helm apply
         if: ${{ inputs.apply == true || inputs.apply == 'true' }}
         run: |
+
+          apps='${{ inputs.updated_apps }}'
+
+
           echo $apps
 
           echo "$apps" | jq -r '.[]' | while read app; do
