@@ -155,7 +155,7 @@ jobs:
           done
 
       - name: Helm diff
-        if: ${{ inputs.apply != 'true' }}
+        if: ${{ inputs.apply == 'false' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
