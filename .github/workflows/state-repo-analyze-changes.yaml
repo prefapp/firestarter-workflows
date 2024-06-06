@@ -1,0 +1,99 @@
+name: State repo analyze changes
+on:
+  workflow_call:
+    inputs:
+      path:
+        required: true
+        type: string
+      is-app:
+        required: true
+        type: boolean
+    outputs:
+      changes:
+        description: "The first output string"
+        value: ${{ jobs.analyze_changes.outputs.changes }}
+jobs:
+  analyze_changes:
+    runs-on: ubuntu-22.04
+    outputs:
+      changes: ${{ steps.analyze_changes.outputs.result }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - name: Calculate changes
+        id: calculate_changes
+        uses: dorny/paths-filter@v3
+        with:
+          list-files: json
+          filters: |
+            changed:
+              - '${{ inputs.path }}/**/*.yaml'
+              - '${{ inputs.path }}/**/*.yml'
+      - name: Analyze files changed
+        id: analyze_changes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const path = require("path");
+            const fs = require("fs");
+
+            const isApp = ${{ inputs.is-app }};
+
+            const changedFiles = JSON.parse(${{ toJson(steps.calculate_changes.outputs.changed_files) }});
+            
+            const ignoredDirectories = [".github", ".docs"];
+            const ignoredFiles = ["helmfile.yaml"];
+
+            const changedEnvironments = {};
+
+            changedFiles.forEach( f => {
+
+              const pathComponents = path.normalize(f).split(path.sep)
+
+              console.log(f);
+
+              if(ignoredDirectories.includes(pathComponents[0])) return;
+              if(ignoredFiles.includes(pathComponents.at(-1))) return;
+
+              let kind, tenant, app, file;
+              if (isApp) {
+                [kind, tenant, app, file] = pathComponents;
+              } else {
+                [kind, app, file] = pathComponents;
+              }
+
+
+              let env;
+
+              if(fs.lstatSync(f).isDirectory()) {
+                env = file;
+              } else {
+                env = path.parse(file).name;
+              }
+              
+              let changedAppInfo;
+              if (isApp) {
+                changedAppInfo = [kind, tenant, app].join("/");
+              } else {
+                changedAppInfo = [kind, app].join("/");
+              }
+
+              if (!Array.isArray(changedEnvironments[env])) changedEnvironments[env] = [];
+              if (!changedEnvironments[env].includes(changedAppInfo)) changedEnvironments[env].push(changedAppInfo);
+
+            });
+
+            console.debug(changedEnvironments);
+
+            const result = Object.keys(changedEnvironments).map(envName => {
+              let newObj = {};
+              newObj.name = envName;
+              newObj.changed = changedEnvironments[envName];
+              return newObj;
+            });
+
+            console.debug(result);
+
+            return result;

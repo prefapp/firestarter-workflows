@@ -1,0 +1,178 @@
+name: State repo helm
+on:
+  workflow_call:
+    inputs:
+      apply:
+        required: true
+        type: boolean
+      environment:
+        required: true
+        type: string
+      # JSON file
+      updated_apps:
+        required: true
+        type: string
+      config_file:
+        required: true
+        type: string
+jobs:
+  helm:
+    runs-on: ubuntu-22.04
+    env:
+      HELM_EXPERIMENTAL_OCI: 1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '20.x'
+      - run: npm install js-yaml
+      - name: Parse config file
+        id: parse_config
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require("fs");
+            const path = require("path");
+            const yaml = require('js-yaml');
+
+            const configPath = path.join("${{ github.workspace }}", "${{ inputs.config_file }}");
+
+            console.log(configPath);
+
+            const config = yaml.load(fs.readFileSync(configPath, 'utf8'));
+
+            const provider = config.provider;
+            const helm_registries = config.helm_registries
+
+            const { cluster_name, identifier } = config.environments["${{ inputs.environment }}"];
+
+            const result = {
+              provider_kind: provider.kind,
+              cluster_name,
+              identifier,
+              helm_registries,
+            }
+
+            switch(provider.kind) {
+              case 'azure':
+                if(!provider?.tenant_id) throw new Error('AZURE_TENANT_ID not configured')
+                if(!provider?.subscription_id) throw new Error('AZURE_SUBSCRIPTION_ID not configured')
+                
+                result.tenant_id = provider.tenant_id
+                result.subscription_id = provider.subscription_id
+                result.resource_group_name = config.environments["${{ inputs.environment }}"].resource_group_name
+                
+                break;
+              default:
+                throw new Error(`Unknown provider: ${providerKind}`)
+            }
+
+
+            console.log(result);
+
+            return result;
+
+      # Azure setup
+
+      - name: debug
+        run: |
+          echo "${{ fromJSON(steps.parse_config.outputs.result).identifier }}"
+          echo "${{ fromJSON(steps.parse_config.outputs.result).tenant_id }}"
+          echo "${{ fromJSON(steps.parse_config.outputs.result).subscription_id }}"
+      - name: Setup / Azure Login
+        uses: Azure/login@v2
+        if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
+        with:
+          client-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).identifier }}
+          tenant-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).tenant_id }}
+          subscription-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).subscription_id }}
+
+      - name: Set up kubelogin for non-interactive login
+        if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
+        uses: azure/use-kubelogin@v1
+        with:
+          kubelogin-version: 'v0.0.24'
+
+      - name: Setup / AKS Context
+        if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).resource_group_name }}
+          cluster-name: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).cluster_name }}
+          admin: 'false'
+          use-kubelogin: 'true'
+
+      - name: Login to ACRs
+        if:  ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
+        run: |
+          registries='${{ toJSON(fromJSON(steps.parse_config.outputs.result).helm_registries) }}'
+
+          echo "$registries" | jq -r '.[]' | while read registry; do
+            echo "Login in $registry"
+            token=$(az acr login --name $registry --expose-token --output tsv --query accessToken) && \
+            echo $token | helm registry login $registry -u 00000000-0000-0000-0000-000000000000 --password-stdin
+          done
+
+      # Helm logic
+      - name: Setup helmfile
+        uses: mamezou-tech/setup-helmfile@v2.0.0
+        with:
+          install-kubectl: no
+          install-helm: no
+
+      - name: Helm diff
+        if: ${{ inputs.apply == false || inputs.apply == 'false' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          diff_file="/tmp/helmfile.md"
+
+          cd ${{ github.workspace }}/sys_services
+
+          apps='${{ inputs.updated_apps }}'
+
+          echo $apps
+
+          echo "$apps" | jq -r '.[]' | while read app; do
+
+            helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
+
+            # Verify the app exists or if it is the first time it's been applied
+            appname=$(echo $app | awk -F"/" '{print $NF}')
+
+            releases_found=`helm list -A -o json | jq "map(select(.name == \"$appname\" )) | length"`
+            
+            if [ $releases_found -gt 0 ]; then
+              diff_output=`helmfile --environment ${{ inputs.environment }} --selector release=$appname diff --detailed-exitcode --context 5 | grep --color=never "\S"`
+              cat <<EOF > $diff_file
+          # Helm diff in app: $appname, env: ${{ inputs.environment }}
+          \`\`\`diff
+          $diff_output
+          \`\`\`
+          EOF
+              gh pr comment ${{ github.event.number }} -F $diff_file
+            else
+              echo 'Installing for the first time'
+            fi
+
+          done
+      
+      - name: Helm apply
+        if: ${{ inputs.apply == true || inputs.apply == 'true' }}
+        run: |
+
+          apps='${{ inputs.updated_apps }}'
+          
+          cd ${{ github.workspace }}/sys_services
+          
+          echo $apps
+
+          echo "$apps" | jq -r '.[]' | while read app; do
+
+            appname=$(echo $app | awk -F"/" '{print $NF}')
+            helmfile --environment ${{ inputs.environment }}  --selector release=$appname apply
+
+          done
