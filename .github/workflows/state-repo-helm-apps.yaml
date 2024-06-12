@@ -185,6 +185,8 @@ jobs:
 
             helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
 
+            helmfile --environment ${{ inputs.environment }} template
+
             # Verify the app exists or if it is the first time it's been applied
             appname=$(echo $app | awk -F"/" '{print $NF}')
 
