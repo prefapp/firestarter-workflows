@@ -150,6 +150,9 @@ jobs:
                   with open(fname) as infile:
                       outfile.write(infile.read())
 
+            with open(os.path.join(app_dir, 'final.yaml'), 'r') as file:
+              print(file.read())
+
             # Merge all CAs
             ca_files = sorted(glob.glob(path.join(app_dir, "ca-certs", '*.crt')))
 
