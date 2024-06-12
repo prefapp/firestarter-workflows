@@ -162,7 +162,7 @@ jobs:
             print(full_ca)
 
 
-            with open(f"{args['ca_yml_path']}", 'w', encoding="utf-8") as yamlfile:
+            with open(path.join(app_dir, "ca.yml"), 'w', encoding="utf-8") as yamlfile:
                 yaml.dump(dict_file, yamlfile, default_style = '|')
 
 
