@@ -88,7 +88,7 @@ jobs:
         if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
         uses: azure/use-kubelogin@v1
         with:
-          kubelogin-version:s 'v0.0.24'
+          kubelogin-version: 'v0.0.24'
 
       - name: Setup / AKS Context
         if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
