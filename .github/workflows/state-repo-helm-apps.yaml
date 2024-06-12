@@ -116,14 +116,29 @@ jobs:
         with:
           install-kubectl: no
           install-helm: no
+
+
       - name: Hydrate helm values
         shell: python
         run: |
           import json
+          import glob
+          from os import path
+
+
           apps = json.loads(${{ toJSON(inputs.updated_apps) }})
           for app in apps:
-            print(apps)
-          
+            print(f"Hydrating app {app}")
+
+            app_dir = path.join("${{ github.workspace }}", app)
+            
+            print(app_dir)
+
+            excluded_files = ['secrets.yaml', 'images.yaml', 'ca.yml', 'final.yaml']
+
+            yaml_files = glob.glob(os.path.join(input_environment, '*.yaml'))
+
+
       # - name: Hydrate helm values
       #   run: |
 
