@@ -125,9 +125,11 @@ jobs:
       - name: Hydrate helm values
         shell: python
         run: |
-          apps = "${{ inputs.updated_apps }}"
+          import json
+          apps = json.loads('${{ inputs.updated_apps }}')
           for app in apps:
-            print(apps) 
+            print(apps)
+          
       # - name: Hydrate helm values
       #   run: |
 
