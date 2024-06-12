@@ -134,7 +134,7 @@ jobs:
           apps = json.loads(${{ toJSON(inputs.updated_apps) }})
           for app in apps:
 
-            app_dir = path.join("${{ gi }}", app, "${{ inputs.environment }}")
+            app_dir = path.join("${{ github.workspace }}", app, "${{ inputs.environment }}")
             
             print(f"Hydrating app {app} in {app_dir}")
             
