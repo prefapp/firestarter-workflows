@@ -133,9 +133,10 @@ jobs:
 
           apps = json.loads(${{ toJSON(inputs.updated_apps) }})
           for app in apps:
-            print(f"Hydrating app {app}")
 
             app_dir = path.join("${{ github.workspace }}", app, "${{ inputs.environment }}")
+            
+            print(f"Hydrating app {app} in {app_dir}")
             
             # Create the final yaml
 
