@@ -136,7 +136,7 @@ jobs:
 
             excluded_files = ['secrets.yaml', 'images.yaml', 'ca.yml', 'final.yaml']
 
-            yaml_files = glob.glob(path.join(input_environment, '*.yaml'))
+            yaml_files = glob.glob(path.join(app_dir, '*.yaml'))
             filtered_files = [f for f in yaml_files if path.basename(f) not in exclude_files]
 
             with open(path.join(app_dir, 'final.yaml'), 'w') as outfile:
