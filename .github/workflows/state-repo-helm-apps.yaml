@@ -159,91 +159,57 @@ jobs:
                 ca += f.read()
 
             dict_file = {'councilbox-server' : {'ca_secret' : {'crts' :  ca }}}
-            print(ca)
-
 
             with open(path.join(app_dir, "ca.yml"), 'w', encoding="utf-8") as yamlfile:
                 yaml.dump(dict_file, yamlfile, default_style = '|')
 
+      - name: Helm diff
+        if:  ${{ inputs.apply == false || inputs.apply == 'false' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          diff_file="/tmp/helmfile.md"
 
-      # - name: Hydrate helm values
-      #   run: |
+          apps='${{ inputs.updated_apps }}'
 
-      #     apps='${{ inputs.updated_apps }}'
+          echo $apps
 
-      #     echo "$apps" | jq -r '.[]' | while read app; do
-      #       echo "Checking $app"
+          echo "$apps" | jq -r '.[]' | while read app; do
+
+            cd ${{ github.workspace }}/$app
+
+            helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
+
+            # Verify the app exists or if it is the first time it's been applied
+            appname=$(echo $app | awk -F"/" '{print $NF}')
+
+            releases_found=`helm list -A -o json | jq "map(select(.name == \"$appname\" and (.namespace | contains(\"${{ inputs.environment }}\")) )) | length"`
             
-      #       cd ${{ github.workspace }}/$app
+            if [ $releases_found -gt 0 ]; then
+              diff_output=`helmfile --environment ${{ inputs.environment }} diff --context 5 | grep --color=never "\S"`
+              cat <<EOF > $diff_file
+          # Helm diff in app: $appname, env: ${{ inputs.environment }}
+          \`\`\`diff
+          $diff_output
+          \`\`\`
+          EOF
+              gh pr comment ${{ github.event.number }} -F $diff_file
+            else
+              echo 'Installing for the first time'
+            fi
 
-      #       find ${{ inputs.environment }} -maxdepth 1 -iname '*.yaml' \
-      #         -not -name 'secrets.yaml' \
-      #         -not -name 'images.yaml' \
-      #         -not -name 'ca.yml' \
-      #         -not -name 'final.yaml' \
-      #         -exec cat {} \; > ./${{ inputs.environment }}/final.yaml
-
-      #       full_ca=""
-      #       for file in $(ls ./${{ inputs.environment }}/ca-certs/*.crt | sort); do
-      #         full_ca+="`cat $file | awk  '{ print "      " $0 }'`
-      #     "
-      #       done
-
-
-      #       cat << EOF > ./${{ inputs.environment }}/ca.yml
-      #     councilbox-server:
-      #       ca_secret:
-      #         crts: $full_ca
-      #     EOF
-      #     done
-
-      # - name: Helm diff
-      #   if:  ${{ inputs.apply == false || inputs.apply == 'false' }}
-      #   env:
-      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   run: |
-      #     diff_file="/tmp/helmfile.md"
-
-      #     apps='${{ inputs.updated_apps }}'
-
-      #     echo $apps
-
-      #     echo "$apps" | jq -r '.[]' | while read app; do
-
-      #       cd ${{ github.workspace }}/$app
-
-      #       helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
-
-      #       # Verify the app exists or if it is the first time it's been applied
-      #       appname=$(echo $app | awk -F"/" '{print $NF}')
-
-      #       releases_found=`helm list -A -o json | jq "map(select(.name == \"$appname\" and (.namespace | contains(\"${{ inputs.environment }}\")) )) | length"`
-            
-      #       if [ $releases_found -gt 0 ]; then
-      #         diff_output=`helmfile --environment ${{ inputs.environment }} diff --context 5 | grep --color=never "\S"`
-      #         cat <<EOF > $diff_file
-      #     # Helm diff in app: $appname, env: ${{ inputs.environment }}
-      #     \`\`\`diff
-      #     $diff_output
-      #     \`\`\`
-      #     EOF
-      #         gh pr comment ${{ github.event.number }} -F $diff_file
-      #       else
-      #         echo 'Installing for the first time'
-      #       fi
-
-      #     done
+          done
       
-      # - name: Helm apply
-      #   if: ${{ inputs.apply == true || inputs.apply == 'true' }}
-      #   run: |
+      - name: Helm apply
+        if: ${{ inputs.apply == true || inputs.apply == 'true' }}
+        run: |
 
-      #     apps='${{ inputs.updated_apps }}'
+          apps='${{ inputs.updated_apps }}'
 
 
-      #     echo $apps
+          echo $apps
 
-      #     echo "$apps" | jq -r '.[]' | while read app; do
-      #       cd ${{ github.workspace }}/$app
-      #       helmfile --environment ${{ inputs.environment }} apply
-      #     done
+          echo "$apps" | jq -r '.[]' | while read app; do
+            cd ${{ github.workspace }}/$app
+            helmfile --environment ${{ inputs.environment }} apply
+          done
