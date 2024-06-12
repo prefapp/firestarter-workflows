@@ -158,8 +158,8 @@ jobs:
               with open(file, encoding="utf-8") as f:
                 ca += f.read()
 
-            dict_file = {'councilbox-server' : {'ca_secret' : {'crts' :  full_ca }}}
-            print(full_ca)
+            dict_file = {'councilbox-server' : {'ca_secret' : {'crts' :  ca }}}
+            print(ca)
 
 
             with open(path.join(app_dir, "ca.yml"), 'w', encoding="utf-8") as yamlfile:
