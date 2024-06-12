@@ -134,7 +134,7 @@ jobs:
           apps = json.loads(${{ toJSON(inputs.updated_apps) }})
           for app in apps:
 
-            app_dir = path.join("${{ github.workspace }}", app, "${{ inputs.environment }}")
+            app_dir = path.join("${{ gi }}", app, "${{ inputs.environment }}")
             
             print(f"Hydrating app {app} in {app_dir}")
             
@@ -191,11 +191,13 @@ jobs:
             
             if [ $releases_found -gt 0 ]; then
               diff_output=`helmfile --environment ${{ inputs.environment }} diff --context 5 | grep --color=never "\S"`
-              cat <<EOF > $diff_file
-          # Helm diff in app: $appname, env: ${{ inputs.environment }}
+              cat <<EOF >> $diff_file
+          <details>
+          <summary>## Helm diff in app: $appname, env: ${{ inputs.environment }}</summary>
           \`\`\`diff
           $diff_output
           \`\`\`
+          </details>
           EOF
               gh pr comment ${{ github.event.number }} -F $diff_file
             else
