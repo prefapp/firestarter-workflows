@@ -159,53 +159,53 @@ jobs:
       #     EOF
       #     done
 
-      - name: Helm diff
-        if:  ${{ inputs.apply == false || inputs.apply == 'false' }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          diff_file="/tmp/helmfile.md"
+      # - name: Helm diff
+      #   if:  ${{ inputs.apply == false || inputs.apply == 'false' }}
+      #   env:
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: |
+      #     diff_file="/tmp/helmfile.md"
 
-          apps='${{ inputs.updated_apps }}'
+      #     apps='${{ inputs.updated_apps }}'
 
-          echo $apps
+      #     echo $apps
 
-          echo "$apps" | jq -r '.[]' | while read app; do
+      #     echo "$apps" | jq -r '.[]' | while read app; do
 
-            cd ${{ github.workspace }}/$app
+      #       cd ${{ github.workspace }}/$app
 
-            helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
+      #       helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
 
-            # Verify the app exists or if it is the first time it's been applied
-            appname=$(echo $app | awk -F"/" '{print $NF}')
+      #       # Verify the app exists or if it is the first time it's been applied
+      #       appname=$(echo $app | awk -F"/" '{print $NF}')
 
-            releases_found=`helm list -A -o json | jq "map(select(.name == \"$appname\" and (.namespace | contains(\"${{ inputs.environment }}\")) )) | length"`
+      #       releases_found=`helm list -A -o json | jq "map(select(.name == \"$appname\" and (.namespace | contains(\"${{ inputs.environment }}\")) )) | length"`
             
-            if [ $releases_found -gt 0 ]; then
-              diff_output=`helmfile --environment ${{ inputs.environment }} diff --context 5 | grep --color=never "\S"`
-              cat <<EOF > $diff_file
-          # Helm diff in app: $appname, env: ${{ inputs.environment }}
-          \`\`\`diff
-          $diff_output
-          \`\`\`
-          EOF
-              gh pr comment ${{ github.event.number }} -F $diff_file
-            else
-              echo 'Installing for the first time'
-            fi
+      #       if [ $releases_found -gt 0 ]; then
+      #         diff_output=`helmfile --environment ${{ inputs.environment }} diff --context 5 | grep --color=never "\S"`
+      #         cat <<EOF > $diff_file
+      #     # Helm diff in app: $appname, env: ${{ inputs.environment }}
+      #     \`\`\`diff
+      #     $diff_output
+      #     \`\`\`
+      #     EOF
+      #         gh pr comment ${{ github.event.number }} -F $diff_file
+      #       else
+      #         echo 'Installing for the first time'
+      #       fi
 
-          done
+      #     done
       
-      - name: Helm apply
-        if: ${{ inputs.apply == true || inputs.apply == 'true' }}
-        run: |
+      # - name: Helm apply
+      #   if: ${{ inputs.apply == true || inputs.apply == 'true' }}
+      #   run: |
 
-          apps='${{ inputs.updated_apps }}'
+      #     apps='${{ inputs.updated_apps }}'
 
 
-          echo $apps
+      #     echo $apps
 
-          echo "$apps" | jq -r '.[]' | while read app; do
-            cd ${{ github.workspace }}/$app
-            helmfile --environment ${{ inputs.environment }} apply
-          done
+      #     echo "$apps" | jq -r '.[]' | while read app; do
+      #       cd ${{ github.workspace }}/$app
+      #       helmfile --environment ${{ inputs.environment }} apply
+      #     done
