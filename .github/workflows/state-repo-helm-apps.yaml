@@ -150,7 +150,7 @@ jobs:
                   with open(fname) as infile:
                       outfile.write(infile.read())
 
-            with open(os.path.join(app_dir, 'final.yaml'), 'r') as file:
+            with open(path.join(app_dir, 'final.yaml'), 'r') as file:
               print(file.read())
 
             # Merge all CAs
