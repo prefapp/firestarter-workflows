@@ -122,37 +122,42 @@ jobs:
         with:
           install-kubectl: no
           install-helm: no
-
       - name: Hydrate helm values
+        shell: python
         run: |
+          apps = "${{ inputs.updated_apps }}"
+          for app in apps:
+            print(apps) 
+      # - name: Hydrate helm values
+      #   run: |
 
-          apps='${{ inputs.updated_apps }}'
+      #     apps='${{ inputs.updated_apps }}'
 
-          echo "$apps" | jq -r '.[]' | while read app; do
-            echo "Checking $app"
+      #     echo "$apps" | jq -r '.[]' | while read app; do
+      #       echo "Checking $app"
             
-            cd ${{ github.workspace }}/$app
+      #       cd ${{ github.workspace }}/$app
 
-            find ${{ inputs.environment }} -maxdepth 1 -iname '*.yaml' \
-              -not -name 'secrets.yaml' \
-              -not -name 'images.yaml' \
-              -not -name 'ca.yml' \
-              -not -name 'final.yaml' \
-              -exec cat {} \; > ./${{ inputs.environment }}/final.yaml
+      #       find ${{ inputs.environment }} -maxdepth 1 -iname '*.yaml' \
+      #         -not -name 'secrets.yaml' \
+      #         -not -name 'images.yaml' \
+      #         -not -name 'ca.yml' \
+      #         -not -name 'final.yaml' \
+      #         -exec cat {} \; > ./${{ inputs.environment }}/final.yaml
 
-            full_ca=""
-            for file in $(ls ./${{ inputs.environment }}/ca-certs/*.crt | sort); do
-              full_ca+="`cat $file | awk  '{ print "      " $0 }'`
-          "
-            done
+      #       full_ca=""
+      #       for file in $(ls ./${{ inputs.environment }}/ca-certs/*.crt | sort); do
+      #         full_ca+="`cat $file | awk  '{ print "      " $0 }'`
+      #     "
+      #       done
 
 
-            cat << EOF > ./${{ inputs.environment }}/ca.yml
-          councilbox-server:
-            ca_secret:
-              crts: $full_ca
-          EOF
-          done
+      #       cat << EOF > ./${{ inputs.environment }}/ca.yml
+      #     councilbox-server:
+      #       ca_secret:
+      #         crts: $full_ca
+      #     EOF
+      #     done
 
       - name: Helm diff
         if:  ${{ inputs.apply == false || inputs.apply == 'false' }}
