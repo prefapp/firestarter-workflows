@@ -154,7 +154,7 @@ jobs:
 
             ca = ''
 
-            for file in sorted(glob.glob(f"{args['ca_certs_path']}/*.crt")):
+            for file in ca_files:
               with open(file, encoding="utf-8") as f:
                 ca += f.read()
 
