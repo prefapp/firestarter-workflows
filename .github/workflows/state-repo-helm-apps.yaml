@@ -76,12 +76,6 @@ jobs:
             return result;
 
       # Azure setup
-
-      - name: debug
-        run: |
-          echo "${{ fromJSON(steps.parse_config.outputs.result).identifier }}"
-          echo "${{ fromJSON(steps.parse_config.outputs.result).tenant_id }}"
-          echo "${{ fromJSON(steps.parse_config.outputs.result).subscription_id }}"
       - name: Setup / Azure Login
         uses: Azure/login@v2
         if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
@@ -94,7 +88,7 @@ jobs:
         if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
         uses: azure/use-kubelogin@v1
         with:
-          kubelogin-version: 'v0.0.24'
+          kubelogin-version:s 'v0.0.24'
 
       - name: Setup / AKS Context
         if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
@@ -126,7 +120,7 @@ jobs:
         shell: python
         run: |
           import json
-          apps = json.loads('${{ inputs.updated_apps }}')
+          apps = json.loads('${{ toJSON(inputs.updated_apps) }}')
           for app in apps:
             print(apps)
           
