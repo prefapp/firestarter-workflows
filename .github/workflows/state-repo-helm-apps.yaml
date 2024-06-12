@@ -193,10 +193,10 @@ jobs:
               diff_output=`helmfile --environment ${{ inputs.environment }} diff --context 5 | grep --color=never "\S"`
               cat <<EOF >> $diff_file
           <details>
-          <summary>## Helm diff in app: $appname, env: ${{ inputs.environment }}</summary>
-          \`\`\`diff
-          $diff_output
-          \`\`\`
+          <summary><h2> Helm diff in app: $appname, env: ${{ inputs.environment }}</h2></summary>
+            \`\`\`diff
+            $diff_output
+            \`\`\`
           </details>
           EOF
               gh pr comment ${{ github.event.number }} -F $diff_file
