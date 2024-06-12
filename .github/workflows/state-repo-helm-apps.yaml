@@ -117,7 +117,10 @@ jobs:
           install-kubectl: no
           install-helm: no
 
-
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+      - run: pip install js-yaml
       - name: Hydrate helm values
         shell: python
         run: |
@@ -130,9 +133,9 @@ jobs:
           for app in apps:
             print(f"Hydrating app {app}")
 
-            app_dir = path.join("${{ github.workspace }}", app)
+            app_dir = path.join("${{ github.workspace }}", app, "${{ inputs.environment }}")
             
-            print(app_dir)
+            # Create the final yaml
 
             excluded_files = ['secrets.yaml', 'images.yaml', 'ca.yml', 'final.yaml']
 
@@ -143,6 +146,23 @@ jobs:
               for fname in filtered_files:
                   with open(fname) as infile:
                       outfile.write(infile.read())
+
+            # Merge all CAs
+            ca_files = sorted(glob.glob(path.join(app_dir, "ca-certs", '*.crt')))
+
+            ca = ''
+
+            for file in sorted(glob.glob(f"{args['ca_certs_path']}/*.crt")):
+              with open(file, encoding="utf-8") as f:
+                ca += f.read()
+
+            dict_file = {'councilbox-server' : {'ca_secret' : {'crts' :  full_ca }}}
+            print(full_ca)
+
+
+            with open(f"{args['ca_yml_path']}", 'w', encoding="utf-8") as yamlfile:
+                yaml.dump(dict_file, yamlfile, default_style = '|')
+
 
       # - name: Hydrate helm values
       #   run: |
