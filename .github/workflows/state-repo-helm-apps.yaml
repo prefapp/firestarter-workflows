@@ -120,7 +120,7 @@ jobs:
         shell: python
         run: |
           import json
-          apps = json.loads('${{ toJSON(inputs.updated_apps) }}')
+          apps = json.loads(${{ toJSON(inputs.updated_apps) }})
           for app in apps:
             print(apps)
           
