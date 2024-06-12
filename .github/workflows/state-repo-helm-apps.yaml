@@ -120,14 +120,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.9'
-      - run: pip install js-yaml
+      - run: pip install pyyaml
       - name: Hydrate helm values
         shell: python
         run: |
           import json
           import glob
           import yaml
-          
+
           from os import path
 
 
