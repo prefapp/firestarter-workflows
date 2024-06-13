@@ -122,6 +122,12 @@ jobs:
           done
 
       # Helm logic
+      - name: Setup helmfile
+        uses: mamezou-tech/setup-helmfile@55ae2a66c5af4883148b7a50cc6ddc9b61042184
+        with:
+          install-kubectl: no
+          install-helm: no
+
       - name: Setup / SOPS
         env:
           SOPS_VERSION: 'v3.7.1'
@@ -137,12 +143,6 @@ jobs:
 
           helm plugin list
           
-      - name: Setup helmfile
-        uses: mamezou-tech/setup-helmfile@55ae2a66c5af4883148b7a50cc6ddc9b61042184
-        with:
-          install-kubectl: no
-          install-helm: no
-
 
       - name: Hydrate helm values
         run: |
