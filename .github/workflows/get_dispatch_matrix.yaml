@@ -59,7 +59,7 @@ jobs:
           sparse-checkout: |
             .github
           sparse-checkout-cone-mode: false
-          token: ${{ inputs.token }}
+          token: ${{ secrets.token }}
 
       - uses: actions/setup-node@v4
         with:
