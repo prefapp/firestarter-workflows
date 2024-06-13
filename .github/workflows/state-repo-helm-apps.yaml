@@ -142,8 +142,6 @@ jobs:
           
 
       - name: Hydrate helm values
-        # env:
-          # HELM_PLUGINS: "/home/runner/work/state-corpme/state-corpme/"
         run: |
 
           apps='${{ inputs.updated_apps }}'
