@@ -158,7 +158,7 @@ jobs:
           sudo mv "sops-$SOPS_VERSION.linux" /usr/bin/sops
           sudo chmod +x /usr/bin/sops
           
-          helm plugin install https://github.com/jkroepke/helm-secrets
+          # helm plugin install https://github.com/jkroepke/helm-secrets
 
           helm plugin list
           
