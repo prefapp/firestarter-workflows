@@ -33,7 +33,6 @@ on:
         required: true
     secrets:
       token:
-        type: string
         description: PAT to use when checking out repo_name
         required: true
     outputs:
