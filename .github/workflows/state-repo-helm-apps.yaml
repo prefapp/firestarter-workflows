@@ -214,14 +214,14 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
 
-            const comments = await github.issues.listComments({
+            const comments = await  github.rest.issues.listComments({
               issue_number: issue_number,
               owner: owner,
               repo: repo,
             });
 
             for (const comment of comments.data) {
-              await github.issues.deleteComment({
+              await github.rest.issues.deleteComment({
                 comment_id: comment.id,
                 owner: owner,
                 repo: repo,
