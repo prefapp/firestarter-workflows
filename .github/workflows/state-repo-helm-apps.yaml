@@ -136,7 +136,7 @@ jobs:
           echo "HELM_PLUGINS=https://github.com/jkroepke/helm-secrets --version ${{ env.HELM_SECRETS_VERSION }}" >> $GITHUB_ENV
 
       - name: Setup helmfile
-        uses: mamezou-tech/setup-helmfile@v2.0.0
+        uses: mamezou-tech/setup-helmfile@55ae2a66c5af4883148b7a50cc6ddc9b61042184
         with:
           install-kubectl: no
           install-helm: no
