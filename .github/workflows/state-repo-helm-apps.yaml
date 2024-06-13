@@ -140,7 +140,7 @@ jobs:
         with:
           install-kubectl: no
           install-helm: no
-          additional-helm-plugins: ${{ env.HELM_PLUGINS }}
+          additional-helm-plugins: "https://github.com/jkroepke/helm-secrets --version v4.1.1"
       - name: Hydrate helm values
         run: |
 
