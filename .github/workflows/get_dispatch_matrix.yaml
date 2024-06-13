@@ -31,6 +31,7 @@ on:
         type: string
         description: What to build (normally "releases" or "snapshots")
         required: true
+    secrets:
       token:
         type: string
         description: PAT to use when checking out repo_name
