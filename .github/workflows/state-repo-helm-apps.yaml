@@ -125,15 +125,14 @@ jobs:
       - name: Setup / SOPS
         env:
           SOPS_VERSION: 'v3.7.1'
+          HELM_SECRETS_VERSION: 'v4.4.2'
         if: ${{ inputs.sops_enabled == true || inputs.sops_enabled == 'true' }}
         run: |
-          # curl -O -L -C - https://github.com/mozilla/sops/releases/download/${{ env.SOPS_VERSION }}/${{ env.SOPS_VERSION }}.linux
-          # sudo mv sops-v3.7.3.linux /usr/bin/sops
-          # sudo chmod +x /usr/bin/sops
-          sudo wget -O /home/runner/bin/sops https://github.com/mozilla/sops/releases/download/${{ env.SOPS_VERSION }}/sops-${{ env.SOPS_VERSION }}.linux
-          sudo chmod +x /home/runner/bin/sops
+          curl -O -L -C - https://github.com/mozilla/sops/releases/download/${{ env.SOPS_VERSION }}/${{ env.SOPS_VERSION }}.linux
+          sudo mv sops-v3.7.3.linux /usr/bin/sops
+          sudo chmod +x /usr/bin/sops
 
-          echo "HELM_PLUGINS=https://github.com/jkroepke/helm-secrets" >> $GITHUB_ENV
+          echo "HELM_PLUGINS=https://github.com/jkroepke/helm-secrets --version ${{ env.HELM_SECRETS_VERSION }}" >> $GITHUB_ENV
 
       - name: Setup helmfile
         uses: mamezou-tech/setup-helmfile@v2.0.0
