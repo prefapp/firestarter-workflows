@@ -195,7 +195,7 @@ jobs:
           <summary><h2> Helm diff in app: $appname, env: ${{ inputs.environment }}</h2></summary>
             \`\`\`diff
 
-            $(printf "%s" "$diff_output")
+            $(echo "$diff_output" | sed 's/^/  /')
             
             \`\`\`
           </details>
