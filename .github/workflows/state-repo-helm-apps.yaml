@@ -15,6 +15,10 @@ on:
       config_file:
         required: true
         type: string
+      sops_enabled:
+        required: false
+        default: false
+        type: boolean
 jobs:
   helm:
     runs-on: ubuntu-22.04
@@ -117,12 +121,20 @@ jobs:
           done
 
       # Helm logic
+      - name: Setup / SOPS
+        if: ${{ inputs.sops_enabled == true || inputs.sops_enabled == 'true' }}
+        run: |
+          wget -O /home/runner/bin/sops https://github.com/mozilla/sops/releases/download/${{ env.sops_version }}/sops-${{ env.sops_version }}.linux
+          chmod +x /home/runner/bin/sops
+
       - name: Setup helmfile
         uses: mamezou-tech/setup-helmfile@v2.0.0
+        env:
+          PLUGINS: "${{ (inputs.sops_enabled == true || inputs.sops_enabled == 'true') ? 'https://github.com/jkroepke/helm-secrets' : '' }}"
         with:
           install-kubectl: no
           install-helm: no
-
+          additional-helm-plugins: ${{ env.PLUGINS }}
       - name: Hydrate helm values
         run: |
 
