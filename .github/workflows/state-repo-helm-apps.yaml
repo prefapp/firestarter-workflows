@@ -160,6 +160,8 @@ jobs:
           
           helm plugin install --debug https://github.com/jkroepke/helm-secrets
 
+          find / -name 'helm-secrets' 2>/dev/null
+
           helm plugin list
           
 
