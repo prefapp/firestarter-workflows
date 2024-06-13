@@ -135,6 +135,8 @@ jobs:
           
           helm plugin install https://github.com/jkroepke/helm-secrets
 
+          helm plugin list
+          
       - name: Setup helmfile
         uses: mamezou-tech/setup-helmfile@55ae2a66c5af4883148b7a50cc6ddc9b61042184
         with:
