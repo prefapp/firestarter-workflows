@@ -213,32 +213,33 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            # const { REPO_NAME, PR_NUMBER, FIRESTARTER_GITHUB_APP_NAME } = process.env;
-            const { REPO_NAME, PR_NUMBER } = process.env;
+            console.log("Hello");
+            # # const { REPO_NAME, PR_NUMBER, FIRESTARTER_GITHUB_APP_NAME } = process.env;
+            # const { REPO_NAME, PR_NUMBER } = process.env;
 
-            const splitted = REPO_NAME.split("/");
-            const owner = splitted[0];
-            const repo = splitted[1];
+            # const splitted = REPO_NAME.split("/");
+            # const owner = splitted[0];
+            # const repo = splitted[1];
 
-            const { data: comments } = await github.rest.issues.listComments({
-              issue_number: PR_NUMBER,
-              owner,
-              repo,
-            });
+            # const { data: comments } = await github.rest.issues.listComments({
+            #   issue_number: PR_NUMBER,
+            #   owner,
+            #   repo,
+            # });
 
-            # const botCommentList = comments.filter(
-            #   comment => comment.user.login === FIRESTARTER_GITHUB_APP_NAME
-            # )
+            # # const botCommentList = comments.filter(
+            # #   comment => comment.user.login === FIRESTARTER_GITHUB_APP_NAME
+            # # )
 
-            const botCommentList = comments;
+            # const botCommentList = comments;
 
-            for(const comment of botCommentList) {
-              await github.rest.issues.deleteComment({
-                comment_id: comment.id,
-                owner,
-                repo,
-              });
-            }
+            # for(const comment of botCommentList) {
+            #   await github.rest.issues.deleteComment({
+            #     comment_id: comment.id,
+            #     owner,
+            #     repo,
+            #   });
+            # }
 
       - name: Add comment
         env:
