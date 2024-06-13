@@ -194,7 +194,9 @@ jobs:
           <details>
           <summary><h2> Helm diff in app: $appname, env: ${{ inputs.environment }}</h2></summary>
             \`\`\`diff
+
             $diff_output
+            
             \`\`\`
           </details>
           EOF
