@@ -128,25 +128,6 @@ jobs:
           install-kubectl: no
           install-helm: no
 
-      # - name: Setup / Install helmfile
-      #   uses: mamezou-tech/setup-helmfile@55ae2a66c5af4883148b7a50cc6ddc9b61042184
-      #   env:
-      #     helm_version: 'v3.12.0'
-      #     helmfile_version: 'v0.155.0'
-      #     helm_diff_version: '3.8.1'
-      #     helm_secrets_version: 'v4.4.2'
-      #     sops_version: 'v3.7.1'
-      #     kubectl_version: '1.26.4'
-      #     kubectl_release_date: "2023-05-11"
-      #     python_version: '3.8'
-      #   with:
-      #     helmfile-version: ${{ env.helmfile_version }}
-      #     helm-diff-plugin-version: ${{ env.helm_diff_version }}
-      #     helm-version: ${{ env.helm_version }}
-      #     kubectl-version: ${{ env.kubectl_version }}
-      #     kubectl-release-date: ${{ env.kubectl_release_date }}
-      #     additional-helm-plugins: https://github.com/jkroepke/helm-secrets --version ${{ env.helm_secrets_version }}
-
       - name: Setup / SOPS
         env:
           SOPS_VERSION: 'v3.7.1'
@@ -159,10 +140,6 @@ jobs:
           sudo chmod +x /usr/bin/sops
           
           helm plugin install --debug https://github.com/jkroepke/helm-secrets
-
-          # find / -name 'helm-secrets' 2>/dev/null
-
-          helm plugin list
           
 
       - name: Hydrate helm values
