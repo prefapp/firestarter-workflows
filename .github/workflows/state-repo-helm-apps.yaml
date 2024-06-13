@@ -24,7 +24,6 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       HELM_EXPERIMENTAL_OCI: 1
-      # HELM_PLUGINS: ""
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -123,7 +122,7 @@ jobs:
 
       # Helm logic
       - name: Setup helmfile
-        uses: mamezou-tech/setup-helmfile@55ae2a66c5af4883148b7a50cc6ddc9b61042184
+        uses: mamezou-tech/setup-helmfile@v2.0.0
         with:
           install-kubectl: no
           install-helm: no
