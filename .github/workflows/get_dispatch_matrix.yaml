@@ -22,11 +22,13 @@ on:
       make_dispatches_file:
         type: string
         description: Path to the make_dispatches.yaml file
-        required: true
+        required: false
+        default: "./.github/make_dispatches.yaml"
       build_images_file:
         type: string
         description: Path to the build_images.yaml file
-        required: true
+        required: false
+        default: "./.github/build_images.yaml"
       build_type:
         type: string
         description: What to build (normally "releases" or "snapshots")
