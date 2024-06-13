@@ -211,6 +211,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           FIRESTARTER_GITHUB_APP_NAME: ${{ vars.FIRESTARTER_GITHUB_APP_NAME }}
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const { REPO_NAME, PR_NUMBER, FIRESTARTER_GITHUB_APP_NAME } = process.env;
 
