@@ -123,9 +123,11 @@ jobs:
 
       # Helm logic
       - name: Setup / SOPS
+        env:
+          SOPS_VERSION: 'v3.7.1'
         if: ${{ inputs.sops_enabled == true || inputs.sops_enabled == 'true' }}
         run: |
-          wget -O /home/runner/bin/sops https://github.com/mozilla/sops/releases/download/${{ env.sops_version }}/sops-${{ env.sops_version }}.linux
+          wget -O /home/runner/bin/sops https://github.com/mozilla/sops/releases/download/${{ env.SOPS_VERSION }}/sops-${{ env.SOPS_VERSION }}.linux
           chmod +x /home/runner/bin/sops
 
           echo "HELM_PLUGINS=https://github.com/jkroepke/helm-secrets" >> $GITHUB_ENV
