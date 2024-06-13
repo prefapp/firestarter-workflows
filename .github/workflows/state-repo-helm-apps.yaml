@@ -206,6 +206,11 @@ jobs:
 
           done
 
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            console.log("Hi!");
+
       - name: Add comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
