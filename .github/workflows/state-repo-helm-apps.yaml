@@ -128,8 +128,9 @@ jobs:
           HELM_SECRETS_VERSION: 'v4.4.2'
         if: ${{ inputs.sops_enabled == true || inputs.sops_enabled == 'true' }}
         run: |
-          curl -O -L -C - https://github.com/mozilla/sops/releases/download/${{ env.SOPS_VERSION }}/${{ env.SOPS_VERSION }}.linux
-          sudo mv sops-v3.7.3.linux /usr/bin/sops
+          
+          curl -O -L -C - "https://github.com/mozilla/sops/releases/download/$SOPS_VERSION/sops-$SOPS_VERSION.linux"
+          sudo mv "sops-$SOPS_VERSION.linux" /usr/bin/sops
           sudo chmod +x /usr/bin/sops
 
           echo "HELM_PLUGINS=https://github.com/jkroepke/helm-secrets --version ${{ env.HELM_SECRETS_VERSION }}" >> $GITHUB_ENV
