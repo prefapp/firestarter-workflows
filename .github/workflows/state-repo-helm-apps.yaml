@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       HELM_EXPERIMENTAL_OCI: 1
-      HELM_PLUGINS: ""
+      # HELM_PLUGINS: ""
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -166,8 +166,8 @@ jobs:
           
 
       - name: Hydrate helm values
-        env:
-          HELM_PLUGINS: "/home/runner/work/state-corpme/state-corpme/"
+        # env:
+          # HELM_PLUGINS: "/home/runner/work/state-corpme/state-corpme/"
         run: |
 
           apps='${{ inputs.updated_apps }}'
