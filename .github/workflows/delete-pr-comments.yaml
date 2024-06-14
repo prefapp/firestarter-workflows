@@ -1,0 +1,33 @@
+name: Delete pull request comments
+on:
+  workflow_call:
+    inputs:
+      content_filter:
+        description: Text to filter comment results
+        required: false
+        type: string
+jobs:
+  helm:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Delete comments
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue_number = context.issue.number;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const comments = await  github.rest.issues.listComments({
+              issue_number: issue_number,
+              owner: owner,
+              repo: repo,
+            });
+
+            for (const comment of comments.data) {
+              await github.rest.issues.deleteComment({
+                comment_id: comment.id,
+                owner: owner,
+                repo: repo,
+              });
+            }
