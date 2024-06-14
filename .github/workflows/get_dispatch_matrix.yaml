@@ -1,0 +1,114 @@
+name: Get dispatch matrix
+
+on:
+  workflow_call:
+    inputs:
+      from:
+        type: string
+        description: Source short-sha, tag, branch-ref that will be used in the checkout and image tagging
+        required: true
+      flavors:
+        type: string
+        description: Flavor name/s | one (alone), several (separated by commas)
+        required: true
+      registry:
+        type: string
+        description: Docker registry where the images will be uploaded
+        required: true
+      repo_name:
+        type: string
+        description: Name of the repository, used to create the registry URL
+        required: true
+      make_dispatches_file:
+        type: string
+        description: Path to the make_dispatches.yaml file
+        required: false
+        default: "./.github/make_dispatches.yaml"
+      build_images_file:
+        type: string
+        description: Path to the build_images.yaml file
+        required: false
+        default: "./.github/build_images.yaml"
+      build_type:
+        type: string
+        description: What to build (normally "releases" or "snapshots")
+        required: true
+    secrets:
+      token:
+        description: PAT to use when checking out repo_name
+        required: true
+    outputs:
+      changes:
+        description: "The dispatch matrix"
+        value: ${{ jobs.create-matrix.outputs.matrix }}
+        
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  create-matrix:
+    runs-on: ubuntu-22.04
+
+    outputs:
+      matrix: ${{ steps.read-configs.outputs.result }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ inputs.repo_name }}
+          sparse-checkout: |
+            .github
+          sparse-checkout-cone-mode: false
+          token: ${{ secrets.token }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm install js-yaml
+
+      - name: Read configs
+        id: read-configs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const yaml = require('js-yaml');
+            const makeDispatchesFile = fs.readFileSync("${{ inputs.make_dispatches_file }}");
+            const makeDispatchesData = yaml.load(makeDispatchesFile);
+            const buildImagesFile = fs.readFileSync("${{ inputs.build_images_file }}");
+            const buildImagesData = yaml.load(buildImagesFile);
+            const typeData = buildImagesData["${{ inputs.build_type }}"];
+            const selectedFlavors = "${{ inputs.flavors }}";
+            const flavorsList = selectedFlavors === "*" ? Object.keys(typeData) : selectedFlavors.split(",");
+            const typeRepository = "${{ inputs.registry }}" + "/service/" + "${{ inputs.repo_name }}";
+            const dispatchMatrix = [];
+
+            const addToDispatchMatrix = function (registryName, imageRepository) {
+              makeDispatchesData["dispatches"].forEach((dispatch) => {
+                if(dispatch.registry === registryName) {
+                  dispatch.state_repos.forEach((stateRepo) => {
+                    dispatchMatrix.push({
+                      "image_repository": imageRepository,
+                      "state_repo": stateRepo,
+                    });
+                  });
+                }
+              });
+            };
+
+            flavorsList.forEach((flavor) => {
+              const extraRegistries = typeData[flavor]["extra_registries"] || [];
+              extraRegistries.forEach((registry) => {
+                const registryName = registry["name"];
+                const imageRepository = registryName + "/" + registry["repository"];
+                addToDispatchMatrix(registryName, imageRepository);
+              });
+              addToDispatchMatrix(flavor, typeRepository);
+            });
+
+            console.log(dispatchMatrix);
+
+            return { dispatches: dispatchMatrix };
