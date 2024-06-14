@@ -207,6 +207,8 @@ jobs:
 
       - name: Delete comments
         uses: prefapp/action-delete-pr-comments@v1
+        env:
+          DEBUG: '*'
         with:
           filter: "Helm diff in env: ${{ inputs.environment }}"
 
