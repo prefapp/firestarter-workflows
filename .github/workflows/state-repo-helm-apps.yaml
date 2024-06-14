@@ -192,7 +192,7 @@ jobs:
               diff_output=`helmfile --environment ${{ inputs.environment }} diff --context 5 | grep --color=never "\S"`
               cat <<EOF >> $DIFF_FILE
           <details>
-          <summary><h2> Helm diff in app: $appname, env: ${{ inputs.environment }}</h2></summary>
+          <summary><h2> Helm diff in env: ${{ inputs.environment }}, app: $appname,</h2></summary>
 
             \`\`\`diff
             $(echo "$diff_output" | sed 's/^/  /')
@@ -205,8 +205,10 @@ jobs:
 
           done
 
-      - name: delete
-        uses: prefapp/firestarter-workflows/.github/workflows/delete-pr-comments.yaml@feat/migrate-hydrate-step-back-to-python
+      - name: Delete comments
+        uses: prefapp/action-delete-pr-comments@v1.0.0
+        with:
+          search: "Helm diff in env: ${{ inputs.environment }}"
 
       - name: Add comment
         env:
