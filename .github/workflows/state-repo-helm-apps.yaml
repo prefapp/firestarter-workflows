@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       HELM_EXPERIMENTAL_OCI: 1
+      DIFF_FILE: "/tmp/helmfile.md"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -80,12 +81,6 @@ jobs:
             return result;
 
       # Azure setup
-
-      - name: debug
-        run: |
-          echo "${{ fromJSON(steps.parse_config.outputs.result).identifier }}"
-          echo "${{ fromJSON(steps.parse_config.outputs.result).tenant_id }}"
-          echo "${{ fromJSON(steps.parse_config.outputs.result).subscription_id }}"
       - name: Setup / Azure Login
         uses: Azure/login@v2
         if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
@@ -141,43 +136,61 @@ jobs:
           helm plugin install --debug https://github.com/jkroepke/helm-secrets
           
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+      - run: pip install pyyaml
+
       - name: Hydrate helm values
+        shell: python
         run: |
+          import json
+          import glob
+          import yaml
 
-          apps='${{ inputs.updated_apps }}'
+          from os import path
 
-          echo "$apps" | jq -r '.[]' | while read app; do
-            echo "Checking $app"
+
+          apps = json.loads(${{ toJSON(inputs.updated_apps) }})
+          for app in apps:
+
+            app_dir = path.join("${{ github.workspace }}", app, "${{ inputs.environment }}")
             
-            cd ${{ github.workspace }}/$app
+            print(f"Hydrating app {app} in {app_dir}")
+            
+            # Create the final yaml
 
-            find ${{ inputs.environment }} -maxdepth 1 -iname '*.yaml' \
-              -not -name 'secrets.yaml' \
-              -not -name 'images.yaml' \
-              -not -name 'ca.yml' \
-              -not -name 'final.yaml' \
-              -exec cat {} \; > ./${{ inputs.environment }}/final.yaml
+            excluded_files = ['secrets.yaml', 'images.yaml', 'ca.yml', 'final.yaml']
 
-            full_ca=""
-            for file in $(ls ./${{ inputs.environment }}/ca-certs/*.crt | sort); do
-              full_ca+="`cat $file | awk  '{ print "      " $0 }'`
-          "
-            done
+            yaml_files = glob.glob(path.join(app_dir, '*.yaml'))
+            filtered_files = [f for f in yaml_files if path.basename(f) not in excluded_files]
 
+            with open(path.join(app_dir, 'final.yaml'), 'w') as outfile:
+              for fname in filtered_files:
+                  with open(fname) as infile:
+                      outfile.write(infile.read())
 
-            cat << EOF > ./${{ inputs.environment }}/ca.yml
-          councilbox-server:
-            ca_secret:
-              crts: $full_ca
-          EOF
-          done
+            with open(path.join(app_dir, 'final.yaml'), 'r') as file:
+              print(file.read())
+
+            # Merge all CAs
+            ca_files = sorted(glob.glob(path.join(app_dir, "ca-certs", '*.crt')))
+
+            ca = ''
+
+            for file in ca_files:
+              with open(file, encoding="utf-8") as f:
+                ca += f.read()
+
+            dict_file = {'councilbox-server' : {'ca_secret' : {'crts' :  ca }}}
+
+            with open(path.join(app_dir, "ca.yml"), 'w', encoding="utf-8") as yamlfile:
+                yaml.dump(dict_file, yamlfile, default_style = '|')
 
       - name: Helm diff
         if:  ${{ inputs.apply == false || inputs.apply == 'false' }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          diff_file="/tmp/helmfile.md"
+          DIFF_FILE="/tmp/helmfile.md"
 
           apps='${{ inputs.updated_apps }}'
 
@@ -196,19 +209,35 @@ jobs:
             
             if [ $releases_found -gt 0 ]; then
               diff_output=`helmfile --environment ${{ inputs.environment }} diff --context 5 | grep --color=never "\S"`
-              cat <<EOF > $diff_file
-          # Helm diff in app: $appname, env: ${{ inputs.environment }}
-          \`\`\`diff
-          $diff_output
-          \`\`\`
+              cat <<EOF >> $DIFF_FILE
+          <details>
+          <summary><h2> Helm diff in env: ${{ inputs.environment }}, app: $appname,</h2></summary>
+
+            \`\`\`diff
+            $(echo "$diff_output" | sed 's/^/  /')
+            \`\`\`
+          </details>
           EOF
-              gh pr comment ${{ github.event.number }} -F $diff_file
             else
               echo 'Installing for the first time'
             fi
 
           done
-      
+
+      - name: Delete comments
+        uses: prefapp/action-delete-pr-comments@v1
+        env:
+          DEBUG: '*'
+        with:
+          filter: "Helm diff in env: ${{ inputs.environment }}"
+
+      - name: Add comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ github.event.number }} -F $DIFF_FILE
+
+
       - name: Helm apply
         if: ${{ inputs.apply == true || inputs.apply == 'true' }}
         run: |
