@@ -211,7 +211,6 @@ jobs:
           DEBUG: '*'
         with:
           filter: "Helm diff in env: ${{ inputs.environment }}"
-          pr_number: "${{ github.event.pull_request.number }}"
 
       - name: Add comment
         env:
