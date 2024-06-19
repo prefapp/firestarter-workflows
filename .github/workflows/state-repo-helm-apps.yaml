@@ -226,12 +226,14 @@ jobs:
 
       - name: Delete comments
         uses: prefapp/action-delete-pr-comments@v1
+        if: ${{ inputs.apply == false || inputs.apply == 'false' }}
         env:
           DEBUG: '*'
         with:
           filter: "Helm diff in env: ${{ inputs.environment }}"
 
       - name: Add comment
+        if: ${{ inputs.apply == false || inputs.apply == 'false' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

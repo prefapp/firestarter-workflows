@@ -29,8 +29,8 @@ jobs:
           list-files: json
           filters: |
             changed:
-              - '${{ inputs.path }}/**/*.yaml'
-              - '${{ inputs.path }}/**/*.yml'
+              - added|modified: '${{ inputs.path }}/**/*.yaml'
+              - added|modified: '${{ inputs.path }}/**/*.yml'
       - name: Analyze files changed
         id: analyze_changes
         uses: actions/github-script@v7
