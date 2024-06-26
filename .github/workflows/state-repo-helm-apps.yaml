@@ -237,8 +237,11 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr comment ${{ github.event.number }} -F $DIFF_FILE
-
+          if [ -f "$DIFF_FILE" ]; then
+            gh pr comment ${{ github.event.number }} -F "$DIFF_FILE"
+          else
+              gh pr comment ${{ github.event.number }} -b 'This PR resulted in no changes in ${{ inputs.updated_apps }}'
+          fi
 
       - name: Helm apply
         if: ${{ inputs.apply == true || inputs.apply == 'true' }}
