@@ -128,7 +128,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          diff_file="/tmp/helmfile.md"
+          DIFF_FILE="/tmp/helmfile.md"
 
           cd ${{ github.workspace }}/sys_services
 
@@ -147,13 +147,15 @@ jobs:
             
             if [ $releases_found -gt 0 ]; then
               diff_output=`helmfile --environment ${{ inputs.environment }} --selector release=$appname diff --detailed-exitcode --context 5 | grep --color=never "\S"`
-              cat <<EOF > $diff_file
-          # Helm diff in app: $appname, env: ${{ inputs.environment }}
-          \`\`\`diff
-          $diff_output
-          \`\`\`
+              cat <<EOF >> $DIFF_FILE
+          <details>
+          <summary><h2> Helm diff in app: $appname, env: ${{ inputs.environment }}</h2></summary>
+
+            \`\`\`diff
+            $(echo "$diff_output" | sed 's/^/  /')
+            \`\`\`
           EOF
-              gh pr comment ${{ github.event.number }} -F $diff_file
+              gh pr comment ${{ github.event.number }} -F $DIFF_FILE
             else
               echo 'Installing for the first time'
             fi
