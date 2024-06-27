@@ -225,7 +225,7 @@ jobs:
           </details>
           EOF
             else
-              echo "Installing for the first time $appname"
+              echo "⚠️ Installing for the first time $appname"
             fi
 
           done
