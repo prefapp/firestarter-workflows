@@ -208,7 +208,7 @@ jobs:
             releases_found=`helm list -A -o json | jq "map(select(.name == \"$appname\" and (.namespace | contains(\"${{ inputs.environment }}\")) )) | length"`
             
             echo "DIFF"
-            helmfile --environment ${{ inputs.environment }} diff --context 5
+            helmfile --environment ${{ inputs.environment }} diff --context 5 | grep --color=never "\S"
             echo "DONE"
 
             if [ $releases_found -gt 0 ]; then
