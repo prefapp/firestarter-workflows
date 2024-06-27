@@ -240,7 +240,7 @@ jobs:
           if [ -f "$DIFF_FILE" ]; then
             gh pr comment ${{ github.event.number }} -F "$DIFF_FILE"
           else
-              gh pr comment ${{ github.event.number }} -b 'This PR resulted in no changes in ${{ inputs.updated_apps }}'
+              gh pr comment ${{ github.event.number }} -b '# This PR resulted in no changes in ${{ inputs.environment }} environment'
           fi
 
       - name: Helm apply
