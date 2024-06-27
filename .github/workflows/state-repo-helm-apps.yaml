@@ -241,7 +241,7 @@ jobs:
             gh pr comment ${{ github.event.number }} -F "$DIFF_FILE"
           else
               gh pr comment ${{ github.event.number }} -b '## Helm diff in env: ${{ inputs.environment }}
-              Found no changes
+              No changes found
               '
           fi
 
