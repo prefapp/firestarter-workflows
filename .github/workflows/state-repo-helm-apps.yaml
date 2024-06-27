@@ -209,7 +209,12 @@ jobs:
             
             if [ $releases_found -gt 0 ]; then
               diff_output=`helmfile --environment ${{ inputs.environment }} diff --context 5 | grep --color=never "\S"`
+              echo "NEW_START"
+              echo `helmfile --environment ${{ inputs.environment }} diff --context 5`
+              echo "NEW_END"
+              echo "ORIGINAL_START"
               echo "$diff_output"
+              echo "ORIGINAL_END"
               cat <<EOF >> $DIFF_FILE
           <details>
           <summary><h2> Helm diff in env: ${{ inputs.environment }}, app: $appname,</h2></summary>
