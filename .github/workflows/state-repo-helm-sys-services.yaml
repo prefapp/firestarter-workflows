@@ -15,6 +15,10 @@ on:
       config_file:
         required: true
         type: string
+      sops_enabled:
+        required: false
+        default: false
+        type: boolean
 jobs:
   helm:
     runs-on: ubuntu-22.04
@@ -122,6 +126,19 @@ jobs:
         with:
           install-kubectl: no
           install-helm: no
+
+      - name: Setup / SOPS
+        env:
+          SOPS_VERSION: 'v3.7.1'
+          HELM_SECRETS_VERSION: 'v4.4.2'
+        if: ${{ inputs.sops_enabled == true || inputs.sops_enabled == 'true' }}
+        run: |
+          
+          curl -O -L -C - "https://github.com/mozilla/sops/releases/download/$SOPS_VERSION/sops-$SOPS_VERSION.linux"
+          sudo mv "sops-$SOPS_VERSION.linux" /usr/bin/sops
+          sudo chmod +x /usr/bin/sops
+          
+          helm plugin install --debug https://github.com/jkroepke/helm-secrets
 
       - name: Helm diff
         if: ${{ inputs.apply == false || inputs.apply == 'false' }}
