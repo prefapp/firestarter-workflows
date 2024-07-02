@@ -205,13 +205,12 @@ jobs:
             # Verify the app exists or if it is the first time it's been applied
             appname=$(echo $app | awk -F"/" '{print $NF}')
 
-            releases_found=`helm list -A -o json | jq "map(select(.name == \"$appname\" and (.namespace | contains(\"${{ inputs.environment }}\")) )) | length"`
-            
+            releases_found=`helmfile --environment ${{ inputs.environment }} list | awk '$4 == "true"' | wc -l`s
             if [ $releases_found -gt 0 ]; then
               diff_output=`helmfile --environment ${{ inputs.environment }} diff --context 5 | grep --color=never "\S"`
               cat <<EOF >> $DIFF_FILE
           <details>
-          <summary><h2> Helm diff in env: ${{ inputs.environment }}, app: $appname,</h2></summary>
+          <summary><h2> Helm diff in env: ${{ inputs.environment }}, app: $appname</h2></summary>
 
             \`\`\`diff
             $(echo "$diff_output" | sed 's/^/  /')
@@ -219,7 +218,7 @@ jobs:
           </details>
           EOF
             else
-              echo 'Installing for the first time'
+              echo "⚠️ Installing $appname for the first time ⚠️"
             fi
 
           done
