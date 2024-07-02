@@ -218,7 +218,7 @@ jobs:
           </details>
           EOF
             else
-              echo "⚠️ Installing for the first time $appname ⚠️"
+              echo "⚠️ Installing $appname for the first time ⚠️"
             fi
 
           done
