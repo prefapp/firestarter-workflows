@@ -4,13 +4,11 @@ on:
     inputs:
       vus:
         description: 'Virtual users'
-        type: number
-        default: 10
+        type: string
         required: true
       duration:
         description: 'Test duration'
         type: string
-        default: 10s
         required: true
       target_script:
         description: 'Target script'
