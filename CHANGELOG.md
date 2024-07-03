@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/prefapp/firestarter-workflows/compare/v1.3.0...v1.3.1) (2024-07-03)
+
+
+### Bug Fixes
+
+* Delete typo ([#83](https://github.com/prefapp/firestarter-workflows/issues/83)) ([e224eb7](https://github.com/prefapp/firestarter-workflows/commit/e224eb7d5ce05a0d0fcb96e57f3c3aecc9b01dcd))
+
 ## [1.3.0](https://github.com/prefapp/firestarter-workflows/compare/v1.2.1...v1.3.0) (2024-07-03)
 
 
