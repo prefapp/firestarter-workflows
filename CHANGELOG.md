@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.3.0](https://github.com/prefapp/firestarter-workflows/compare/v1.2.1...v1.3.0) (2024-07-03)
+
+
+### Features
+
+* Add dispatch matrix reusable workflow ([#67](https://github.com/prefapp/firestarter-workflows/issues/67)) ([a471998](https://github.com/prefapp/firestarter-workflows/commit/a4719981753cd6e46dbb70d321cd5507da8a3f6e))
+* Add sops support in sys services ([#81](https://github.com/prefapp/firestarter-workflows/issues/81)) ([0613e5d](https://github.com/prefapp/firestarter-workflows/commit/0613e5ddb495d6ff5b67e764c02b9bd547133d0f))
+* Add state repo reusable workflows ([#65](https://github.com/prefapp/firestarter-workflows/issues/65)) ([67b0f9a](https://github.com/prefapp/firestarter-workflows/commit/67b0f9a90596f38a53b8b68ba67f691c7cc26707))
+* Added get_dispatch_matrix workflow ([#66](https://github.com/prefapp/firestarter-workflows/issues/66)) ([f194b0c](https://github.com/prefapp/firestarter-workflows/commit/f194b0cd5f9b9bdebb7170628fad7cefd6aafb65))
+* Migrate hydrate step back to python ([#73](https://github.com/prefapp/firestarter-workflows/issues/73)) ([65fefe7](https://github.com/prefapp/firestarter-workflows/commit/65fefe7468c012b95629e59073e0ee65a9651e39))
+
+
+### Bug Fixes
+
+* Added default values ([#71](https://github.com/prefapp/firestarter-workflows/issues/71)) ([4e03cc7](https://github.com/prefapp/firestarter-workflows/commit/4e03cc7fe01e7c4f863a041e7e8c11fc0762ca42))
+* Dispatch matrix workflow ([#68](https://github.com/prefapp/firestarter-workflows/issues/68)) ([ea81875](https://github.com/prefapp/firestarter-workflows/commit/ea8187557880386c0f6ab684a286ee5ace2d7ae9))
+* Fix error when the app does not match exactly with the release ([#79](https://github.com/prefapp/firestarter-workflows/issues/79)) ([8e30f70](https://github.com/prefapp/firestarter-workflows/commit/8e30f70a3b7b1c9a098f35186d73bbe77b5ebc18))
+* Fixed extra_registries in execute function ([#82](https://github.com/prefapp/firestarter-workflows/issues/82)) ([3370d7a](https://github.com/prefapp/firestarter-workflows/commit/3370d7a12f4765cadab7b88013813e33fd8cea7f))
+* Removed uses of property already_logged_in_providers ([#63](https://github.com/prefapp/firestarter-workflows/issues/63)) ([dff1259](https://github.com/prefapp/firestarter-workflows/commit/dff1259d72f28c6375a0a2f2a8c21d28682b751d))
+* Specify kind of events to handle in dorny paths ([#75](https://github.com/prefapp/firestarter-workflows/issues/75)) ([0ccd9b3](https://github.com/prefapp/firestarter-workflows/commit/0ccd9b3abb26991308d7158b04986f4a825a3d70))
+* Support empty diffs ([#78](https://github.com/prefapp/firestarter-workflows/issues/78)) ([8b490f4](https://github.com/prefapp/firestarter-workflows/commit/8b490f4c937f7faface83201fe4507d3dd222cf8))
+
 ## [1.2.1](https://github.com/prefapp/firestarter-workflows/compare/v1.2.0...v1.2.1) (2024-05-08)
 
 
