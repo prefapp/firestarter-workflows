@@ -1,0 +1,99 @@
+name: K6 QA load test
+on:
+  workflow_call:
+    inputs:
+      vus:
+        description: 'Virtual users'
+        type: number
+        default: 10
+        required: true
+      duration:
+        description: 'Test duration'
+        type: string
+        default: 10s
+        required: true
+      target_script:
+        description: 'Target script'
+        type: string
+        required: true
+      slack_channel_id:
+        description: 'Slack channel id'
+        type: string
+        required: false
+jobs:
+  load-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run k6
+        id: k6
+        run: |
+          # Save the date of the test as an output
+          K6_RUN_DATE=`date +"%Y-%m-%d-%H-%M#${{ github.run_attempt }}"`
+          echo "K6_RUN_DATE=$K6_RUN_DATE" >> $GITHUB_OUTPUT
+
+          # Dump the environment variables
+          printenv > env.list
+
+          docker run \
+            -u root \
+            --env-file env.list \
+            -v ${{ github.workspace }}:/k6 ghcr.io/grafana/xk6-dashboard run \
+            --vus ${{ inputs.vus || '10' }} \
+            --duration ${{ inputs.duration || '10s' }} \
+            --out 'web-dashboard=export=/k6/report.html' \
+            --summary-export /k6/summary.json \
+            /k6/${{ inputs.target_script }}.js
+
+      - name: Parse summary
+        if: (!cancelled())
+        run: |
+          echo -e "# Summary\nSummary k6 results\n## Checks\n|Name|Passes✅|Fails❌|\n|---|---|---|" >> $GITHUB_STEP_SUMMARY
+          cat ${{ github.workspace }}/summary.json \
+            | jq -r '.root_group.checks | to_entries | .[] | "|" + .key + "|" + (.value.passes|tostring) + "|" + (.value.fails|tostring) + "|"' >> $GITHUB_STEP_SUMMARY
+          echo -e "\n## Thresholds\n|Name|Key|Failed|\n|---|---|---|" >> $GITHUB_STEP_SUMMARY
+          cat ${{ github.workspace }}/summary.json \
+            | jq -r '.metrics | to_entries | .[] | select(.value.thresholds) | .key as $name | .value.thresholds | to_entries | .[] | "|"+ $name +"|"+ .key +"|" + (.value|tostring) + "|"' >> $GITHUB_STEP_SUMMARY
+      - name: Post to a Slack channel
+        if: failure()
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          # Slack channel id, channel name, or user id to post message.
+          # See also: https://api.slack.com/methods/chat.postMessage#channels
+          # You can pass in multiple channels to post to by providing a comma-delimited list of channel IDs.
+          channel-id: '${{ inputs.slack_channel_id }}'
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Prueba de carga en CBX fallida"
+                  }
+                },
+                {
+                  "type": "actions",
+                  "elements": [
+                    {
+                      "type": "button",
+                      "text": {
+                        "type": "plain_text",
+                        "text": "See details"
+                      },
+                      "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+                      "action_id": "button_1"
+                    }
+                  ]
+                }
+              ]
+            }
+
+      - uses: actions/upload-artifact@v4
+        if: (!cancelled())
+        with:
+          name: "report-${{ steps.k6.outputs.K6_RUN_DATE}}"
+          path: |
+            ${{ github.workspace }}/report.html
+            ${{ github.workspace }}/summary.json
