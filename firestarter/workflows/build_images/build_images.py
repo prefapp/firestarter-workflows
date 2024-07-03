@@ -268,13 +268,13 @@ class BuildImages(FirestarterWorkflow):
             value = self.config.images[flavor]
             extra_registries = value.extra_registries or []
 
-        for extra_registry in extra_registries:
-            if extra_registry['auth_strategy']:
-                self.login(
-                    extra_registry['auth_strategy'],
-                    extra_registry['name'],
-                    extra_registry.get('creds')
-                )
+            for extra_registry in extra_registries:
+                if extra_registry['auth_strategy']:
+                    self.login(
+                        extra_registry['auth_strategy'],
+                        extra_registry['name'],
+                        extra_registry.get('creds')
+                    )
 
         # Run the coroutine function to execute the compilation process for all on-premises
         anyio.run(self.compile_images_for_all_flavors)
