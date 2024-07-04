@@ -215,21 +215,23 @@ class BuildImages(FirestarterWorkflow):
                 secrets = secrets_for_all_flavors + flavor_secrets
 
                 # Set the address for the default registry
-                registry_adress = f"{registry}/{self.repo_name}"
-                full_registry_adress = f"{registry_adress}:{normalize_image_tag(self.from_version + '_' + flavor)}"
+                registry_address = f"{registry}/{self.repo_name}"
+                full_registry_address = f"{registry_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
 
                 # Create a list of addresses for all registries
-                registry_list = [full_registry_adress]
+                registry_list = [full_registry_address]
 
                 for extra_registry in extra_registries:
 
-                    extra_registry_adress = f"{extra_registry['name']}/{extra_registry['repository']}"
+                    extra_registry_address = f"{extra_registry['name']}/{extra_registry['repository']}"
 
-                    extra_full_registry_adress = f"{extra_registry_adress}:{normalize_image_tag(self.from_version + '_' + flavor)}"
+                    extra_full_registry_address = f"{extra_registry_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
 
-                    registry_list.append(extra_full_registry_adress)
+                    registry_list.append(extra_full_registry_address)
 
                 for image in registry_list:
+                    logger.info(f"Compiling and publishin image {image}...")
+
 
                     await self.compile_image_and_publish(
                         client,
