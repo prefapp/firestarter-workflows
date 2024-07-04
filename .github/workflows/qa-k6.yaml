@@ -18,6 +18,10 @@ on:
         description: 'Slack channel id'
         type: string
         required: false
+      env:
+        description: 'k6 environment variables'
+        type: string
+        required: false
 jobs:
   load-test:
     runs-on: ubuntu-latest
@@ -32,7 +36,7 @@ jobs:
           echo "K6_RUN_DATE=$K6_RUN_DATE" >> $GITHUB_OUTPUT
 
           # Dump the environment variables
-          printenv > env.list
+          echo '${{ inputs.env }}' > env.list
 
           docker run \
             -u root \
