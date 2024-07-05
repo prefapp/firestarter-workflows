@@ -92,6 +92,6 @@ jobs:
            from="${{ steps.get-tag.outputs.tag }}"
            login_required="true"
            ref="feat/add-base-paths"
-           base_path=${{ fromJSON(vars.DOCKER_REGISTRIES_BASE_PATHS).services[inputs.type] }}
+           base_path="${{ fromJSON(vars.DOCKER_REGISTRIES_BASE_PATHS).services[inputs.type] }}"
          secrets: ${{ inputs.secrets }}
          
