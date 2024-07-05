@@ -61,42 +61,42 @@ jobs:
           echo -e "\n## Thresholds\n|Name|Key|Failed|\n|---|---|---|" >> $GITHUB_STEP_SUMMARY
           cat ${{ github.workspace }}/summary.json \
             | jq -r '.metrics | to_entries | .[] | select(.value.thresholds) | .key as $name | .value.thresholds | to_entries | .[] | "|"+ $name +"|"+ .key +"|" + (.value|tostring) + "|"' >> $GITHUB_STEP_SUMMARY
-      - name: Post to a Slack channel
-        if: failure()
-        uses: slackapi/slack-github-action@v1.25.0
-        env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-        with:
-          # Slack channel id, channel name, or user id to post message.
-          # See also: https://api.slack.com/methods/chat.postMessage#channels
-          # You can pass in multiple channels to post to by providing a comma-delimited list of channel IDs.
-          channel-id: '${{ inputs.slack_channel_id }}'
-          payload: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "Prueba de carga fallida"
-                  }
-                },
-                {
-                  "type": "actions",
-                  "elements": [
-                    {
-                      "type": "button",
-                      "text": {
-                        "type": "plain_text",
-                        "text": "See details"
-                      },
-                      "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-                      "action_id": "button_1"
-                    }
-                  ]
-                }
-              ]
-            }
+      # - name: Post to a Slack channel
+      #   if: failure()
+      #   uses: slackapi/slack-github-action@v1.25.0
+      #   env:
+      #     SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+      #   with:
+      #     # Slack channel id, channel name, or user id to post message.
+      #     # See also: https://api.slack.com/methods/chat.postMessage#channels
+      #     # You can pass in multiple channels to post to by providing a comma-delimited list of channel IDs.
+      #     channel-id: '${{ inputs.slack_channel_id }}'
+      #     payload: |
+      #       {
+      #         "blocks": [
+      #           {
+      #             "type": "section",
+      #             "text": {
+      #               "type": "mrkdwn",
+      #               "text": "Prueba de carga fallida"
+      #             }
+      #           },
+      #           {
+      #             "type": "actions",
+      #             "elements": [
+      #               {
+      #                 "type": "button",
+      #                 "text": {
+      #                   "type": "plain_text",
+      #                   "text": "See details"
+      #                 },
+      #                 "url": "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}",
+      #                 "action_id": "button_1"
+      #               }
+      #             ]
+      #           }
+      #         ]
+      #       }
 
       - uses: actions/upload-artifact@v4
         if: (!cancelled())
