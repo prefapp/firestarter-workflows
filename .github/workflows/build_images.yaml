@@ -26,7 +26,6 @@ on:
       base_paths:
         type: string
         description: Base paths for registry creation
-        default: "${{ vars.DOCKER_REGISTRIES_BASE_PATH }}"
         required: true
         
 permissions:
