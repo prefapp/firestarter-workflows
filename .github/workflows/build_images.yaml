@@ -79,7 +79,7 @@ jobs:
          path: config
    
      - name: Call run-dagger-py action
-       uses: prefapp/run-dagger-py@main
+       uses: prefapp/run-dagger-py@feat/add-base-paths
        with:
          working_directory: build
          pyproject_path: .dagger
