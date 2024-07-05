@@ -178,11 +178,11 @@ class BuildImages(FirestarterWorkflow):
         # Set up the Dagger configuration object
         config = dagger.Config(log_output=sys.stdout)
 
-        print(f"Base paths 🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄: {self.base_paths}")
+        logger.info(f"Base paths 🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄: {self.base_paths}")
         base_paths_yaml = yaml.safe_load(self.base_paths)
-        print(f"Base paths as YAML 🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄: {self.base_paths_yaml}")
+        logger.info(f"Base paths as YAML 🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄: {self.base_paths_yaml}")
         service_path = base_paths_yaml["services"][self.type]
-        print(f"Service path 🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄: {self.service_path}")
+        logger.info(f"Service path 🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄: {self.service_path}")
 
         # Connect to Dagger
         async with dagger.Connection(config) as client:
@@ -228,7 +228,7 @@ class BuildImages(FirestarterWorkflow):
 
                 # Set the address for the default registry
                 registry_adress = f"{registry}/{service_path}/{self.repo_name}"
-                print(f"Registry adress 🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄: {self.registry_adress}")
+                logger.info(f"Registry adress 🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄: {self.registry_adress}")
                 full_registry_adress = f"{registry_adress}:{normalize_image_tag(self.from_version + '_' + flavor)}"
 
                 # Create a list of addresses for all registries
