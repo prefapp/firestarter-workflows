@@ -50,7 +50,7 @@ jobs:
             --duration ${{ inputs.duration || '10s' }} \
             --out 'web-dashboard=export=/k6/report.html' \
             --summary-export /k6/summary.json \
-            ${{ inputs.target_script }}.js
+            ./${{ inputs.target_script }}.js
 
       - name: Parse summary
         if: (!cancelled())
