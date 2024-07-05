@@ -23,10 +23,6 @@ on:
         type: string
         description: Secrets to pass to the image
         default: ""
-      base_paths:
-        type: string
-        description: Base paths for registry creation
-        required: true
         
 permissions:
   id-token: write
