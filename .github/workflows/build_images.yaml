@@ -95,6 +95,6 @@ jobs:
            from="${{ steps.get-tag.outputs.tag }}"
            login_required="true"
            ref="v1"
-           base_paths="${{ inputs.base_paths }}"
          secrets: ${{ inputs.secrets }}
+         base_paths: '${{ inputs.base_paths }}'
          

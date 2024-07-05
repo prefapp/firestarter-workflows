@@ -37,7 +37,7 @@ class BuildImages(FirestarterWorkflow):
         self._auth_strategy = self.vars['auth_strategy']
         self._type = self.vars['type']
         self._from = self.vars['from']
-        self._base_paths = self.vars['base_paths']
+        self._base_paths = self.base_paths
         self._flavors = self.vars['flavors'] if 'flavors' in self.vars else 'default'
         self._container_structure_filename = self.vars['container_structure_filename'] if 'container_structure_filename' in self.vars else None
         self._dagger_secrets = []
