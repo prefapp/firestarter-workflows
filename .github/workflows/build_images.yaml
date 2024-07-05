@@ -94,7 +94,7 @@ jobs:
            type="${{ inputs.type }}"
            from="${{ steps.get-tag.outputs.tag }}"
            login_required="true"
-           ref="v1"
+           ref="feat/add-base-paths"
          secrets: ${{ inputs.secrets }}
          base_paths: '${{ inputs.base_paths }}'
          
