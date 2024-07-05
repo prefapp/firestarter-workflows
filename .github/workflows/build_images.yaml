@@ -85,6 +85,7 @@ jobs:
          pyproject_path: .dagger
          workflow: build_images
          config_file: ../config/.github/build_images.yaml
+         ref: "feat/add-base-paths"
          vars: |
            repo_name="${{ github.repository }}"
            flavors="${{ inputs.flavors }}"
