@@ -23,6 +23,11 @@ on:
         type: string
         description: Secrets to pass to the image
         default: ""
+      base_paths:
+        type: string
+        description: Base paths for registry creation
+        default: "${{ vars.DOCKER_REGISTRIES_BASE_PATH }}"
+        required: true
         
 permissions:
   id-token: write
@@ -91,5 +96,6 @@ jobs:
            from="${{ steps.get-tag.outputs.tag }}"
            login_required="true"
            ref="v1"
+           base_paths="${{ inputs.base_paths }}"
          secrets: ${{ inputs.secrets }}
          

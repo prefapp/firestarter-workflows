@@ -13,6 +13,7 @@ import uuid
 from os import remove, getcwd
 import string
 import logging
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,7 @@ class BuildImages(FirestarterWorkflow):
         self._auth_strategy = self.vars['auth_strategy']
         self._type = self.vars['type']
         self._from = self.vars['from']
+        self._base_paths = self.vars['base_paths']
         self._flavors = self.vars['flavors'] if 'flavors' in self.vars else 'default'
         self._container_structure_filename = self.vars['container_structure_filename'] if 'container_structure_filename' in self.vars else None
         self._dagger_secrets = []
@@ -81,6 +83,10 @@ class BuildImages(FirestarterWorkflow):
     @property
     def flavors(self):
         return self._flavors
+
+    @property
+    def base_paths(self):
+        return self._base_paths
 
     @property
     def container_structure_filename(self):
@@ -172,6 +178,9 @@ class BuildImages(FirestarterWorkflow):
         # Set up the Dagger configuration object
         config = dagger.Config(log_output=sys.stdout)
 
+        base_paths_yaml = yaml.safe_load(self.base_paths)
+        service_path = base_paths_yaml["services"][self.type]
+
         # Connect to Dagger
         async with dagger.Connection(config) as client:
 
@@ -215,7 +224,7 @@ class BuildImages(FirestarterWorkflow):
                 secrets = secrets_for_all_flavors + flavor_secrets
 
                 # Set the address for the default registry
-                registry_adress = f"{registry}/{self.repo_name}"
+                registry_adress = f"{registry}/{service_path}/{self.repo_name}"
                 full_registry_adress = f"{registry_adress}:{normalize_image_tag(self.from_version + '_' + flavor)}"
 
                 # Create a list of addresses for all registries
