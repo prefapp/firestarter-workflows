@@ -38,7 +38,7 @@ jobs:
     steps:
     
      - name: Configure Azure Credentials
-       uses: azure/login@v1
+       uses: azure/login@v2
        if: ${{ vars.AZURE_CLIENT_ID }}
        with:
          client-id: ${{ vars.AZURE_CLIENT_ID }}
@@ -79,7 +79,7 @@ jobs:
          path: config
    
      - name: Call run-dagger-py action
-       uses: prefapp/run-dagger-py@feat/add-base-paths
+       uses: prefapp/run-dagger-py@main
        with:
          working_directory: build
          pyproject_path: .dagger
@@ -96,7 +96,6 @@ jobs:
            from="${{ steps.get-tag.outputs.tag }}"
            login_required="true"
            ref="feat/add-base-paths"
+           base_path=${{ fromJSON(vars.DOCKER_REGISTRIES_BASE_PATHS).services[inputs.flavors] }}
          secrets: ${{ inputs.secrets }}
-         base_paths: |
-           "${{ inputs.base_paths }}"
          
