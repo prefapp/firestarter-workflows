@@ -13,7 +13,6 @@ import uuid
 from os import remove, getcwd
 import string
 import logging
-import yaml
 
 logger = logging.getLogger(__name__)
 
