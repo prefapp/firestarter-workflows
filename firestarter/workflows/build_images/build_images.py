@@ -36,6 +36,7 @@ class BuildImages(FirestarterWorkflow):
         self._auth_strategy = self.vars['auth_strategy']
         self._type = self.vars['type']
         self._from = self.vars['from']
+        self._service_path = self.vars['service_path']
         self._flavors = self.vars['flavors'] if 'flavors' in self.vars else 'default'
         self._container_structure_filename = self.vars['container_structure_filename'] if 'container_structure_filename' in self.vars else None
         self._dagger_secrets = []
@@ -81,6 +82,10 @@ class BuildImages(FirestarterWorkflow):
     @property
     def flavors(self):
         return self._flavors
+
+    @property
+    def service_path(self):
+        return self._service_path
 
     @property
     def container_structure_filename(self):
@@ -215,19 +220,20 @@ class BuildImages(FirestarterWorkflow):
                 secrets = secrets_for_all_flavors + flavor_secrets
 
                 # Set the address for the default registry
-                registry_adress = f"{registry}/{self.repo_name}"
-                full_registry_adress = f"{registry_adress}:{normalize_image_tag(self.from_version + '_' + flavor)}"
+                registry_address = f"{registry}/{self.service_path}/{self.repo_name}"
+                logger.info(f"Registry address 🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄: {registry_address}")
+                full_registry_address = f"{registry_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
 
                 # Create a list of addresses for all registries
-                registry_list = [full_registry_adress]
+                registry_list = [full_registry_address]
 
                 for extra_registry in extra_registries:
 
-                    extra_registry_adress = f"{extra_registry['name']}/{extra_registry['repository']}"
+                    extra_registry_address = f"{extra_registry['name']}/{extra_registry['repository']}"
 
-                    extra_full_registry_adress = f"{extra_registry_adress}:{normalize_image_tag(self.from_version + '_' + flavor)}"
+                    extra_full_registry_address = f"{extra_registry_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
 
-                    registry_list.append(extra_full_registry_adress)
+                    registry_list.append(extra_full_registry_address)
 
                 for image in registry_list:
 

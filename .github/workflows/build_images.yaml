@@ -34,7 +34,7 @@ jobs:
     steps:
     
      - name: Configure Azure Credentials
-       uses: azure/login@v1
+       uses: azure/login@v2
        if: ${{ vars.AZURE_CLIENT_ID }}
        with:
          client-id: ${{ vars.AZURE_CLIENT_ID }}
@@ -81,6 +81,7 @@ jobs:
          pyproject_path: .dagger
          workflow: build_images
          config_file: ../config/.github/build_images.yaml
+         ref: "feat/add-base-paths"
          vars: |
            repo_name="${{ github.repository }}"
            flavors="${{ inputs.flavors }}"
@@ -90,6 +91,7 @@ jobs:
            type="${{ inputs.type }}"
            from="${{ steps.get-tag.outputs.tag }}"
            login_required="true"
-           ref="v1"
+           ref="feat/add-base-paths"
+           service_path="${{ fromJSON(vars.DOCKER_REGISTRIES_BASE_PATHS).services[inputs.type] }}"
          secrets: ${{ inputs.secrets }}
          
