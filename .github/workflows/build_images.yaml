@@ -97,5 +97,6 @@ jobs:
            login_required="true"
            ref="feat/add-base-paths"
          secrets: ${{ inputs.secrets }}
-         base_paths: '${{ inputs.base_paths }}'
+         base_paths: |
+           "${{ inputs.base_paths }}"
          

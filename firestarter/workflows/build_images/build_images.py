@@ -29,6 +29,7 @@ def normalize_image_tag(tag):
 class BuildImages(FirestarterWorkflow):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+        logger.info(f"KWARGS paths 🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄: {kwargs}")
         self._secrets = self.resolve_secrets(self.secrets)
         self._repo_name = self.vars['repo_name']
         self._snapshots_registry = self.vars['snapshots_registry']
