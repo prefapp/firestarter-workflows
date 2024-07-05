@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.4.0](https://github.com/prefapp/firestarter-workflows/compare/v1.3.1...v1.4.0) (2024-07-05)
+
+
+### Features
+
+* Added base_paths env variable parsing ([#86](https://github.com/prefapp/firestarter-workflows/issues/86)) ([e46ebe5](https://github.com/prefapp/firestarter-workflows/commit/e46ebe5472c62cb6fa6ab1d5cf90b3fbbe73bfc1))
+
+
+### Bug Fixes
+
+* Build images workflow branch references ([#88](https://github.com/prefapp/firestarter-workflows/issues/88)) ([48b4c14](https://github.com/prefapp/firestarter-workflows/commit/48b4c144cd72474a4d0950c81973e47c34923e0b))
+
 ## [1.3.1](https://github.com/prefapp/firestarter-workflows/compare/v1.3.0...v1.3.1) (2024-07-03)
 
 
