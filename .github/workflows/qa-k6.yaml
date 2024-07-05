@@ -45,11 +45,12 @@ jobs:
             -u root \
             --env-file env.list \
             -v ${{ github.workspace }}:/k6 ghcr.io/grafana/xk6-dashboard run \
+            -w /k6 \
             --vus ${{ inputs.vus || '10' }} \
             --duration ${{ inputs.duration || '10s' }} \
             --out 'web-dashboard=export=/k6/report.html' \
             --summary-export /k6/summary.json \
-            /k6/${{ inputs.target_script }}.js
+            ${{ inputs.target_script }}.js
 
       - name: Parse summary
         if: (!cancelled())
