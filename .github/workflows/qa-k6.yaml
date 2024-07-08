@@ -50,8 +50,7 @@ jobs:
             --duration ${{ inputs.duration || '10s' }} \
             --out 'web-dashboard=export=/k6/report.html' \
             --summary-export /k6/summary.json \
-            ./${{ inputs.target_script }}.js
-
+            ./${{ inputs.target_script }}.js > logs.txt
       - name: Parse summary
         if: (!cancelled())
         run: |
@@ -105,3 +104,4 @@ jobs:
           path: |
             ${{ github.workspace }}/report.html
             ${{ github.workspace }}/summary.json
+            ${{ github.workspace }}/logs.txt
