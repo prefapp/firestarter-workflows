@@ -44,7 +44,7 @@ jobs:
           echo "K6_RUN_DATE=$K6_RUN_DATE" >> $GITHUB_OUTPUT
 
           # Dump the environment variables
-          echo '${{ inputs.env }}' > env.list
+          echo '${{ inputs.env_file }}' > env.list
 
           docker run \
             -u root \
@@ -55,7 +55,7 @@ jobs:
             --duration ${{ inputs.duration || '10s' }} \
             --out 'web-dashboard=export=/k6/report.html' \
             --summary-export /k6/summary.json \
-            ./${{ inputs.target_script }}.js | tee logs.txt
+            ./${{ inputs.script }}.js | tee logs.txt
       - name: Parse summary
         if: (!cancelled())
         run: |
