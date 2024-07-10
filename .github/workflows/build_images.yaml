@@ -88,6 +88,7 @@ jobs:
            auth_strategy="${{ inputs.auth_strategy }}"
            snapshots_registry="${{ vars.DOCKER_REGISTRY_SNAPSHOTS }}"
            releases_registry="${{ vars.DOCKER_REGISTRY_RELEASES }}"
+           output_results=build_images_results.json
            type="${{ inputs.type }}"
            from="${{ steps.get-tag.outputs.tag }}"
            login_required="true"
@@ -95,3 +96,7 @@ jobs:
            service_path="${{ fromJSON(vars.DOCKER_REGISTRIES_BASE_PATHS).services[inputs.type] }}"
          secrets: ${{ inputs.secrets }}
          
+     - name: Upload results
+       uses: actions/upload-artifact@v4
+       with:
+         file: build_images_results.json
