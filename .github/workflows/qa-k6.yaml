@@ -10,16 +10,20 @@ on:
         description: 'Test duration'
         type: string
         required: true
-      target_script:
+      script:
         description: 'Target script'
         type: string
         required: true
-      slack_channel_id:
-        description: 'Slack channel id'
+      github_environment:
+        description: 'Github environment'
+        type: string
+        required: true
+      env_file:
+        description: 'k6 environment variables'
         type: string
         required: false
-      env:
-        description: 'k6 environment variables'
+      slack_channel_id:
+        description: 'Slack channel id'
         type: string
         required: false
     secrets:
@@ -28,6 +32,7 @@ on:
 jobs:
   load-test:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.github_environment }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
