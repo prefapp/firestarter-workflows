@@ -13,6 +13,7 @@ import uuid
 from os import remove, getcwd
 import string
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -176,6 +177,7 @@ class BuildImages(FirestarterWorkflow):
     async def compile_images_for_all_flavors(self):
         # Set up the Dagger configuration object
         config = dagger.Config(log_output=sys.stdout)
+        results_list = []
 
         # Connect to Dagger
         async with dagger.Connection(config) as client:
@@ -248,6 +250,27 @@ class BuildImages(FirestarterWorkflow):
 
                         image
                     )
+
+                    image_tag = image.split(":")[1]
+                    registry = image.split(":").split("/")[0]
+                    repository = "/".join(image.split(":").split("/")[1:])
+
+                    results_list.append({
+                        "flavor": flavor,
+                        "image_type": self.type,
+                        "version": self.from_version,
+                        "image_name": "",
+                        "image_tag": image_tag,
+                        "repository": repository,
+                        "registries": registry,
+                        "build_args": build_args,
+                        "manifest": {}
+                    })
+
+        result_json = json.dumps(results_list)
+        result_file = open(os.path.expanduser("build_images_results.json"), "w")
+        result_file.write(result_json)
+        result_file.close()
 
     def get_flavor_data(self, flavor):
 
