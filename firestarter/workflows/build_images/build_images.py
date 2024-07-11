@@ -35,6 +35,7 @@ class BuildImages(FirestarterWorkflow):
         self._releases_registry = self.vars['releases_registry']
         self._registry_creds = self.vars.get('registry_creds')
         self._auth_strategy = self.vars['auth_strategy']
+        self._output_results = self.vars['output_results']
         self._type = self.vars['type']
         self._from = self.vars['from']
         self._service_path = self.vars['service_path']
@@ -107,6 +108,10 @@ class BuildImages(FirestarterWorkflow):
     @property
     def publish(self):
         return self._publish
+
+    @property
+    def output_results(self):
+        return self._output_results
 
     def resolve_secrets(self, secrets=None):
         sr = SecretResolver(secrets)
@@ -268,7 +273,7 @@ class BuildImages(FirestarterWorkflow):
                     })
 
         result_json = json.dumps(results_list)
-        result_file = open(os.path.expanduser("build_images_results.json"), "w")
+        result_file = open(os.path.expanduser(self.output_results), "w")
         result_file.write(result_json)
         result_file.close()
 
