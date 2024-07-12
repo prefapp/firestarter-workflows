@@ -67,7 +67,7 @@ jobs:
 
      - uses: LouisBrunner/checks-action@v2.0.
        with:
-         token: ${{ steps.get-gh-app-token.outputs.github-app-pem }}
+         token: ${{ steps.get-gh-app-token.outputs.token }}
          name: Build ${{ inputs.type }}
          status: in_progress
          output: |
