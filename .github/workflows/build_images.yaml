@@ -70,7 +70,7 @@ jobs:
        if: ${{ vars.AZURE_CLIENT_ID }}
        with:
          token: ${{ steps.get-gh-app-token.outputs.token }}
-         name: Build Docker ${{ inputs.type }}
+         name: Build ${{ inputs.type }}
          status: in_progress
          sha: ${{ inputs.from }}
          output: |
@@ -155,7 +155,7 @@ jobs:
        if: always()
        with:
          token: ${{ steps.get-gh-app-token.outputs.token }}
-         name: Build Docker ${{ inputs.type }}
+         name: Build ${{ inputs.type }}
          conclusion: ${{ steps.build-images.outcome }}
          sha: ${{ inputs.from }}
          output: |
