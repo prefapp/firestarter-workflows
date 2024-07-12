@@ -151,15 +151,13 @@ jobs:
            }
            
            return fs.readFileSync(pathFile, "utf8")
-           
-          
 
      - uses: LouisBrunner/checks-action@v2.0.0
        if: always()
        with:
          token: ${{ steps.get-gh-app-token.outputs.token }}
          name: Build ${{ inputs.type }}
-         status: ${{ steps.build_images.conclusion }}
+         status: ${{ steps.build_images.outcome }}
          sha: ${{ inputs.from }}
          output: |
            {"summary":"${{steps.analyze-build-images-result.outputs.result}}"}
