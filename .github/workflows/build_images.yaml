@@ -148,7 +148,7 @@ jobs:
           
            }
            
-           return JSON.stringify({summary: fs.readFileSync(pathFile, "utf8")})
+           return JSON.stringify({summary: "```yaml\n" + fs.readFileSync(pathFile, "utf8") + "\n```"})
 
      - uses: LouisBrunner/checks-action@v2.0.0
        name: Update Check Action Build Docker
