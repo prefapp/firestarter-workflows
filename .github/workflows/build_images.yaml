@@ -108,8 +108,9 @@ jobs:
        with:
          path: config
    
-     - name: Call run-dagger-py action
+     - name: Build images
        uses: prefapp/run-dagger-py@main
+       id: build-images
        with:
          working_directory: build
          pyproject_path: .dagger
@@ -130,9 +131,31 @@ jobs:
            service_path="${{ fromJSON(vars.DOCKER_REGISTRIES_BASE_PATHS).services[inputs.type] }}"
          secrets: ${{ inputs.secrets }}
          
-     - name: Upload results
-       uses: actions/upload-artifact@v4
+     - uses: actions/github-script@v7
+       name: Analyze build images results
+       id: analyze-build-images-result
        with:
-         name: build_images_results.json
-         path: ~/build_images_results.json
+         result-encoding: string
+         script: |
+           const fs = require("fs")
 
+           return JSON.parse(
+          
+              fs.readFileSync(
+              
+                "/tmp/build_images_results.json", 
+                
+                "utf8"
+                
+              )
+           )
+
+     - uses: LouisBrunner/checks-action@v2.0.0
+       if: always()
+       with:
+         token: ${{ steps.get-gh-app-token.outputs.token }}
+         name: Build ${{ inputs.type }}
+         status: ${{ steps.build_images.conclusion }}
+         sha: ${{ inputs.from }}
+         output: |
+           {"summary":"${{steps.analyze-build-images-result.outputs.result}}"}
