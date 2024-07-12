@@ -70,7 +70,7 @@ jobs:
        with:
          token: ${{ steps.get-gh-app-token.outputs.token }}
          name: Build ${{ inputs.type }}
-         status: in_progressç
+         status: in_progress
          sha: ${{ inputs.from }}
          output: |
            {"summary":"In progress..."}
