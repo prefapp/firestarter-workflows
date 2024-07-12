@@ -150,11 +150,9 @@ jobs:
           
            }
            
-           return JSON.parse(
-          
-              fs.readFileSync(pathFile, "utf8")
+           return fs.readFileSync(pathFile, "utf8")
            
-           )
+          
 
      - uses: LouisBrunner/checks-action@v2.0.0
        if: always()
