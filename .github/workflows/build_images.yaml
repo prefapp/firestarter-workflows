@@ -72,7 +72,7 @@ jobs:
          token: ${{ steps.get-gh-app-token.outputs.token }}
          name: Build ${{ inputs.type }}
          status: in_progress
-         sha: ${{ inputs.from }}
+         # sha: ${{ inputs.from }}
          output: |
            {"summary":"In progress..."}
      
@@ -157,6 +157,6 @@ jobs:
          token: ${{ steps.get-gh-app-token.outputs.token }}
          name: Build ${{ inputs.type }}
          conclusion: ${{ steps.build-images.outcome }}
-         sha: ${{ inputs.from }}
+         # sha: ${{ inputs.from }}
          output: |
            ${{steps.analyze-build-images-result.outputs.result}}
