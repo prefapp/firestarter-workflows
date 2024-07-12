@@ -273,7 +273,7 @@ class BuildImages(FirestarterWorkflow):
                     })
 
         result_json = json.dumps(results_list)
-        result_file = open(os.path.expanduser(self.output_results), "w")
+        result_file = open(os.path.join("/tmp", self.output_results), "w")
         result_file.write(result_json)
         result_file.close()
 
