@@ -66,10 +66,11 @@ jobs:
           owner: ${{ github.repository_owner }}
 
      - uses: LouisBrunner/checks-action@v2.0.0
+       name: Set Check Action Build Docker
        if: ${{ vars.AZURE_CLIENT_ID }}
        with:
          token: ${{ steps.get-gh-app-token.outputs.token }}
-         name: Build ${{ inputs.type }}
+         name: Build Docker ${{ inputs.type }}
          status: in_progress
          sha: ${{ inputs.from }}
          output: |
@@ -150,10 +151,11 @@ jobs:
            return fs.readFileSync(pathFile, "utf8")
 
      - uses: LouisBrunner/checks-action@v2.0.0
+       name: Update Check Action Build Docker
        if: always()
        with:
          token: ${{ steps.get-gh-app-token.outputs.token }}
-         name: Build ${{ inputs.type }}
+         name: Build Docker ${{ inputs.type }}
          conclusion: ${{ steps.build-images.outcome }}
          sha: ${{ inputs.from }}
          output: |
