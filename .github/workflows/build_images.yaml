@@ -23,6 +23,10 @@ on:
         type: string
         description: Secrets to pass to the image
         default: ""
+      token:
+        type: string
+        description: Github App Token
+        required: true
         
 permissions:
   id-token: write
