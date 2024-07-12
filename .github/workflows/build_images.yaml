@@ -72,7 +72,7 @@ jobs:
          name: Build ${{ inputs.type }}
          status: in_progress
          output: |
-           In progress...
+           {"summary":"In progress..."}
      
      - name: Configure AWS Credentials
        uses: aws-actions/configure-aws-credentials@v1
