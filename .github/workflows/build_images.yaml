@@ -133,5 +133,5 @@ jobs:
        uses: actions/upload-artifact@v4
        with:
          name: build_images_results.json
-         path: build_images_results.json
+         path: ~/build_images_results.json
 
