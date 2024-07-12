@@ -58,7 +58,7 @@ jobs:
      
      - name: Get Token from Github App
        if: ${{ vars.AZURE_CLIENT_ID }}
-       id: app-token
+       id: get-gh-app-token
        uses: actions/create-github-app-token@v1
        with:
           app-id: ${{ vars.FIRESTARTER_GITHUB_APP_ID }}
