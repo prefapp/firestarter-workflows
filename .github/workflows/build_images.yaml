@@ -124,7 +124,7 @@ jobs:
            auth_strategy="${{ inputs.auth_strategy }}"
            snapshots_registry="${{ vars.DOCKER_REGISTRY_SNAPSHOTS }}"
            releases_registry="${{ vars.DOCKER_REGISTRY_RELEASES }}"
-           output_results="build_images_results.json"
+           output_results="build_images_results.yaml"
            type="${{ inputs.type }}"
            from="${{ steps.get-tag.outputs.tag }}"
            login_required="true"
@@ -140,7 +140,7 @@ jobs:
          result-encoding: string
          script: |
            const fs = require("fs")
-           const pathFile = "/tmp/build_images_results.json"
+           const pathFile = "/tmp/build_images_results.yaml"
            
            if(!fs.existsSync(pathFile)) {
            
