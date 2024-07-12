@@ -54,7 +54,7 @@ jobs:
          do
          echo "::add-mask::${line}"
          done <<< "$github_app_pem_eof"
-         echo -e "$github_app_pem_eof" >> "$GITHUB_OUTPUT"     
+         echo -e "$github_app_pem_eof" >> "$GITHUB_OUTPUT"
      
      - name: Get Token from Github App
        if: ${{ vars.AZURE_CLIENT_ID }}
@@ -71,6 +71,7 @@ jobs:
          token: ${{ steps.get-gh-app-token.outputs.token }}
          name: Build ${{ inputs.type }}
          status: in_progress
+         sha: ${{ inputs.from }}
          output: |
            {"summary":"In progress..."}
      
