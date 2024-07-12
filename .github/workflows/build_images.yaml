@@ -64,6 +64,14 @@ jobs:
           app-id: ${{ vars.FIRESTARTER_GITHUB_APP_ID }}
           private-key: ${{ steps.get-pem.outputs.github-app-pem }}
           owner: ${{ github.repository_owner }}
+
+     - uses: LouisBrunner/checks-action@v2.0.
+       with:
+         token: ${{ steps.get-gh-app-token.outputs.github-app-pem }}
+         name: Build ${{ inputs.type }}
+         status: in_progress
+         output: |
+           In progress...
      
      - name: Configure AWS Credentials
        uses: aws-actions/configure-aws-credentials@v1
