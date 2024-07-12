@@ -65,7 +65,7 @@ jobs:
           private-key: ${{ steps.get-pem.outputs.github-app-pem }}
           owner: ${{ github.repository_owner }}
 
-     - uses: LouisBrunner/checks-action@v2.0
+     - uses: LouisBrunner/checks-action@v2.0.0
        if: ${{ vars.AZURE_CLIENT_ID }}
        with:
          token: ${{ steps.get-gh-app-token.outputs.token }}
