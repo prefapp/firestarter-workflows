@@ -154,7 +154,7 @@ jobs:
        with:
          token: ${{ steps.get-gh-app-token.outputs.token }}
          name: Build ${{ inputs.type }}
-         status: ${{ steps.build-images.outcome }}
+         conclusion: ${{ steps.build-images.outcome }}
          sha: ${{ inputs.from }}
          output: |
            {"summary":"${{steps.analyze-build-images-result.outputs.result}}"}
