@@ -13,7 +13,7 @@ import uuid
 from os import remove, getcwd
 import string
 import logging
-import json
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -272,10 +272,8 @@ class BuildImages(FirestarterWorkflow):
                         "manifest": {}
                     })
 
-        result_json = json.dumps(results_list)
-        result_file = open(os.path.join("/tmp", self.output_results), "w")
-        result_file.write(result_json)
-        result_file.close()
+        with open(os.path.join("/tmp", self.output_results), "w") as f:
+            yaml.dump(results_list, f)
 
     def get_flavor_data(self, flavor):
 
