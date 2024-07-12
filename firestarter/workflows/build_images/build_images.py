@@ -257,8 +257,8 @@ class BuildImages(FirestarterWorkflow):
                     )
 
                     image_tag = image.split(":")[1]
-                    registry = image.split(":").split("/")[0]
-                    repository = "/".join(image.split(":").split("/")[1:])
+                    registry = image.split(":")[0].split("/")[0]
+                    repository = "/".join(image.split(":")[0].split("/")[1:])
 
                     results_list.append({
                         "flavor": flavor,
