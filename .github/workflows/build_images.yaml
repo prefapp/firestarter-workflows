@@ -148,7 +148,7 @@ jobs:
           
            }
            
-           return fs.readFileSync(pathFile, "utf8")
+           return JSON.stringify({summary: fs.readFileSync(pathFile, "utf8")})
 
      - uses: LouisBrunner/checks-action@v2.0.0
        name: Update Check Action Build Docker
@@ -159,4 +159,4 @@ jobs:
          conclusion: ${{ steps.build-images.outcome }}
          sha: ${{ inputs.from }}
          output: |
-           {"summary":"${{steps.analyze-build-images-result.outputs.result}}"}
+           ${{steps.analyze-build-images-result.outputs.result}}
