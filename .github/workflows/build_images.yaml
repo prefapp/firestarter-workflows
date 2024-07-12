@@ -144,7 +144,7 @@ jobs:
            const fs = require("fs")
            const pathFile = "/tmp/build_images_results.json"
            
-           if(!fs.accessSync(pathFile)) {
+           if(!(await fs.access(pathFile))) {
            
                return `The file ${pathFile} does not exist`
           
