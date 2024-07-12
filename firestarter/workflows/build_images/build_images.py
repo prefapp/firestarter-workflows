@@ -264,7 +264,7 @@ class BuildImages(FirestarterWorkflow):
                         "flavor": flavor,
                         "image_type": self.type,
                         "version": self.from_version,
-                        "image_name": self.repo_name,
+                        "image_repo": self.repo_name,
                         "image_tag": image_tag,
                         "repository": repository,
                         "registries": registry,
