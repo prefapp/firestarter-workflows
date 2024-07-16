@@ -23,11 +23,11 @@ on:
       version_kubectl:
         type: string
         required: false
-        default: '1.28.11'
+        default: '1.28.8'
       version_kubectl_release_date:
         type: string
         required: false
-        default: '2024-06-11'
+        default: '2024-04-19'
       version_kustomize:
         type: string
         required: false
