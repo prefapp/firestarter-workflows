@@ -155,6 +155,7 @@ jobs:
         uses: mamezou-tech/setup-helmfile@v2.0.0
         with:
           kubectl-version: '${{ inputs.version_kubectl }}'
+          kubectl-release-date: '${{ inputs.version_kubectl_release_date }}'
           helmfile-version: '${{ inputs.version_helmfile }}' 
           helm-version: '${{ inputs.version_helm }}'
 
@@ -170,7 +171,13 @@ jobs:
           sudo chmod +x /usr/bin/sops
           
           helm plugin install --debug https://github.com/jkroepke/helm-secrets
-          
+
+      - name: Debug Versions
+        run: |
+          kubectl version
+          helm version
+          helmfile version
+          sops --version
 
       - uses: actions/setup-python@v5
         with:
