@@ -160,10 +160,6 @@ jobs:
         with:
           kustomize-version: '${{ inputs.version_kustomize }}'
 
-      # - name: Install kustomize with go
-      #   run: |
-      #     go install 'sigs.k8s.io/kustomize/kustomize/v5@v${{ inputs.version_kustomize }}'
-
       - name: Setup / SOPS
         env:
           SOPS_VERSION: '${{ inputs.version_sops }}'
@@ -176,15 +172,6 @@ jobs:
           sudo chmod +x /usr/bin/sops
           
           helm plugin install --debug https://github.com/jkroepke/helm-secrets
-
-      - name: Debug Versions
-        run: |
-          kubectl version
-          helm version
-          helmfile version
-          sops --version
-
-          which kustomize
 
       - uses: actions/setup-python@v5
         with:
