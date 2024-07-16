@@ -184,6 +184,8 @@ jobs:
           helmfile version
           sops --version
 
+          which kustomize
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.9'
