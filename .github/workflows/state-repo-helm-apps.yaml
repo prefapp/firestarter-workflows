@@ -27,7 +27,7 @@ on:
       version_kustomize:
         type: string
         required: false
-        default: 'v5.4.2 '
+        default: 'v5.4.2'
       version_helm:
         type: string
         required: false
