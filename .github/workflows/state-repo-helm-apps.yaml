@@ -31,7 +31,7 @@ on:
       version_helm:
         type: string
         required: false
-        default: 'v3.15.3'
+        default: 'v3.14.0'
       version_helmfile:
         type: string
         required: false
