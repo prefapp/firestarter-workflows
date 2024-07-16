@@ -160,6 +160,10 @@ jobs:
         with:
           kustomize-version: '${{ inputs.version_kustomize }}'
 
+      - name: Install kustomize with go
+        run: |
+          go install 'sigs.k8s.io/kustomize/kustomize/v5@${{ inputs.version_kustomize }}'
+
       - name: Setup / SOPS
         env:
           SOPS_VERSION: '${{ inputs.version_sops }}'
