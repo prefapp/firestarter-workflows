@@ -31,7 +31,7 @@ on:
       version_kustomize:
         type: string
         required: false
-        default: '5.3.0'
+        default: '5.4.2'
       version_helm:
         type: string
         required: false
