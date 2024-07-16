@@ -149,10 +149,10 @@ jobs:
       ## Both kubectl and helm are already installed but we use this step also to use a specific version
       - name: Setup helmfile
         uses: mamezou-tech/setup-helmfile@v2.0.0
-        # with:
+        with:
           # kubectl-version: '${{ inputs.version_kubectl }}'
-          # helmfile-version: '${{ inputs.version_helmfile }}' 
-          # helm-version: '${{ inputs.version_helm }}'
+          helmfile-version: '${{ inputs.version_helmfile }}' 
+          helm-version: '${{ inputs.version_helm }}'
 
       - name: Setup / SOPS
         env:
