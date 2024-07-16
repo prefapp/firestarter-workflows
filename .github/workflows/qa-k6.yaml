@@ -101,6 +101,10 @@ jobs:
                 }
               ]
             }
+      - uses: prefapp/action-k6-summary-analyzer
+        if: (!cancelled())
+        with:
+          path: '${{ github.workspace }}/summary.json'
 
       - uses: actions/upload-artifact@v4
         if: (!cancelled())
