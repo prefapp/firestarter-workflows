@@ -19,6 +19,36 @@ on:
         required: false
         default: false
         type: boolean
+      # Versions inputs
+      version_kubectl:
+        type: string
+        required: false
+        default: '1.28.8'
+      version_kubectl_release_date:
+        type: string
+        required: false
+        default: '2024-04-19'
+      version_kustomize:
+        type: string
+        required: false
+        default: '5.4.2'
+      version_helm:
+        type: string
+        required: false
+        default: 'v3.14.0'
+      version_helmfile:
+        type: string
+        required: false
+        default: 'v0.161.0'
+      version_secrets:
+        type: string
+        required: false
+        default: 'v4.4.2'
+      version_sops:
+        type: string
+        required: false
+        default: 'v3.7.1'
+
 jobs:
   helm:
     runs-on: ubuntu-22.04
@@ -116,16 +146,24 @@ jobs:
           done
 
       # Helm logic
+
+      ## Both kubectl and helm are already installed but we use this step also to use a specific version
       - name: Setup helmfile
         uses: mamezou-tech/setup-helmfile@v2.0.0
         with:
-          install-kubectl: no
-          install-helm: no
+          kubectl-version: '${{ inputs.version_kubectl }}'
+          kubectl-release-date: '${{ inputs.version_kubectl_release_date }}'
+          helmfile-version: '${{ inputs.version_helmfile }}' 
+          helm-version: '${{ inputs.version_helm }}'
+
+      - uses: imranismail/setup-kustomize@v2
+        with:
+          kustomize-version: '${{ inputs.version_kustomize }}'
 
       - name: Setup / SOPS
         env:
-          SOPS_VERSION: 'v3.7.1'
-          HELM_SECRETS_VERSION: 'v4.4.2'
+          SOPS_VERSION: '${{ inputs.version_sops }}'
+          HELM_SECRETS_VERSION: '${{ inputs.version_secrets }}'
         if: ${{ inputs.sops_enabled == true || inputs.sops_enabled == 'true' }}
         run: |
           
@@ -134,7 +172,6 @@ jobs:
           sudo chmod +x /usr/bin/sops
           
           helm plugin install --debug https://github.com/jkroepke/helm-secrets
-          
 
       - uses: actions/setup-python@v5
         with:
