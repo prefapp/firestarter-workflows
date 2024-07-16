@@ -24,6 +24,10 @@ on:
         type: string
         required: false
         default: '1.28.0'
+      version_kubectl_release_date:
+        type: string
+        required: false
+        default: '2024-06-11'
       version_kustomize:
         type: string
         required: false
