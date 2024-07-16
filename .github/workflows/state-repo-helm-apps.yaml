@@ -23,7 +23,7 @@ on:
       version_kubectl:
         type: string
         required: false
-        default: '1.28.0'
+        default: '1.28.11'
       version_kubectl_release_date:
         type: string
         required: false
