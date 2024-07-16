@@ -150,7 +150,7 @@ jobs:
       - name: Setup helmfile
         uses: mamezou-tech/setup-helmfile@v2.0.0
         with:
-          # kubectl-version: '${{ inputs.version_kubectl }}'
+          kubectl-version: '${{ inputs.version_kubectl }}'
           helmfile-version: '${{ inputs.version_helmfile }}' 
           helm-version: '${{ inputs.version_helm }}'
 
