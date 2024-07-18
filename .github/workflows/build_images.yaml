@@ -23,6 +23,10 @@ on:
         type: string
         description: Secrets to pass to the image
         default: ""
+      check_run_name:
+        type: string
+        description: Check run name identifier
+        required: true
         
 permissions:
   id-token: write
@@ -65,16 +69,16 @@ jobs:
           private-key: ${{ steps.get-pem.outputs.github-app-pem }}
           owner: ${{ github.repository_owner }}
 
-     - uses: LouisBrunner/checks-action@v2.0.0
-       name: Set Check Action Build Docker
-       if: ${{ vars.AZURE_CLIENT_ID }}
+     - name: Init Check Run Summary
+       id: init-check-run-summary
+       if: always()
+       uses: prefapp/action-build-images-summary@v1
        with:
-         token: ${{ steps.get-gh-app-token.outputs.token }}
-         name: Build Docker ${{ inputs.type }}
-         status: in_progress
-         sha: ${{ inputs.from }}
-         output: |
-           {"summary":"In progress..."}
+         token:  ${{ steps.get-gh-app-token.outputs.token }}
+         summary_path: /tmp/build_images_results.yaml
+         check_run_name: ${{ inputs.check_run_name }}
+         ref: ${{ inputs.from }}
+         op: 'init-check-run'
      
      - name: Configure AWS Credentials
        uses: aws-actions/configure-aws-credentials@v1
@@ -137,31 +141,14 @@ jobs:
          name: build-images-results
          path: /tmp/build_images_results.yaml
               
-     - uses: actions/github-script@v7
-       name: Analyze build images results
+     - name: Update Check Run Summary
+       id: update-check-run-summary
        if: always()
-       id: analyze-build-images-result
+       uses: prefapp/action-build-images-summary@v1
        with:
-         result-encoding: string
-         script: |
-           const fs = require("fs")
-           const pathFile = "/tmp/build_images_results.yaml"
-           
-           if(!fs.existsSync(pathFile)) {
-           
-               return `The file ${pathFile} does not exist`
-          
-           }
-           
-           return JSON.stringify({summary: "```yaml\n" + fs.readFileSync(pathFile, "utf8") + "\n```"})
-
-     - uses: LouisBrunner/checks-action@v2.0.0
-       name: Update Check Action Build Docker
-       if: always()
-       with:
-         token: ${{ steps.get-gh-app-token.outputs.token }}
-         name: Build Docker ${{ inputs.type }}
          conclusion: ${{ steps.build-images.outcome }}
-         sha: ${{ inputs.from }}
-         output: |
-           ${{steps.analyze-build-images-result.outputs.result}}
+         token: ${{ steps.get-gh-app-token.outputs.token }}
+         summary_path: '/tmp/build_images_results.yaml'
+         check_run_name: ${{ inputs.check_run_name }}
+         ref: ${{ inputs.from }}
+         op: 'complete-check-run'
