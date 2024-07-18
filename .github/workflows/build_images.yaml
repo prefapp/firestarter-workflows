@@ -71,7 +71,6 @@ jobs:
 
      - name: Init Check Run Summary
        id: init-check-run-summary
-       if: always()
        uses: prefapp/action-build-images-summary@v1
        with:
          token:  ${{ steps.get-gh-app-token.outputs.token }}
