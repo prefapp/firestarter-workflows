@@ -283,8 +283,9 @@ class BuildImages(FirestarterWorkflow):
                         "workflow_run_url": self.workflow_run_url
                     })
 
+        yaml.Dumper.ignore_aliases = lambda *args : True
         with open(os.path.join("/tmp", self.output_results), "w") as f:
-            yaml.dump(results_list, f)
+            yaml.dump(results_list, f, default_flow_style=False)
 
     def get_flavor_data(self, flavor):
 
