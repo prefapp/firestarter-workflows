@@ -38,6 +38,8 @@ class BuildImages(FirestarterWorkflow):
         self._output_results = self.vars['output_results']
         self._type = self.vars['type']
         self._from = self.vars['from']
+        self._workflow_run_id = self.vars['workflow_run_id']
+        self._workflow_run_url = self.vars['workflow_run_url']
         self._service_path = self.vars['service_path']
         self._flavors = self.vars['flavors'] if 'flavors' in self.vars else 'default'
         self._container_structure_filename = self.vars['container_structure_filename'] if 'container_structure_filename' in self.vars else None
@@ -80,6 +82,14 @@ class BuildImages(FirestarterWorkflow):
     @property
     def from_version(self):
         return self._from
+    
+    @property
+    def workflow_run_id(self):
+        return self._workflow_run_id
+    
+    @property
+    def workflow_run_url(self):
+        return self._workflow_run_url
 
     @property
     def flavors(self):
@@ -228,7 +238,7 @@ class BuildImages(FirestarterWorkflow):
 
                 # Set the address for the default registry
                 registry_address = f"{registry}/{self.service_path}/{self.repo_name}"
-                logger.info(f"Registry address 🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄: {registry_address}")
+                logger.info(f"Registry address 🍄: {registry_address}")
                 full_registry_address = f"{registry_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
 
                 # Create a list of addresses for all registries
@@ -269,7 +279,8 @@ class BuildImages(FirestarterWorkflow):
                         "repository": repository,
                         "registries": registry,
                         "build_args": build_args,
-                        "manifest": {}
+                        "workflow_run_id": self.workflow_run_id,
+                        "workflow_run_url": self.workflow_run_url
                     })
 
         with open(os.path.join("/tmp", self.output_results), "w") as f:
