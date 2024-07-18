@@ -131,7 +131,7 @@ jobs:
            type="${{ inputs.type }}"
            from="${{ steps.get-tag.outputs.tag }}"
            workflow_run_id=${{ github.run_id}}
-           workflow_run_url="https://github.com/${{ github.repository}}/actions/runs/${{ github.run_id}}"
+           workflow_run_url="https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
            login_required="true"
            ref="v1"
            service_path="${{ fromJSON(vars.DOCKER_REGISTRIES_BASE_PATHS).services[inputs.type] }}"
