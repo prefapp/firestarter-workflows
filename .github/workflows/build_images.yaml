@@ -45,28 +45,29 @@ jobs:
          tenant-id: ${{ vars.AZURE_TENANT_ID }}
          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       
-     - name: Get PEM File from Azure Key Vault
-       if: ${{ vars.AZURE_CLIENT_ID }}
-       id: get-pem
-       env:
-         AZ_KEY_VAULT_NAME:  ${{ vars.FIRESTARTER_AZ_KEY_VAULT_NAME }}
-         PEM_FILE_REF: ${{ vars.FIRESTARTER_GITHUB_APP_PEM_FILE_REF }}
-       run: |
-         github_app_pem=`az keyvault secret show --vault-name $AZ_KEY_VAULT_NAME --name $PEM_FILE_REF --query value -o tsv`
-         github_app_pem_eof="github-app-pem<<EOF\n$github_app_pem\nEOF"
-         while read -r line;
-         do
-         echo "::add-mask::${line}"
-         done <<< "$github_app_pem_eof"
-         echo -e "$github_app_pem_eof" >> "$GITHUB_OUTPUT"
+     # - name: Get PEM File from Azure Key Vault
+     #   if: ${{ vars.AZURE_CLIENT_ID }}
+     #   id: get-pem
+     #   env:
+     #     AZ_KEY_VAULT_NAME:  ${{ vars.FIRESTARTER_AZ_KEY_VAULT_NAME }}
+     #     PEM_FILE_REF: ${{ vars.FIRESTARTER_GITHUB_APP_PEM_FILE_REF }}
+     #   run: |
+     #     github_app_pem=`az keyvault secret show --vault-name $AZ_KEY_VAULT_NAME --name $PEM_FILE_REF --query value -o tsv`
+     #     github_app_pem_eof="github-app-pem<<EOF\n$github_app_pem\nEOF"
+     #     while read -r line;
+     #     do
+     #     echo "::add-mask::${line}"
+     #     done <<< "$github_app_pem_eof"
+     #     echo -e "$github_app_pem_eof" >> "$GITHUB_OUTPUT"
      
      - name: Get Token from Github App
-       if: ${{ vars.AZURE_CLIENT_ID }}
+       # if: ${{ vars.AZURE_CLIENT_ID }}
        id: get-gh-app-token
        uses: actions/create-github-app-token@v1
        with:
           app-id: ${{ vars.FIRESTARTER_GITHUB_APP_ID }}
-          private-key: ${{ steps.get-pem.outputs.github-app-pem }}
+          # private-key: ${{ steps.get-pem.outputs.github-app-pem }}
+          private-key: ${{ secrets.FIRESTARTER_GITHUB_APP_PEM_FILE }}
           owner: ${{ github.repository_owner }}
 
      - name: Init Check Run Summary
