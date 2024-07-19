@@ -82,11 +82,11 @@ class BuildImages(FirestarterWorkflow):
     @property
     def from_version(self):
         return self._from
-    
+
     @property
     def workflow_run_id(self):
         return self._workflow_run_id
-    
+
     @property
     def workflow_run_url(self):
         return self._workflow_run_url
@@ -203,7 +203,7 @@ class BuildImages(FirestarterWorkflow):
 
             for flavor in self.flavors:
 
-                registry, build_args, dockerfile, extra_registries = self.get_flavor_data(flavor)
+                registry, full_repo_name, build_args, dockerfile, extra_registries = self.get_flavor_data(flavor)
 
                 # Set the build arguments for the current on-premises
                 build_args_list = [dagger.BuildArg(name=key, value=value) for key, value in build_args.items()]
@@ -237,7 +237,7 @@ class BuildImages(FirestarterWorkflow):
                 secrets = secrets_for_all_flavors + flavor_secrets
 
                 # Set the address for the default registry
-                registry_address = f"{registry}/{self.service_path}/{self.repo_name}"
+                registry_address = f"{registry}/{full_repo_name}"
                 logger.info(f"Registry address 🍄: {registry_address}")
                 full_registry_address = f"{registry_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
 
@@ -291,7 +291,9 @@ class BuildImages(FirestarterWorkflow):
 
         value = self.config.images[flavor]
 
-        registry = self.vars[f"{self.type}_registry"]
+        registry = value.get("registry", {}).get("name", "") or self.vars[f"{self.type}_registry"]
+
+        full_repo_name = value.get("registry", {}).get("repository", "") or f"{self.service_path}/{self.repo_name}"
 
         build_args = value.build_args or {}
 
@@ -299,17 +301,26 @@ class BuildImages(FirestarterWorkflow):
 
         extra_registries = value.extra_registries or []
 
-        return registry, build_args, dockerfile, extra_registries
+        return registry, full_repo_name, build_args, dockerfile, extra_registries
 
 
     def execute(self):
         self.filter_flavors()
 
-        self.login(self.auth_strategy, getattr(
-            self, f"{self.type}_registry"), self.registry_creds)
+        default_registry = getattr(self, f"{self.type}_registry")
+
+        self.login(self.auth_strategy, default_registry, self.registry_creds)
 
         for flavor in self.flavors:
             value = self.config.images[flavor]
+
+            if value.registry:
+                self.login(
+                    value.registry.get("auth_strategy", self.auth_strategy),
+                    value.registry.get("name", default_registry),
+                    value.registry.get("creds", self.registry_creds)
+                )
+
             extra_registries = value.extra_registries or []
 
             for extra_registry in extra_registries:
