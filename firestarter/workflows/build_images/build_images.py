@@ -277,7 +277,7 @@ class BuildImages(FirestarterWorkflow):
                         "image_repo": self.repo_name,
                         "image_tag": image_tag,
                         "repository": repository,
-                        "registries": registry,
+                        "registry": registry,
                         "build_args": build_args,
                         "workflow_run_id": self.workflow_run_id,
                         "workflow_run_url": self.workflow_run_url
