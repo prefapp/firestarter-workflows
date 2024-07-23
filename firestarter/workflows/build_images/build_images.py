@@ -129,16 +129,14 @@ class BuildImages(FirestarterWorkflow):
 
     def filter_flavors(self):
         # Get the on-premises name from the command-line arguments and filter the on-premises data accordingly
-        if self.flavors is not None:
-            if self.flavors.replace(' ', '') == '*':
-                print('Publishing all flavors:')
-                self._flavors = ",".join(list(self.config.to_dict()["images"].keys()))
+        if self.flavors.replace(' ', '') == '*':
+            print('Publishing all flavors:')
+            self._flavors = ",".join(list(self.config.to_dict()["images"].keys()))
 
-            self._flavors = self.flavors.replace(' ', '').split(',')
+        self._flavors = self.flavors.replace(' ', '').split(',')
 
     def filter_auto_build(self):
-        if self.flavors is None or self.flavors.replace(' ', '') == '':
-            self._flavors = [flavor for flavor in self.config.to_dict()["images"] if self.config.to_dict()["images"][flavor].get("auto", False)]
+        self._flavors = [flavor for flavor in self.config.to_dict()["images"] if self.config.to_dict()["images"][flavor].get("auto", False)]
 
 
     async def test_image(self, ctx):
@@ -306,11 +304,15 @@ class BuildImages(FirestarterWorkflow):
         return registry, build_args, dockerfile, extra_registries
 
 
+    def is_auto_build(self):
+        return self.flavors is None or self.flavors.replace(' ', '') == ''
+
     def execute(self):
         
-        self.filter_flavors()
-
-        self.filter_auto_build()
+        if self.is_auto_build():
+            self.filter_auto_build()
+        else:
+            self.filter_flavors()
 
         self.login(self.auth_strategy, getattr(
             self, f"{self.type}_registry"), self.registry_creds)
