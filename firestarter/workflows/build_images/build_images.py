@@ -302,9 +302,9 @@ class BuildImages(FirestarterWorkflow):
 
         value = self.config.images[flavor]
 
-        registry = value.get("registry", {}).get("name", "") or self.vars[f"{self.type}_registry"]
+        registry = value.registry.get("name", "") or self.vars[f"{self.type}_registry"]
 
-        full_repo_name = value.get("registry", {}).get("repository", "") or f"{self.service_path}/{self.repo_name}"
+        full_repo_name = value.registry.get("repository", "") or f"{self.service_path}/{self.repo_name}"
 
         build_args = value.build_args or {}
 
