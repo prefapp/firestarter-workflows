@@ -60,7 +60,6 @@ jobs:
          done <<< "$github_app_pem_eof"
          echo -e "$github_app_pem_eof" >> "$GITHUB_OUTPUT"
 
-     
      - name: Get Token from Github App
        if: ${{ vars.AZURE_CLIENT_ID }}
        id: get-gh-app-token
@@ -122,7 +121,7 @@ jobs:
          pyproject_path: .dagger
          workflow: build_images
          config_file: ../config/.github/build_images.yaml
-         ref: "feat/add-registry-config-option"
+         ref: "v1"
          vars: |
            repo_name="${{ github.repository }}"
            flavors="${{ inputs.flavors }}"
