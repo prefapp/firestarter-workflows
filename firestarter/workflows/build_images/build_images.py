@@ -136,6 +136,12 @@ class BuildImages(FirestarterWorkflow):
 
             self._flavors = self.flavors.replace(' ', '').split(',')
 
+    def filter_auto_build(self):
+        # Get the on-premises name from the command-line arguments and filter the on-premises data accordingly
+        if self.flavors is None or self.flavors.replace(' ', '') == '':
+            # Get flavors with auto_build set to True
+            self._flavors = [flavor for flavor in self.config.to_dict()["images"] if self.config.to_dict()["images"][flavor].get("auto", False)]
+
 
     async def test_image(self, ctx):
         try:
@@ -303,7 +309,10 @@ class BuildImages(FirestarterWorkflow):
 
 
     def execute(self):
+        
         self.filter_flavors()
+
+        self.filter_auto_build()
 
         self.login(self.auth_strategy, getattr(
             self, f"{self.type}_registry"), self.registry_creds)
