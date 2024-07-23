@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.5.1](https://github.com/prefapp/firestarter-workflows/compare/v1.5.0...v1.5.1) (2024-07-23)
+
+
+### Bug Fixes
+
+* Fix error when registry field was missing ([#106](https://github.com/prefapp/firestarter-workflows/issues/106)) ([6baf1d9](https://github.com/prefapp/firestarter-workflows/commit/6baf1d9e71949b49364748802ca73c0ee3f38f27))
+
 ## [1.5.0](https://github.com/prefapp/firestarter-workflows/compare/v1.4.0...v1.5.0) (2024-07-23)
 
 
