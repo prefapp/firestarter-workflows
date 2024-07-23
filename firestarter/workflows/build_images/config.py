@@ -7,6 +7,7 @@ import re
 class Image:
     auto: bool = field(default=False)
     build_always: bool = field(default=True)
+    registry: dict = field(default_factory=dict)
     extra_registries: dict = field(default_factory=dict)
     build_args: dict = field(default_factory=dict)
     secrets: dict = field(default_factory=dict)
@@ -17,6 +18,7 @@ class Image:
         return cls(
             auto=obj.get("auto"),
             build_always=obj.get("build_always"),
+            registry=obj.get("registry"),
             extra_registries=obj.get("extra_registries"),
             build_args=obj.get("build_args"),
             secrets=obj.get("secrets"),
@@ -27,6 +29,7 @@ class Image:
         return {
             "auto": self.auto,
             "build_always": self.build_always,
+            "registry": self.registry,
             "extra_registries": self.extra_registries,
             "build_args": self.build_args,
             "secrets": self.secrets,
