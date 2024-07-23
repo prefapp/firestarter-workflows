@@ -302,9 +302,11 @@ class BuildImages(FirestarterWorkflow):
 
         value = self.config.images[flavor]
 
-        registry = value.registry.get("name", "") or self.vars[f"{self.type}_registry"]
+        registry = value.registry or {}
 
-        full_repo_name = value.registry.get("repository", "") or f"{self.service_path}/{self.repo_name}"
+        registry_name = registry.get("name", "") or self.vars[f"{self.type}_registry"]
+
+        full_repo_name = registry.get("repository", "") or f"{self.service_path}/{self.repo_name}"
 
         build_args = value.build_args or {}
 
@@ -312,7 +314,7 @@ class BuildImages(FirestarterWorkflow):
 
         extra_registries = value.extra_registries or []
 
-        return registry, full_repo_name, build_args, dockerfile, extra_registries
+        return registry_name, full_repo_name, build_args, dockerfile, extra_registries
 
 
     def is_auto_build(self):
