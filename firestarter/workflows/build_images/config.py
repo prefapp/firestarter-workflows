@@ -5,6 +5,7 @@ import re
 
 @dataclass
 class Image:
+    auto: bool = field(default=False)
     build_always: bool = field(default=True)
     extra_registries: dict = field(default_factory=dict)
     build_args: dict = field(default_factory=dict)
@@ -14,6 +15,7 @@ class Image:
     @classmethod
     def from_dict(cls: t.Type["Image"], obj: dict):
         return cls(
+            auto=obj.get("auto"),
             build_always=obj.get("build_always"),
             extra_registries=obj.get("extra_registries"),
             build_args=obj.get("build_args"),
@@ -23,6 +25,7 @@ class Image:
 
     def to_dict(self):
         return {
+            "auto": self.auto,
             "build_always": self.build_always,
             "extra_registries": self.extra_registries,
             "build_args": self.build_args,

@@ -13,6 +13,7 @@ import uuid
 from os import remove, getcwd
 import string
 import logging
+import yaml
 
 logger = logging.getLogger(__name__)
 
@@ -34,13 +35,16 @@ class BuildImages(FirestarterWorkflow):
         self._releases_registry = self.vars['releases_registry']
         self._registry_creds = self.vars.get('registry_creds')
         self._auth_strategy = self.vars['auth_strategy']
+        self._output_results = self.vars['output_results']
         self._type = self.vars['type']
         self._from = self.vars['from']
+        self._workflow_run_id = self.vars['workflow_run_id']
+        self._workflow_run_url = self.vars['workflow_run_url']
         self._service_path = self.vars['service_path']
         self._flavors = self.vars['flavors'] if 'flavors' in self.vars else 'default'
         self._container_structure_filename = self.vars['container_structure_filename'] if 'container_structure_filename' in self.vars else None
         self._dagger_secrets = []
-        self._login_required = literal_eval(
+        self._login_required = literal_eval(    
             self.vars['login_required'].capitalize()) if 'login_required' in self.vars else True
         self._publish = self.vars['publish'] if 'publish' in self.vars else True
 
@@ -78,6 +82,14 @@ class BuildImages(FirestarterWorkflow):
     @property
     def from_version(self):
         return self._from
+    
+    @property
+    def workflow_run_id(self):
+        return self._workflow_run_id
+    
+    @property
+    def workflow_run_url(self):
+        return self._workflow_run_url
 
     @property
     def flavors(self):
@@ -107,19 +119,25 @@ class BuildImages(FirestarterWorkflow):
     def publish(self):
         return self._publish
 
+    @property
+    def output_results(self):
+        return self._output_results
+
     def resolve_secrets(self, secrets=None):
         sr = SecretResolver(secrets)
         return sr.resolve()
 
     def filter_flavors(self):
         # Get the on-premises name from the command-line arguments and filter the on-premises data accordingly
-        if self.flavors is not None:
-            if self.flavors.replace(' ', '') == '*':
-                print('Publishing all flavors:')
-                self._flavors = ",".join(list(self.config.to_dict()["images"].keys()))
+        if self.flavors.replace(' ', '') == '*':
+            print('Publishing all flavors:')
+            self._flavors = ",".join(list(self.config.to_dict()["images"].keys()))
 
-            self._flavors = self.flavors.replace(' ', '').split(',')
+        self._flavors = self.flavors.replace(' ', '').split(',')
 
+    def filter_auto_build(self):
+        print('Publishing all flavors with auto build enabled:', self.config.to_dict()["images"])
+        self._flavors = [flavor for flavor in self.config.to_dict()["images"] if self.config.to_dict()["images"][flavor].get("auto")]
 
     async def test_image(self, ctx):
         try:
@@ -176,6 +194,7 @@ class BuildImages(FirestarterWorkflow):
     async def compile_images_for_all_flavors(self):
         # Set up the Dagger configuration object
         config = dagger.Config(log_output=sys.stdout)
+        results_list = []
 
         # Connect to Dagger
         async with dagger.Connection(config) as client:
@@ -221,7 +240,7 @@ class BuildImages(FirestarterWorkflow):
 
                 # Set the address for the default registry
                 registry_address = f"{registry}/{self.service_path}/{self.repo_name}"
-                logger.info(f"Registry address 🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄: {registry_address}")
+                logger.info(f"Registry address 🍄: {registry_address}")
                 full_registry_address = f"{registry_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
 
                 # Create a list of addresses for all registries
@@ -249,6 +268,27 @@ class BuildImages(FirestarterWorkflow):
                         image
                     )
 
+                    image_tag = image.split(":")[1]
+                    registry = image.split(":")[0].split("/")[0]
+                    repository = "/".join(image.split(":")[0].split("/")[1:])
+
+                    results_list.append({
+                        "flavor": flavor,
+                        "image_type": self.type,
+                        "version": self.from_version,
+                        "image_repo": self.repo_name,
+                        "image_tag": image_tag,
+                        "repository": repository,
+                        "registry": registry,
+                        "build_args": build_args,
+                        "workflow_run_id": self.workflow_run_id,
+                        "workflow_run_url": self.workflow_run_url
+                    })
+
+        yaml.Dumper.ignore_aliases = lambda *args : True
+        with open(os.path.join("/tmp", self.output_results), "w") as f:
+            yaml.dump(results_list, f, default_flow_style=False)
+
     def get_flavor_data(self, flavor):
 
         value = self.config.images[flavor]
@@ -264,8 +304,15 @@ class BuildImages(FirestarterWorkflow):
         return registry, build_args, dockerfile, extra_registries
 
 
+    def is_auto_build(self):
+        return self.flavors is None or self.flavors.replace(' ', '') == ''
+
     def execute(self):
-        self.filter_flavors()
+        
+        if self.is_auto_build():
+            self.filter_auto_build()
+        else:
+            self.filter_flavors()
 
         self.login(self.auth_strategy, getattr(
             self, f"{self.type}_registry"), self.registry_creds)
