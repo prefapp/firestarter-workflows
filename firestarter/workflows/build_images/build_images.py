@@ -44,7 +44,7 @@ class BuildImages(FirestarterWorkflow):
         self._flavors = self.vars['flavors'] if 'flavors' in self.vars else 'default'
         self._container_structure_filename = self.vars['container_structure_filename'] if 'container_structure_filename' in self.vars else None
         self._dagger_secrets = []
-        self._login_required = literal_eval(    
+        self._login_required = literal_eval(
             self.vars['login_required'].capitalize()) if 'login_required' in self.vars else True
         self._publish = self.vars['publish'] if 'publish' in self.vars else True
 
@@ -82,11 +82,11 @@ class BuildImages(FirestarterWorkflow):
     @property
     def from_version(self):
         return self._from
-    
+
     @property
     def workflow_run_id(self):
         return self._workflow_run_id
-    
+
     @property
     def workflow_run_url(self):
         return self._workflow_run_url
@@ -319,7 +319,7 @@ class BuildImages(FirestarterWorkflow):
         return self.flavors is None or self.flavors.replace(' ', '') == ''
 
     def execute(self):
-        
+
         if self.is_auto_build():
             self.filter_auto_build()
         else:
