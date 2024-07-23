@@ -122,7 +122,7 @@ jobs:
          pyproject_path: .dagger
          workflow: build_images
          config_file: ../config/.github/build_images.yaml
-         ref: "feat/upload-results-artifacts"
+         ref: "feat/add-registry-config-option"
          vars: |
            repo_name="${{ github.repository }}"
            flavors="${{ inputs.flavors }}"
