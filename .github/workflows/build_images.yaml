@@ -61,7 +61,7 @@ jobs:
          echo -e "$github_app_pem_eof" >> "$GITHUB_OUTPUT"
      
      - name: Get Token from Github App
-       # if: ${{ vars.AZURE_CLIENT_ID }}
+       if: ${{ vars.AZURE_CLIENT_ID }}
        id: get-gh-app-token
        uses: actions/create-github-app-token@v1
        with:
