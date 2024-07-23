@@ -44,7 +44,7 @@ jobs:
          client-id: ${{ vars.AZURE_CLIENT_ID }}
          tenant-id: ${{ vars.AZURE_TENANT_ID }}
          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-      
+     
      # - name: Get PEM File from Azure Key Vault
      #   if: ${{ vars.AZURE_CLIENT_ID }}
      #   id: get-pem
@@ -59,15 +59,16 @@ jobs:
      #     echo "::add-mask::${line}"
      #     done <<< "$github_app_pem_eof"
      #     echo -e "$github_app_pem_eof" >> "$GITHUB_OUTPUT"
+
      
      - name: Get Token from Github App
-       # if: ${{ vars.AZURE_CLIENT_ID }}
+       #if: ${{ vars.AZURE_CLIENT_ID }}
        id: get-gh-app-token
        uses: actions/create-github-app-token@v1
        with:
-          app-id: ${{ vars.FIRESTARTER_GITHUB_APP_ID }}
-          # private-key: ${{ steps.get-pem.outputs.github-app-pem }}
+          app-id: ${{ vars.FIRESTARTER_GITHUB_APP_ID }}  
           private-key: ${{ secrets.FIRESTARTER_GITHUB_APP_PEM_FILE }}
+          #private-key: ${{ steps.get-pem.outputs.github-app-pem }}
           owner: ${{ github.repository_owner }}
 
      - name: Init Check Run Summary

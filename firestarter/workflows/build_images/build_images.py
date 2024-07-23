@@ -44,7 +44,7 @@ class BuildImages(FirestarterWorkflow):
         self._flavors = self.vars['flavors'] if 'flavors' in self.vars else 'default'
         self._container_structure_filename = self.vars['container_structure_filename'] if 'container_structure_filename' in self.vars else None
         self._dagger_secrets = []
-        self._login_required = literal_eval(
+        self._login_required = literal_eval(    
             self.vars['login_required'].capitalize()) if 'login_required' in self.vars else True
         self._publish = self.vars['publish'] if 'publish' in self.vars else True
 
@@ -82,6 +82,14 @@ class BuildImages(FirestarterWorkflow):
     @property
     def from_version(self):
         return self._from
+    
+    @property
+    def workflow_run_id(self):
+        return self._workflow_run_id
+    
+    @property
+    def workflow_run_url(self):
+        return self._workflow_run_url
 
     @property
     def workflow_run_id(self):
@@ -129,13 +137,15 @@ class BuildImages(FirestarterWorkflow):
 
     def filter_flavors(self):
         # Get the on-premises name from the command-line arguments and filter the on-premises data accordingly
-        if self.flavors is not None:
-            if self.flavors.replace(' ', '') == '*':
-                print('Publishing all flavors:')
-                self._flavors = ",".join(list(self.config.to_dict()["images"].keys()))
+        if self.flavors.replace(' ', '') == '*':
+            print('Publishing all flavors:')
+            self._flavors = ",".join(list(self.config.to_dict()["images"].keys()))
 
-            self._flavors = self.flavors.replace(' ', '').split(',')
+        self._flavors = self.flavors.replace(' ', '').split(',')
 
+    def filter_auto_build(self):
+        print('Publishing all flavors with auto build enabled:', self.config.to_dict()["images"])
+        self._flavors = [flavor for flavor in self.config.to_dict()["images"] if self.config.to_dict()["images"][flavor].get("auto")]
 
     async def test_image(self, ctx):
         try:
@@ -238,6 +248,7 @@ class BuildImages(FirestarterWorkflow):
 
                 # Set the address for the default registry
                 registry_address = f"{registry}/{full_repo_name}"
+
                 logger.info(f"Registry address 🍄: {registry_address}")
                 full_registry_address = f"{registry_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
 
@@ -277,7 +288,7 @@ class BuildImages(FirestarterWorkflow):
                         "image_repo": self.repo_name,
                         "image_tag": image_tag,
                         "repository": repository,
-                        "registries": registry,
+                        "registry": registry,
                         "build_args": build_args,
                         "workflow_run_id": self.workflow_run_id,
                         "workflow_run_url": self.workflow_run_url
@@ -304,8 +315,15 @@ class BuildImages(FirestarterWorkflow):
         return registry, full_repo_name, build_args, dockerfile, extra_registries
 
 
+    def is_auto_build(self):
+        return self.flavors is None or self.flavors.replace(' ', '') == ''
+
     def execute(self):
-        self.filter_flavors()
+        
+        if self.is_auto_build():
+            self.filter_auto_build()
+        else:
+            self.filter_flavors()
 
         default_registry = getattr(self, f"{self.type}_registry")
 
