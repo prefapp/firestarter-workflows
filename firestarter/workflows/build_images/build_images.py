@@ -44,7 +44,7 @@ class BuildImages(FirestarterWorkflow):
         self._flavors = self.vars['flavors'] if 'flavors' in self.vars else 'default'
         self._container_structure_filename = self.vars['container_structure_filename'] if 'container_structure_filename' in self.vars else None
         self._dagger_secrets = []
-        self._login_required = literal_eval(
+        self._login_required = literal_eval(    
             self.vars['login_required'].capitalize()) if 'login_required' in self.vars else True
         self._publish = self.vars['publish'] if 'publish' in self.vars else True
 
@@ -137,7 +137,7 @@ class BuildImages(FirestarterWorkflow):
 
     def filter_auto_build(self):
         print('Publishing all flavors with auto build enabled:', self.config.to_dict()["images"])
-        self._flavors = [flavor for flavor in self.config.to_dict()["images"] if self.config.to_dict()["images"][flavor].get("auto", False)]
+        self._flavors = [flavor for flavor in self.config.to_dict()["images"] if self.config.to_dict()["images"][flavor].get("auto")]
 
     async def test_image(self, ctx):
         try:

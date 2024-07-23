@@ -5,6 +5,7 @@ import re
 
 @dataclass
 class Image:
+    auto: bool = field(default=False)
     build_always: bool = field(default=True)
     extra_registries: dict = field(default_factory=dict)
     build_args: dict = field(default_factory=dict)
@@ -28,6 +29,7 @@ class Image:
             "build_args": self.build_args,
             "secrets": self.secrets,
             "dockerfile": self.dockerfile,
+            "auto": self.auto
         }
 
 @dataclass
