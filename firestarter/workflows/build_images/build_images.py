@@ -137,9 +137,7 @@ class BuildImages(FirestarterWorkflow):
             self._flavors = self.flavors.replace(' ', '').split(',')
 
     def filter_auto_build(self):
-        # Get the on-premises name from the command-line arguments and filter the on-premises data accordingly
         if self.flavors is None or self.flavors.replace(' ', '') == '':
-            # Get flavors with auto_build set to True
             self._flavors = [flavor for flavor in self.config.to_dict()["images"] if self.config.to_dict()["images"][flavor].get("auto", False)]
 
 
