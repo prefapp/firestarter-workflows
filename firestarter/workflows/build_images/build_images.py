@@ -136,8 +136,8 @@ class BuildImages(FirestarterWorkflow):
         self._flavors = self.flavors.replace(' ', '').split(',')
 
     def filter_auto_build(self):
+        print('Publishing all flavors with auto build enabled:', self.config.to_dict()["images"])
         self._flavors = [flavor for flavor in self.config.to_dict()["images"] if self.config.to_dict()["images"][flavor].get("auto", False)]
-
 
     async def test_image(self, ctx):
         try:
