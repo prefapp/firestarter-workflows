@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.5.0](https://github.com/prefapp/firestarter-workflows/compare/v1.4.0...v1.5.0) (2024-07-23)
+
+
+### Features
+
+* Add registry config option ([#102](https://github.com/prefapp/firestarter-workflows/issues/102)) ([1de2511](https://github.com/prefapp/firestarter-workflows/commit/1de2511e60453144215b9aa85330f76cb9ec437e))
+* add results to workflow run artifacts ([#91](https://github.com/prefapp/firestarter-workflows/issues/91)) ([42b910b](https://github.com/prefapp/firestarter-workflows/commit/42b910ba3665a9b15a3e9f149cde94e8b0768021))
+* Fix versions with workflow call inputs ([#99](https://github.com/prefapp/firestarter-workflows/issues/99)) ([49afea0](https://github.com/prefapp/firestarter-workflows/commit/49afea0c51784e3a72e1ce9bfcfe7dd46a8349f5))
+
 ## [1.4.0](https://github.com/prefapp/firestarter-workflows/compare/v1.3.1...v1.4.0) (2024-07-05)
 
 
