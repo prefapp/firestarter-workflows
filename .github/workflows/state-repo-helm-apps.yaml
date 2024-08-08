@@ -239,7 +239,7 @@ jobs:
 
             helmfile --environment ${{ inputs.environment }} template > /tmp/manifests.yml
 
-            if [ -s /tmp/manifests.yml ]; then
+            if [ -z /tmp/manifests.yml ]; then
               echo "The YAML file is not empty."
               kubectl apply -f /tmp/manifests.yml --dry-run=server
               rm /tmp/manifests.yml
