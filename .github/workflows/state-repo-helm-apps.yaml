@@ -243,7 +243,7 @@ jobs:
               kubectl apply -f /tmp/manifests.yml --dry-run=server
               rm /tmp/manifests.yml
             else
-              echo "::warning app=$app,env=${{inputs.environment}}::The YAML file is empty."
+              echo "::warning app=$app,env=${{inputs.environment}}::The helm deploy did not generate any manifest."
             fi
 
 
