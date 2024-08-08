@@ -190,7 +190,14 @@ jobs:
 
           echo "$apps" | jq -r '.[]' | while read app; do
 
-            helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
+            helmfile --environment ${{ inputs.environment }} template > /tmp/manifests.yml
+
+            if [ -z /tmp/manifests.yml ]; then
+              kubectl apply -f /tmp/manifests.yml --dry-run=server
+              rm /tmp/manifests.yml
+            else
+              echo "::warning app=$app,env=${{inputs.environment}}::The helm deploy did not generate any manifest."
+            fi
 
             # Verify the app exists or if it is the first time it's been applied
             appname=$(echo $app | awk -F"/" '{print $NF}')
