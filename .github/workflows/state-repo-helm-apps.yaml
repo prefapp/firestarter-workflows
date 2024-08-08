@@ -237,7 +237,16 @@ jobs:
 
             cd ${{ github.workspace }}/$app
 
-            helmfile --environment ${{ inputs.environment }} template | kubectl apply -f - --dry-run=server
+            helmfile --environment ${{ inputs.environment }} template > /tmp/manifests.yml
+
+            if [ -s /tmp/manifests.yml ]; then
+              echo "The YAML file is not empty."
+              kubectl apply -f /tmp/manifests.yml --dry-run=server
+              rm /tmp/manifests.yml
+            else
+              echo "The YAML file is empty."
+            fi
+
 
             # Verify the app exists or if it is the first time it's been applied
             appname=$(echo $app | awk -F"/" '{print $NF}')
