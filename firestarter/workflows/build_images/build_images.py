@@ -14,6 +14,7 @@ from os import remove, getcwd
 import string
 import logging
 import yaml
+import fnmatch
 
 logger = logging.getLogger(__name__)
 
@@ -136,12 +137,24 @@ class BuildImages(FirestarterWorkflow):
         return sr.resolve()
 
     def filter_flavors(self):
+        all_flavors_list = list(self.config.to_dict()["images"].keys())
+        flavor_filter_list = []
+        final_flavors_list = []
+
         # Get the on-premises name from the command-line arguments and filter the on-premises data accordingly
         if self.flavors.replace(' ', '') == '*':
             print('Publishing all flavors:')
-            self._flavors = ",".join(list(self.config.to_dict()["images"].keys()))
+            self._flavors = ",".join(all_flavors_list)
 
-        self._flavors = self.flavors.replace(' ', '').split(',')
+        flavor_filter_list = self.flavors.replace(' ', '').split(',')
+        for flavor in all_flavors_list:
+            for flavor_filter in flavor_filter_list:
+                if fnmatch.fnmatch(flavor, flavor_filter):
+                    final_flavors_list.append(flavor)
+                    continue
+
+        self._flavors = final_flavors_list
+
 
     def filter_auto_build(self):
         print('Publishing all flavors with auto build enabled:', self.config.to_dict()["images"])
