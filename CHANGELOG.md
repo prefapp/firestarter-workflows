@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.0](https://github.com/prefapp/firestarter-workflows/compare/v1.5.1...v1.6.0) (2024-08-20)
+
+
+### Features
+
+* Added glob filtering ([#111](https://github.com/prefapp/firestarter-workflows/issues/111)) ([c5d3c2f](https://github.com/prefapp/firestarter-workflows/commit/c5d3c2f10db6005b5b0ba8d62dc4c2d9d95cd0fd))
+* Verify helmfile templated contents before dry run ([#109](https://github.com/prefapp/firestarter-workflows/issues/109)) ([a0a2849](https://github.com/prefapp/firestarter-workflows/commit/a0a284955abf040040504d99c695c84f1801283f))
+
 ## [1.5.1](https://github.com/prefapp/firestarter-workflows/compare/v1.5.0...v1.5.1) (2024-07-23)
 
 
