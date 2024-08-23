@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/prefapp/firestarter-workflows/compare/v1.6.0...v1.6.1) (2024-08-23)
+
+
+### Bug Fixes
+
+* Replaced print statements with logger.info ([#112](https://github.com/prefapp/firestarter-workflows/issues/112)) ([2abcfca](https://github.com/prefapp/firestarter-workflows/commit/2abcfcaeae12e9181f06b8a6a0f44fd74477bdf7))
+
 ## [1.6.0](https://github.com/prefapp/firestarter-workflows/compare/v1.5.1...v1.6.0) (2024-08-20)
 
 
