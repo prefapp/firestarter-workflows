@@ -143,7 +143,7 @@ class BuildImages(FirestarterWorkflow):
 
         # Get the on-premises name from the command-line arguments and filter the on-premises data accordingly
         if self.flavors.replace(' ', '') == '*':
-            print('Publishing all flavors:')
+            logger.info('Publishing all flavors:')
             self._flavors = ",".join(all_flavors_list)
 
         flavor_filter_list = self.flavors.replace(' ', '').split(',')
@@ -157,7 +157,7 @@ class BuildImages(FirestarterWorkflow):
 
 
     def filter_auto_build(self):
-        print('Publishing all flavors with auto build enabled:', self.config.to_dict()["images"])
+        logger.info('Publishing all flavors with auto build enabled:', self.config.to_dict()["images"])
         self._flavors = [flavor for flavor in self.config.to_dict()["images"] if self.config.to_dict()["images"][flavor].get("auto")]
 
     async def test_image(self, ctx):
@@ -179,12 +179,12 @@ class BuildImages(FirestarterWorkflow):
                 ]
             )
 
-            print(stdout.decode('utf-8'))
+            logger.info(stdout.decode('utf-8'))
 
         except docker.errors.ContainerError as e:
             raise Exception("Structure test failed.")
         except Exception as e:
-            print(e)
+            logger.info(e)
         finally:
             remove(file_name)
 
@@ -376,7 +376,7 @@ class BuildImages(FirestarterWorkflow):
             auth_strategy, registry
         )
 
-        print(f"Setting creds {creds}")
+        logger.info(f"Setting creds {creds}")
         provider.creds = creds
 
         provider.login_registry()
