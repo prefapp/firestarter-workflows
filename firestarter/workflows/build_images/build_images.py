@@ -138,16 +138,17 @@ class BuildImages(FirestarterWorkflow):
             ['git', 'ls-remote', '--tags'], stdout=subprocess.PIPE
         ).stdout.decode('utf-8')
 
-        logger.info(f"Git output: {git_output}")
-
         splitted_output = git_output.split('\n')
 
         for tag_info in splitted_output:
-            logger.info(f"Tag info: {tag_info}")
-            tag_name = tag_info.split('\t')[1]
+            # The last entry in splitter_output is an empty string,
+            # because the output of the git command ends with '\n'.
+            # This check prevents an error
+            if tag_info:
+                tag_name = tag_info.split('\t')[1]
 
-            if self._from == tag_name:
-                return tag_name
+                if self._from == tag_name:
+                    return tag_name
 
         short_sha = subprocess.run(
             ['git', 'rev-parse', self._from], stdout=subprocess.PIPE
