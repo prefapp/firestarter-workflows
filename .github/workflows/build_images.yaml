@@ -121,7 +121,7 @@ jobs:
          pyproject_path: .dagger
          workflow: build_images
          config_file: ../config/.github/build_images.yaml
-         ref: "v1"
+         ref: "feat/non-tag-references-to-short-sha"
          vars: |
            repo_name="${{ github.repository }}"
            flavors="${{ inputs.flavors }}"
@@ -134,7 +134,7 @@ jobs:
            workflow_run_id=${{ github.run_id}}
            workflow_run_url="https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
            login_required="true"
-           ref="v1"
+           ref="feat/non-tag-references-to-short-sha"
            service_path="${{ fromJSON(vars.DOCKER_REGISTRIES_BASE_PATHS).services[inputs.type] }}"
          secrets: ${{ inputs.secrets }}
 
