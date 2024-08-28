@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/prefapp/firestarter-workflows/compare/v1.6.1...v1.7.0) (2024-08-28)
+
+
+### Features
+
+* Updated code so non-tag references are transformed to short SHA ([#114](https://github.com/prefapp/firestarter-workflows/issues/114)) ([cd00e39](https://github.com/prefapp/firestarter-workflows/commit/cd00e3951335d01873b65a38afc451792f93db9c))
+
 ## [1.6.1](https://github.com/prefapp/firestarter-workflows/compare/v1.6.0...v1.6.1) (2024-08-23)
 
 
