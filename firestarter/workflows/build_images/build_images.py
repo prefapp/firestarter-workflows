@@ -143,6 +143,7 @@ class BuildImages(FirestarterWorkflow):
         splitted_output = git_output.split('\n')
 
         for tag_info in splitted_output:
+            logger.info(f"Tag info: {tag_info}")
             tag_name = tag_info.split('\t')[1]
 
             if self._from == tag_name:
