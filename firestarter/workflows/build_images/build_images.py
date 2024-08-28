@@ -147,8 +147,8 @@ class BuildImages(FirestarterWorkflow):
             if tag_info:
                 tag_name = tag_info.split('\t')[1]
 
-                if self._from == f'refs/tags/{tag_name}':
-                    return tag_name
+                if f'refs/tags/{self._from}' == tag_name:
+                    return self._from
 
         short_sha = subprocess.run(
             ['git', 'rev-parse', self._from], stdout=subprocess.PIPE
