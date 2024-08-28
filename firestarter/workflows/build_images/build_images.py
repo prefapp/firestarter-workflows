@@ -138,6 +138,8 @@ class BuildImages(FirestarterWorkflow):
             ['git', 'ls-remote', '--tags'], stdout=subprocess.PIPE
         ).stdout.decode('utf-8')
 
+        logger.info(f"Git output: {git_output}")
+
         splitted_output = git_output.split('\n')
 
         for tag_info in splitted_output:
