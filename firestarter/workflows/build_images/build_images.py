@@ -147,7 +147,7 @@ class BuildImages(FirestarterWorkflow):
             if tag_info:
                 tag_name = tag_info.split('\t')[1]
 
-                if self._from == tag_name:
+                if self._from == f'refs/tags/{tag_name}':
                     return tag_name
 
         short_sha = subprocess.run(
