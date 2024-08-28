@@ -15,6 +15,7 @@ import string
 import logging
 import yaml
 import fnmatch
+import subprocess
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +83,7 @@ class BuildImages(FirestarterWorkflow):
     # Cannot use from property as it is a reserved keyword
     @property
     def from_version(self):
-        return self._from
+        return self.dereference_from_version()
 
     @property
     def workflow_run_id(self):
@@ -131,6 +132,29 @@ class BuildImages(FirestarterWorkflow):
     @property
     def output_results(self):
         return self._output_results
+
+    def dereference_from_version(self):
+        git_output = subprocess.run(
+            ['git', 'ls-remote', '--tags'], stdout=subprocess.PIPE
+        ).stdout.decode('utf-8')
+
+        splitted_output = git_output.split('\n')
+
+        for tag_info in splitted_output:
+            # The last entry in splitter_output is an empty string,
+            # because the output of the git command ends with '\n'.
+            # This check prevents an error
+            if tag_info:
+                tag_name = tag_info.split('\t')[1]
+
+                if f'refs/tags/{self._from}' == tag_name:
+                    return self._from
+
+        short_sha = subprocess.run(
+            ['git', 'rev-parse', self._from], stdout=subprocess.PIPE
+        ).stdout.decode('utf-8')[:7]
+
+        return short_sha
 
     def resolve_secrets(self, secrets=None):
         sr = SecretResolver(secrets)
