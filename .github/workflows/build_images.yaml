@@ -112,15 +112,6 @@ jobs:
        uses: actions/checkout@v4
        with:
          path: config
-         
-     - name: Log in to GitHub Container Registry
-       id: login_docker_github_registry
-       if: ${{ inputs.auth_strategy == 'generic' }}
-       run: |
-         echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u github-bot --password-stdin
-         token=$(docker login ghcr.io -u github-bot --password-stdin 2>&1 | grep -oP '(?<=token: )\S+')
-         echo "::add-mask::$token"
-         echo "::set-output name=docker_token::$token"
         
      - name: Build images
        uses: prefapp/run-dagger-py@main
@@ -145,7 +136,7 @@ jobs:
            login_required="true"
            ref="v1"
            service_path="${{ fromJSON(vars.DOCKER_REGISTRIES_BASE_PATHS).services[inputs.type] }}"
-           registry_creds="${{ secrets.DOCKER_REGISTRY_CREDS || 'github-bot:${{ steps.login_docker_github_registry.outputs.docker_token }}' }}"
+           registry_creds="${{ secrets.DOCKER_REGISTRY_CREDS || '${{ github.actor }}:${{ github.token }}' }}"
          secrets: ${{ inputs.secrets }}
 
      - uses: actions/upload-artifact@v4
