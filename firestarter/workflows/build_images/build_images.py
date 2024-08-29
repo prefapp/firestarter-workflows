@@ -337,13 +337,20 @@ class BuildImages(FirestarterWorkflow):
 
     def get_flavor_data(self, flavor):
 
+                
+        def concat_full_repo_name(service_path, repo_name):
+            if not service_path:
+                return repo_name
+            else:
+                return f"{service_path}/{repo_name}"
+
         value = self.config.images[flavor]
 
         registry = value.registry or {}
 
         registry_name = registry.get("name", "") or self.vars[f"{self.type}_registry"]
 
-        full_repo_name = registry.get("repository", "") or f"{self.service_path}/{self.repo_name}"
+        full_repo_name = registry.get("repository", "") or concat_full_repo_name(self.service_path,self.repo_name)
 
         build_args = value.build_args or {}
 
