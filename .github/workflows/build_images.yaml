@@ -116,7 +116,7 @@ jobs:
          
      - name: Log in to GitHub Container Registry
        id: login_docker_github_registry
-       if: ${{ inputs.auth_strategy == 'generic' && secrets.DOCKER_REGISTRY_CREDS == '' }}
+       if: ${{ inputs.auth_strategy == 'generic' }} && ${{ secrets.DOCKER_REGISTRY_CREDS == '' }}
        run: |
          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u github-bot --password-stdin
          # Supongamos que el comando anterior devuelve un token o valor que necesitas extraer
