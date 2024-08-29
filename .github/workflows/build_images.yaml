@@ -66,8 +66,7 @@ jobs:
        id: get-gh-app-token
        uses: actions/create-github-app-token@v1
        with:
-          app-id: ${{ vars.FIRESTARTER_GITHUB_APP_ID }}  
-          # private-key: ${{ secrets.FIRESTARTER_GITHUB_APP_PEM_FILE }}
+          app-id: ${{ vars.FIRESTARTER_GITHUB_APP_ID }}
           private-key: ${{ steps.get-pem.outputs.github-app-pem }}
           owner: ${{ github.repository_owner }}
 
