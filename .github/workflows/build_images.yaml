@@ -136,7 +136,7 @@ jobs:
            login_required="true"
            ref="v1"
            service_path="${{ fromJSON(vars.DOCKER_REGISTRIES_BASE_PATHS).services[inputs.type] }}"
-           registry_creds="${{ secrets.DOCKER_REGISTRY_CREDS || 'ghcr.io:${{github.token}}' }}"
+           registry_creds="${{ secrets.DOCKER_REGISTRY_CREDS || '${{github.actor}}:${{github.token}}' }}"
          secrets: ${{ inputs.secrets }}
 
      - uses: actions/upload-artifact@v4
