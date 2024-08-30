@@ -36,7 +36,7 @@ class BuildImages(FirestarterWorkflow):
         self._snapshots_registry = self.vars['snapshots_registry']
         self._releases_registry = self.vars['releases_registry']
         self._snapshots_registry_creds = self.vars.get('snapshots_registry_creds')
-        self._releases_registry_creds = self.vars.get('registry_releases_creds')
+        self._releases_registry_creds = self.vars.get('releases_registry_creds')
         self._auth_strategy = self.vars['auth_strategy']
         self._output_results = self.vars['output_results']
         self._type = self.vars['type']
@@ -71,11 +71,11 @@ class BuildImages(FirestarterWorkflow):
     # because there is no way to specify a custom auth strategy for each of them
     @property
     def snapshots_registry_creds(self):
-        return self.snapshots_registry_creds
+        return self._snapshots_registry_creds
 
     @property
-    def registry_releases_creds(self):
-        return self.registry_releases_creds
+    def releases_registry_creds(self):
+        return self._releases_registry_creds
 
     @property
     def auth_strategy(self):
