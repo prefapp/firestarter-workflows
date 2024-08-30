@@ -94,20 +94,6 @@ jobs:
          ref: ${{ inputs.from }}
          path: build
 
-     - name: Get tag
-       id: get-tag
-       shell: bash
-       run: |
-        ref=${{ inputs.from }}
-        if [[ $ref =~ ^[0-9a-fA-F]{40}$ ]]; then
-            short_sha=$(echo $ref | cut -c1-7)
-            echo "tag=${short_sha}" >> $GITHUB_OUTPUT
-            echo "Ref $ref is a Git SHA, $short_sha is used as a tag."
-        else
-            echo "tag=${ref}" >> $GITHUB_OUTPUT
-            echo "Ref is not a Git SHA, $ref is used as a tag or branch name."
-        fi
-
      - name: Checkout repository to get config file
        uses: actions/checkout@v4
        with:
@@ -130,7 +116,7 @@ jobs:
            releases_registry="${{ vars.DOCKER_REGISTRY_RELEASES }}"
            output_results="build_images_results.yaml"
            type="${{ inputs.type }}"
-           from="${{ steps.get-tag.outputs.tag }}"
+           from="${{ inputs.from }}"
            workflow_run_id=${{ github.run_id}}
            workflow_run_url="https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
            login_required="true"

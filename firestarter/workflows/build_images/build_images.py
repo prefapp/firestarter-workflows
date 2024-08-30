@@ -16,6 +16,7 @@ import logging
 import yaml
 import fnmatch
 import subprocess
+import re
 
 logger = logging.getLogger(__name__)
 
@@ -150,11 +151,16 @@ class BuildImages(FirestarterWorkflow):
                 if f'refs/tags/{self._from}' == tag_name:
                     return self._from
 
-        short_sha = subprocess.run(
+        image_tag = subprocess.run(
             ['git', 'rev-parse', self._from], stdout=subprocess.PIPE
         ).stdout.decode('utf-8')[:7]
 
-        return short_sha
+        # If self._from is not a SHA, we assume it's a branch.
+        # We append its name to the image_tag so it's easier to identify
+        if not re.match('^[0-9a-f]{7,40}$', self._from):
+            image_tag = f'{self._from}_{image_tag}'
+
+        return image_tag
 
     def resolve_secrets(self, secrets=None):
         sr = SecretResolver(secrets)
