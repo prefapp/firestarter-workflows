@@ -2,7 +2,7 @@ from .aws import AwsOidcDockerRegistryAuth
 from .azure import AzureOidcDockerRegistryAuth
 from .generic import GenericDockerRegistryAuth
 from .base import RegistryProvider
-
+from .github import GithubRegistryAuth
 
 class DockerRegistryAuthFactory():
 
@@ -14,6 +14,6 @@ class DockerRegistryAuthFactory():
         elif provider == 'generic':
             return GenericDockerRegistryAuth(registry)
         elif provider == 'ghcr':
-            return GenericDockerRegistryAuth(registry)
+            return GithubRegistryAuth(registry)
         else:
             raise ValueError(f'Unknown provider: {provider}')

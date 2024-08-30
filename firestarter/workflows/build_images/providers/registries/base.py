@@ -11,8 +11,8 @@ class RegistryAuth:
 
 class RegistryProvider():
 
-    def __init__(self, registry: str) -> None:
-        self._creds = None
+    def __init__(self, registry: str, creds: str = None) -> None:
+        self._creds = creds
         self._registry = registry
 
     @property
