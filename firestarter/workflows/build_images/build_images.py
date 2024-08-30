@@ -403,7 +403,7 @@ class BuildImages(FirestarterWorkflow):
                     self.login(
                         extra_registry['auth_strategy'],
                         extra_registry['name'],
-                        extra_registry.get('creds')
+                        default_registry_creds
                     )
 
         # Print config docker file
