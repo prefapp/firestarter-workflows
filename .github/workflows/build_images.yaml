@@ -35,6 +35,8 @@ permissions:
 
 jobs:
   build-images:
+    env:
+     GH_TOKEN: ${{ github.token }}
     runs-on: ubuntu-22.04
     steps:
     
@@ -113,17 +115,6 @@ jobs:
        with:
          path: config
 
-     - name: Generic Docker Registry Credentials
-       id: generic_docker_registry_creds
-       if: ${{ inputs.auth_strategy == 'generic' }}
-       run: |
-         if [ -n "${{ secrets.DOCKER_REGISTRY_CREDS }}" ]; then
-           registry_creds="${{ secrets.DOCKER_REGISTRY_CREDS }}"
-         else
-           registry_creds="${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}"
-         fi
-         echo "::set-output name=registry_creds::$registry_creds"      
-        
      - name: Build images
        uses: prefapp/run-dagger-py@main
        id: build-images
@@ -147,7 +138,8 @@ jobs:
            login_required="true"
            ref="v1"
            service_path="${{ fromJSON(vars.DOCKER_REGISTRIES_BASE_PATHS).services[inputs.type] }}"
-           registry_creds="${{ steps.generic_docker_registry_creds.outputs.registry_creds }}"
+           generic_registry_creds="${{ secrets.DOCKER_REGISTRY_CREDS }}"
+           ghcr_registry_creds="${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}"
          secrets: ${{ inputs.secrets }}
 
      - uses: actions/upload-artifact@v4
