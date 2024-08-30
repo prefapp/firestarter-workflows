@@ -138,8 +138,8 @@ jobs:
            login_required="true"
            ref="v1"
            service_path="${{ fromJSON(vars.DOCKER_REGISTRIES_BASE_PATHS).services[inputs.type] }}"
-           generic_registry_creds="${{ secrets.DOCKER_REGISTRY_CREDS }}"
-           ghcr_registry_creds="${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}"
+           registry_snapshots_creds="${{ secrets.DOCKER_REGISTRY_SNAPSHOTS_CREDS }}"
+           registry_releases_creds="${{ secrets.DOCKER_REGISTRY_RELEASES_CREDS }}"
          secrets: ${{ inputs.secrets }}
 
      - uses: actions/upload-artifact@v4
