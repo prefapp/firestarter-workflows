@@ -67,8 +67,6 @@ class BuildImages(FirestarterWorkflow):
     def releases_registry(self):
         return self._releases_registry
 
-    # There is only one shared cred for both snapshots and releases as for now
-    # because there is no way to specify a custom auth strategy for each of them
     @property
     def snapshots_registry_creds(self):
         return self._snapshots_registry_creds
