@@ -402,7 +402,7 @@ class BuildImages(FirestarterWorkflow):
                     self.login(
                         extra_registry['auth_strategy'],
                         extra_registry['name'],
-                        extra_registry.get('creds')
+                        default_registry_creds
                     )
 
         # Run the coroutine function to execute the compilation process for all on-premises
