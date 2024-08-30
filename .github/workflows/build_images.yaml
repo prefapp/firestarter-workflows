@@ -123,7 +123,7 @@ jobs:
          pyproject_path: .dagger
          workflow: build_images
          config_file: ../config/.github/build_images.yaml
-         ref: "feat/support-generic-docker-registry-auth"
+         ref: "v1"
          vars: |
            repo_name="${{ github.repository }}"
            flavors="${{ inputs.flavors }}"
