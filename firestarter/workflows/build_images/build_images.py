@@ -406,14 +406,6 @@ class BuildImages(FirestarterWorkflow):
                         default_registry_creds
                     )
 
-        # Print config docker file
-        docker_cfg_path = f"{getenv('HOME')}/.docker/config.json"
-      
-      
-        with open(docker_cfg_path, 'r') as f:
-          print("🐣🐣🐣")
-          print(json.load(f))
-
         # Run the coroutine function to execute the compilation process for all on-premises
         anyio.run(self.compile_images_for_all_flavors)
 
