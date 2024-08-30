@@ -13,5 +13,7 @@ class DockerRegistryAuthFactory():
             return AzureOidcDockerRegistryAuth(registry)
         elif provider == 'generic':
             return GenericDockerRegistryAuth(registry)
+        elif provider == 'ghcr':
+            return GenericDockerRegistryAuth(registry)
         else:
             raise ValueError(f'Unknown provider: {provider}')
