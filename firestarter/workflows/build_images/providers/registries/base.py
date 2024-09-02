@@ -11,8 +11,8 @@ class RegistryAuth:
 
 class RegistryProvider():
 
-    def __init__(self, registry: str) -> None:
-        self._creds = None
+    def __init__(self, registry: str, creds: str = None) -> None:
+        self._creds = creds
         self._registry = registry
 
     @property
@@ -47,6 +47,7 @@ class RegistryProvider():
         else:
             with open(docker_cfg_path, 'r') as f:
                 config = json.load(f)
+        
         config.setdefault("auths", {})[self.registry] = {"auth": b64_auth}
 
         # Write the updated config to config.json
