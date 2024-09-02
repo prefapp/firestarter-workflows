@@ -39,7 +39,7 @@ class BuildImages(FirestarterWorkflow):
         self._auth_strategy = self.vars['auth_strategy']
         self._output_results = self.vars['output_results']
         self._type = self.vars['type']
-        self._from = self.vars['from']
+        self._from = self.dereference_from_input(self.vars['from'])
         self._workflow_run_id = self.vars['workflow_run_id']
         self._workflow_run_url = self.vars['workflow_run_url']
         self._service_path = self.vars['service_path']
@@ -83,7 +83,7 @@ class BuildImages(FirestarterWorkflow):
     # Cannot use from property as it is a reserved keyword
     @property
     def from_version(self):
-        return self.dereference_from_version()
+        return self._from
 
     @property
     def workflow_run_id(self):
@@ -133,25 +133,20 @@ class BuildImages(FirestarterWorkflow):
     def output_results(self):
         return self._output_results
 
-    def dereference_from_version(self):
+    def dereference_from_input(self, input_value):
+        # git tag -l <pattern> checks to see if any tag matches the given pattern.
+        # Since we want a tag named exactly as input_value, we input it as a pattern
+        # and check the output. If it's empty, input_value is not a tag. If it does,
+        # input_value is a tag
         git_output = subprocess.run(
-            ['git', 'ls-remote', '--tags'], stdout=subprocess.PIPE
+            ['git', 'tag', '-l', input_value], stdout=subprocess.PIPE
         ).stdout.decode('utf-8')
 
-        splitted_output = git_output.split('\n')
-
-        for tag_info in splitted_output:
-            # The last entry in splitter_output is an empty string,
-            # because the output of the git command ends with '\n'.
-            # This check prevents an error
-            if tag_info:
-                tag_name = tag_info.split('\t')[1]
-
-                if f'refs/tags/{self._from}' == tag_name:
-                    return self._from
+        if git_output:
+            return input_value
 
         short_sha = subprocess.run(
-            ['git', 'rev-parse', self._from], stdout=subprocess.PIPE
+            ['git', 'rev-parse', input_value], stdout=subprocess.PIPE
         ).stdout.decode('utf-8')[:7]
 
         return short_sha
@@ -216,6 +211,9 @@ class BuildImages(FirestarterWorkflow):
     # Define a coroutine function to compile an image using Docker
 
     async def compile_image_and_publish(self, ctx, build_args, secrets, dockerfile, image):
+        # Checkout the correct commit of the repo before starting the build process
+        subprocess.run(['git', 'checkout', self.from_version])
+
         # Set a current working directory
         src = ctx.host().directory(".")
 
