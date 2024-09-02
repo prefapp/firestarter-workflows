@@ -93,14 +93,13 @@ jobs:
      - name: Checkout repository
        uses: actions/checkout@v4
        with:
-         ref: ${{ inputs.from }}
          path: build
+         fetch-depth: 0
 
      - name: Checkout repository to get config file
        uses: actions/checkout@v4
        with:
          path: config
-         fetch-depth: 0
 
      - name: Build images
        uses: prefapp/run-dagger-py@main
