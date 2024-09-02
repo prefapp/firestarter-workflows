@@ -215,6 +215,9 @@ class BuildImages(FirestarterWorkflow):
     # Define a coroutine function to compile an image using Docker
 
     async def compile_image_and_publish(self, ctx, build_args, secrets, dockerfile, image):
+        # We checkout self._from before building the image
+        subprocess.run(["git", "checkout", self._from])
+
         # Set a current working directory
         src = ctx.host().directory(".")
 
@@ -336,7 +339,7 @@ class BuildImages(FirestarterWorkflow):
 
     def get_flavor_data(self, flavor):
 
-                
+
         def concat_full_repo_name(service_path, repo_name):
             if not service_path:
                 return repo_name
@@ -373,8 +376,8 @@ class BuildImages(FirestarterWorkflow):
         default_registry = getattr(self, f"{self.type}_registry")
         default_registry_creds = getattr(self, f"{self.type}_registry_creds")
         self.login(
-            self.auth_strategy, 
-            default_registry, 
+            self.auth_strategy,
+            default_registry,
             default_registry_creds,
         )
 
@@ -386,7 +389,7 @@ class BuildImages(FirestarterWorkflow):
                     value.registry.get("auth_strategy", self.auth_strategy),
                     value.registry.get("name", default_registry),
                     value.registry.get(
-                        "creds", 
+                        "creds",
                         default_registry_creds
                     )
                 )
