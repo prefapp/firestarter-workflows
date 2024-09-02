@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import sys
 from firestarter.common.firestarter_workflow import FirestarterWorkflow
@@ -10,7 +11,7 @@ from .config import Config
 import docker
 from ast import literal_eval
 import uuid
-from os import remove, getcwd
+from os import getenv, remove, getcwd
 import string
 import logging
 import yaml
@@ -35,7 +36,8 @@ class BuildImages(FirestarterWorkflow):
         self._repo_name = self.vars['repo_name']
         self._snapshots_registry = self.vars['snapshots_registry']
         self._releases_registry = self.vars['releases_registry']
-        self._registry_creds = self.vars.get('registry_creds')
+        self._snapshots_registry_creds = self.vars.get('snapshots_registry_creds')
+        self._releases_registry_creds = self.vars.get('releases_registry_creds')
         self._auth_strategy = self.vars['auth_strategy']
         self._output_results = self.vars['output_results']
         self._type = self.vars['type']
@@ -66,11 +68,13 @@ class BuildImages(FirestarterWorkflow):
     def releases_registry(self):
         return self._releases_registry
 
-    # There is only one shared cred for both snapshots and releases as for now
-    # because there is no way to specify a custom auth strategy for each of them
     @property
-    def registry_creds(self):
-        return self._registry_creds
+    def snapshots_registry_creds(self):
+        return self._snapshots_registry_creds
+
+    @property
+    def releases_registry_creds(self):
+        return self._releases_registry_creds
 
     @property
     def auth_strategy(self):
@@ -337,13 +341,20 @@ class BuildImages(FirestarterWorkflow):
 
     def get_flavor_data(self, flavor):
 
+                
+        def concat_full_repo_name(service_path, repo_name):
+            if not service_path:
+                return repo_name
+            else:
+                return f"{service_path}/{repo_name}"
+
         value = self.config.images[flavor]
 
         registry = value.registry or {}
 
         registry_name = registry.get("name", "") or self.vars[f"{self.type}_registry"]
 
-        full_repo_name = registry.get("repository", "") or f"{self.service_path}/{self.repo_name}"
+        full_repo_name = registry.get("repository", "") or concat_full_repo_name(self.service_path,self.repo_name)
 
         build_args = value.build_args or {}
 
@@ -365,8 +376,12 @@ class BuildImages(FirestarterWorkflow):
             self.filter_flavors()
 
         default_registry = getattr(self, f"{self.type}_registry")
-
-        self.login(self.auth_strategy, default_registry, self.registry_creds)
+        default_registry_creds = getattr(self, f"{self.type}_registry_creds")
+        self.login(
+            self.auth_strategy, 
+            default_registry, 
+            default_registry_creds,
+        )
 
         for flavor in self.flavors:
             value = self.config.images[flavor]
@@ -375,7 +390,10 @@ class BuildImages(FirestarterWorkflow):
                 self.login(
                     value.registry.get("auth_strategy", self.auth_strategy),
                     value.registry.get("name", default_registry),
-                    value.registry.get("creds", self.registry_creds)
+                    value.registry.get(
+                        "creds", 
+                        default_registry_creds
+                    )
                 )
 
             extra_registries = value.extra_registries or []
@@ -385,7 +403,7 @@ class BuildImages(FirestarterWorkflow):
                     self.login(
                         extra_registry['auth_strategy'],
                         extra_registry['name'],
-                        extra_registry.get('creds')
+                        default_registry_creds
                     )
 
         # Run the coroutine function to execute the compilation process for all on-premises

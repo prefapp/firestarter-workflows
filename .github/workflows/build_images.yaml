@@ -31,9 +31,12 @@ on:
 permissions:
   id-token: write
   contents: read
+  packages: write
 
 jobs:
   build-images:
+    env:
+     GH_TOKEN: ${{ secrets.GITHUB_DOCKER_REGISTRY_CREDS || github.token }}
     runs-on: ubuntu-22.04
     steps:
     
@@ -65,8 +68,7 @@ jobs:
        id: get-gh-app-token
        uses: actions/create-github-app-token@v1
        with:
-          app-id: ${{ vars.FIRESTARTER_GITHUB_APP_ID }}  
-          # private-key: ${{ secrets.FIRESTARTER_GITHUB_APP_PEM_FILE }}
+          app-id: ${{ vars.FIRESTARTER_GITHUB_APP_ID }}
           private-key: ${{ steps.get-pem.outputs.github-app-pem }}
           owner: ${{ github.repository_owner }}
 
@@ -112,7 +114,7 @@ jobs:
        uses: actions/checkout@v4
        with:
          path: config
-   
+
      - name: Build images
        uses: prefapp/run-dagger-py@main
        id: build-images
@@ -136,12 +138,15 @@ jobs:
            login_required="true"
            ref="v1"
            service_path="${{ fromJSON(vars.DOCKER_REGISTRIES_BASE_PATHS).services[inputs.type] }}"
+           snapshots_registry_creds="${{ secrets.DOCKER_REGISTRY_SNAPSHOTS_CREDS }}"
+           releases_registry_creds="${{ secrets.DOCKER_REGISTRY_RELEASES_CREDS }}"
          secrets: ${{ inputs.secrets }}
 
      - uses: actions/upload-artifact@v4
        with:
          name: build-images-results
          path: /tmp/build_images_results.yaml
+
               
      - name: Update Check Run Summary
        id: update-check-run-summary
