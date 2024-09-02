@@ -211,9 +211,6 @@ class BuildImages(FirestarterWorkflow):
     # Define a coroutine function to compile an image using Docker
 
     async def compile_image_and_publish(self, ctx, build_args, secrets, dockerfile, image):
-        # Checkout the correct commit of the repo before starting the build process
-        subprocess.run(['git', 'checkout', self.from_version])
-
         # Set a current working directory
         src = ctx.host().directory(".")
 
