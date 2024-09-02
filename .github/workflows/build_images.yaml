@@ -107,7 +107,7 @@ jobs:
          pyproject_path: .dagger
          workflow: build_images
          config_file: ../config/.github/build_images.yaml
-         ref: "v1"
+         ref: "fix/branch-name-in-image-tag"
          vars: |
            repo_name="${{ github.repository }}"
            flavors="${{ inputs.flavors }}"
@@ -120,7 +120,7 @@ jobs:
            workflow_run_id=${{ github.run_id}}
            workflow_run_url="https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
            login_required="true"
-           ref="v1"
+           ref="fix/branch-name-in-image-tag"
            service_path="${{ fromJSON(vars.DOCKER_REGISTRIES_BASE_PATHS).services[inputs.type] }}"
          secrets: ${{ inputs.secrets }}
 
