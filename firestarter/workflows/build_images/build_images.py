@@ -142,18 +142,21 @@ class BuildImages(FirestarterWorkflow):
         # Since we want a tag named exactly as input_value, we input it as a pattern
         # and check the output. If it's empty, input_value is not a tag. If it does,
         # input_value is a tag
+        logger.info("🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷", input_value)
+
         git_output = subprocess.run(
             ['git', 'tag', '-l', input_value], stdout=subprocess.PIPE
         ).stdout.decode('utf-8')
 
-        logger.info("🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙", git_output.strip())
-
         if git_output.strip():
-            return input_value
+            logger.info("🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙", git_output)
+            return git_output
 
         short_sha = subprocess.run(
             ['git', 'rev-parse', input_value], stdout=subprocess.PIPE
         ).stdout.decode('utf-8')[:7]
+
+        logger.info("🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷", short_sha)
 
         return short_sha
 
