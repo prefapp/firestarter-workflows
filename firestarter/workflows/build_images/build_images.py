@@ -146,6 +146,8 @@ class BuildImages(FirestarterWorkflow):
             ['git', 'tag', '-l', input_value], stdout=subprocess.PIPE
         ).stdout.decode('utf-8')
 
+        logger.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", git_output)
+
         if git_output:
             return input_value
 
