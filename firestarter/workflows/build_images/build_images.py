@@ -217,6 +217,7 @@ class BuildImages(FirestarterWorkflow):
     # Define a coroutine function to compile an image using Docker
 
     async def compile_image_and_publish(self, ctx, build_args, secrets, dockerfile, image):
+        logger.info("🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄", self.from_version)
         # We checkout self._from before building the image
         subprocess.run(["git", "checkout", self.from_version])
 
