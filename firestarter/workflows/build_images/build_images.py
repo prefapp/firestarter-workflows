@@ -142,21 +142,16 @@ class BuildImages(FirestarterWorkflow):
         # Since we want a tag named exactly as input_value, we input it as a pattern
         # and check the output. If it's empty, input_value is not a tag. If it does,
         # input_value is a tag
-        logger.info("🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷", input_value)
-
         git_output = subprocess.run(
             ['git', 'tag', '-l', input_value], stdout=subprocess.PIPE
         ).stdout.decode('utf-8')
 
         if git_output.strip():
-            logger.info("🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙🤙", git_output)
             return git_output
 
         short_sha = subprocess.run(
             ['git', 'rev-parse', input_value], stdout=subprocess.PIPE
         ).stdout.decode('utf-8')[:7]
-
-        logger.info("🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷🦷", short_sha)
 
         return short_sha
 
@@ -220,7 +215,6 @@ class BuildImages(FirestarterWorkflow):
     # Define a coroutine function to compile an image using Docker
 
     async def compile_image_and_publish(self, ctx, build_args, secrets, dockerfile, image):
-        logger.info("🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄🍄", self.from_version)
         # We checkout self._from before building the image
         subprocess.run(["git", "checkout", self.from_version])
 
