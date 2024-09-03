@@ -148,7 +148,7 @@ class BuildImages(FirestarterWorkflow):
 
         logger.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", git_output)
 
-        if git_output:
+        if git_output.strip():
             return input_value
 
         short_sha = subprocess.run(
