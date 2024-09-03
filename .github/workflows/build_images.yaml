@@ -118,7 +118,7 @@ jobs:
            releases_registry="${{ vars.DOCKER_REGISTRY_RELEASES }}"
            output_results="build_images_results.yaml"
            type="${{ inputs.type }}"
-           from="${{ steps.get-tag.outputs.tag }}"
+           from="${{ inputs.from }}"
            workflow_run_id=${{ github.run_id}}
            workflow_run_url="https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
            login_required="true"
