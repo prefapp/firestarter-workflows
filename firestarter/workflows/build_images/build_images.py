@@ -52,6 +52,10 @@ class BuildImages(FirestarterWorkflow):
             self.vars['login_required'].capitalize()) if 'login_required' in self.vars else True
         self._publish = self.vars['publish'] if 'publish' in self.vars else True
 
+        # We checkout the correct sha/tag before getting the config to ensure
+        # it's the version that we want
+        self.checkout_git_repository(self._from)
+
         # Read the on-premises configuration file
         self._config = Config.from_yaml(
             self.config_file, self.type, self.secrets)
@@ -137,6 +141,10 @@ class BuildImages(FirestarterWorkflow):
     def output_results(self):
         return self._output_results
 
+    def checkout_git_repository(self, checkout_value):
+        # We checkout self._from before building the image
+        subprocess.run(["git", "checkout", checkout_value])
+
     def dereference_from_input(self, input_value):
         # git tag -l <pattern> checks to see if any tag matches the given pattern.
         # Since we want a tag named exactly as input_value, we input it as a pattern
@@ -150,7 +158,7 @@ class BuildImages(FirestarterWorkflow):
             return git_output
 
         short_sha = subprocess.run(
-            ['git', 'rev-parse', f'origin/{input_value}'], stdout=subprocess.PIPE
+            ['git', 'rev-parse', input_value], stdout=subprocess.PIPE
         ).stdout.decode('utf-8')[:7]
 
         return short_sha
@@ -215,9 +223,6 @@ class BuildImages(FirestarterWorkflow):
     # Define a coroutine function to compile an image using Docker
 
     async def compile_image_and_publish(self, ctx, build_args, secrets, dockerfile, image):
-        # We checkout self._from before building the image
-        subprocess.run(["git", "checkout", self.from_version])
-
         # Set a current working directory
         src = ctx.host().directory(".")
 

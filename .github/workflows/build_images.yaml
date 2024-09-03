@@ -96,11 +96,6 @@ jobs:
          path: build
          fetch-depth: 0
 
-     - name: Checkout repository to get config file
-       uses: actions/checkout@v4
-       with:
-         path: config
-
      - name: Build images
        uses: prefapp/run-dagger-py@main
        id: build-images
@@ -108,7 +103,7 @@ jobs:
          working_directory: build
          pyproject_path: .dagger
          workflow: build_images
-         config_file: ../config/.github/build_images.yaml
+         config_file: ../build/.github/build_images.yaml
          ref: "feat/fetch-depth-0"
          vars: |
            repo_name="${{ github.repository }}"
