@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.0.0](https://github.com/prefapp/firestarter-workflows/compare/v1.7.0...v2.0.0) (2024-09-04)
+
+
+### ⚠ BREAKING CHANGES
+
+* Made checkout action fetch-depth equal 0 so the actual checkout logic is managed by the Python code ([#121](https://github.com/prefapp/firestarter-workflows/issues/121))
+* support generic docker registry auth ([#116](https://github.com/prefapp/firestarter-workflows/issues/116))
+
+### Features
+
+* Made checkout action fetch-depth equal 0 so the actual checkout logic is managed by the Python code ([#121](https://github.com/prefapp/firestarter-workflows/issues/121)) ([926ee2d](https://github.com/prefapp/firestarter-workflows/commit/926ee2d99324f5d98419c6bb0f0a73029dd17f22))
+* support generic docker registry auth ([#116](https://github.com/prefapp/firestarter-workflows/issues/116)) ([fbf4a3f](https://github.com/prefapp/firestarter-workflows/commit/fbf4a3fd57dd30f0a52a295186fcf42d3afc81ab))
+
 ## [1.7.0](https://github.com/prefapp/firestarter-workflows/compare/v1.6.1...v1.7.0) (2024-08-28)
 
 
