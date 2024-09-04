@@ -99,7 +99,7 @@ jobs:
      - name: Checkout repository
        uses: actions/checkout@v4
        with:
-         path: config 
+         path: config
 
      - name: Build images
        uses: prefapp/run-dagger-py@main
