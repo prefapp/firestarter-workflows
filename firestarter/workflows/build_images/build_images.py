@@ -147,9 +147,9 @@ class BuildImages(FirestarterWorkflow):
         # input_value is a tag
         git_output = subprocess.run(
             ['git', 'tag', '-l', input_value], stdout=subprocess.PIPE
-        ).stdout.decode('utf-8')
+        ).stdout.decode('utf-8').strip()
 
-        if git_output.strip():
+        if git_output:
             return git_output
 
         short_sha = subprocess.run(
