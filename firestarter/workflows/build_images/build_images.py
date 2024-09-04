@@ -32,6 +32,10 @@ def normalize_image_tag(tag):
 class BuildImages(FirestarterWorkflow):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+
+        # We checkout the correct sha/tag
+        self.checkout_git_repository(self.vars['from'])
+
         self._secrets = self.resolve_secrets(self.secrets)
         self._repo_name = self.vars['repo_name']
         self._snapshots_registry = self.vars['snapshots_registry']
@@ -51,9 +55,6 @@ class BuildImages(FirestarterWorkflow):
         self._login_required = literal_eval(
             self.vars['login_required'].capitalize()) if 'login_required' in self.vars else True
         self._publish = self.vars['publish'] if 'publish' in self.vars else True
-
-        # We checkout the correct sha/tag
-        self.checkout_git_repository(self.from_version)
 
         # Read the on-premises configuration file
         self._config = Config.from_yaml(
