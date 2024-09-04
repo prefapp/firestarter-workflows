@@ -153,7 +153,7 @@ class BuildImages(FirestarterWorkflow):
             return git_output
 
         short_sha = subprocess.run(
-            ['git', 'rev-parse', input_value], stdout=subprocess.PIPE
+            ['git', 'rev-parse', f'origin/{input_value}'], stdout=subprocess.PIPE
         ).stdout.decode('utf-8')[:7]
 
         return short_sha
