@@ -52,6 +52,9 @@ class BuildImages(FirestarterWorkflow):
             self.vars['login_required'].capitalize()) if 'login_required' in self.vars else True
         self._publish = self.vars['publish'] if 'publish' in self.vars else True
 
+        # We checkout the correct sha/tag
+        self.checkout_git_repository(self.from_version)
+
         # Read the on-premises configuration file
         self._config = Config.from_yaml(
             self.config_file, self.type, self.secrets)
@@ -147,13 +150,13 @@ class BuildImages(FirestarterWorkflow):
         # input_value is a tag
         git_output = subprocess.run(
             ['git', 'tag', '-l', input_value], stdout=subprocess.PIPE
-        ).stdout.decode('utf-8').strip()
+        ).stdout.decode('utf-8').strip().strip()
 
         if git_output:
             return git_output
 
         short_sha = subprocess.run(
-            ['git', 'rev-parse', f'origin/{input_value}'], stdout=subprocess.PIPE
+            ['git', 'rev-parse', input_value], stdout=subprocess.PIPE
         ).stdout.decode('utf-8')[:7]
 
         return short_sha
@@ -220,9 +223,6 @@ class BuildImages(FirestarterWorkflow):
     async def compile_image_and_publish(self, ctx, build_args, secrets, dockerfile, image):
         # Set a current working directory
         src = ctx.host().directory(".")
-
-        # We checkout the correct sha/tag
-        self.checkout_git_repository(self.from_version)
 
         logger.info(f"Using secrets: {secrets}")
 
