@@ -255,6 +255,7 @@ class BuildImages(FirestarterWorkflow):
                 secrets_for_all_flavors.append(client.set_secret(key, value))
 
             for flavor in self.flavors:
+                secrets = secrets_for_all_flavors
 
                 registry, full_repo_name, build_args, dockerfile, extra_registries = self.get_flavor_data(flavor)
 
@@ -287,7 +288,7 @@ class BuildImages(FirestarterWorkflow):
                     )
 
                 # Combine generic and custom secrets for this flavor
-                secrets = secrets_for_all_flavors + flavor_secrets
+                secrets += flavor_secrets
 
                 # Set the address for the default registry
                 registry_address = f"{registry}/{full_repo_name}"
