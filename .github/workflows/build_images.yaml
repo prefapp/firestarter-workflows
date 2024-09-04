@@ -93,24 +93,10 @@ jobs:
      - name: Checkout repository
        uses: actions/checkout@v4
        with:
-         ref: ${{ inputs.from }}
          path: build
+         fetch-depth: 0
 
-     - name: Get tag
-       id: get-tag
-       shell: bash
-       run: |
-        ref=${{ inputs.from }}
-        if [[ $ref =~ ^[0-9a-fA-F]{40}$ ]]; then
-            short_sha=$(echo $ref | cut -c1-7)
-            echo "tag=${short_sha}" >> $GITHUB_OUTPUT
-            echo "Ref $ref is a Git SHA, $short_sha is used as a tag."
-        else
-            echo "tag=${ref}" >> $GITHUB_OUTPUT
-            echo "Ref is not a Git SHA, $ref is used as a tag or branch name."
-        fi
-
-     - name: Checkout repository to get config file
+     - name: Checkout repository
        uses: actions/checkout@v4
        with:
          path: config
@@ -123,7 +109,7 @@ jobs:
          pyproject_path: .dagger
          workflow: build_images
          config_file: ../config/.github/build_images.yaml
-         ref: "v1"
+         ref: "v2"
          vars: |
            repo_name="${{ github.repository }}"
            flavors="${{ inputs.flavors }}"
@@ -132,11 +118,11 @@ jobs:
            releases_registry="${{ vars.DOCKER_REGISTRY_RELEASES }}"
            output_results="build_images_results.yaml"
            type="${{ inputs.type }}"
-           from="${{ steps.get-tag.outputs.tag }}"
+           from="${{ inputs.from }}"
            workflow_run_id=${{ github.run_id}}
            workflow_run_url="https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
            login_required="true"
-           ref="v1"
+           ref="v2"
            service_path="${{ fromJSON(vars.DOCKER_REGISTRIES_BASE_PATHS).services[inputs.type] }}"
            snapshots_registry_creds="${{ secrets.DOCKER_REGISTRY_SNAPSHOTS_CREDS }}"
            releases_registry_creds="${{ secrets.DOCKER_REGISTRY_RELEASES_CREDS }}"

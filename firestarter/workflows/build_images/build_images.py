@@ -32,6 +32,10 @@ def normalize_image_tag(tag):
 class BuildImages(FirestarterWorkflow):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+
+        # We checkout the correct sha/tag
+        self.checkout_git_repository(self.vars['from'])
+
         self._secrets = self.resolve_secrets(self.secrets)
         self._repo_name = self.vars['repo_name']
         self._snapshots_registry = self.vars['snapshots_registry']
@@ -41,7 +45,7 @@ class BuildImages(FirestarterWorkflow):
         self._auth_strategy = self.vars['auth_strategy']
         self._output_results = self.vars['output_results']
         self._type = self.vars['type']
-        self._from = self.vars['from']
+        self._from = self.dereference_from_input(self.vars['from'])
         self._workflow_run_id = self.vars['workflow_run_id']
         self._workflow_run_url = self.vars['workflow_run_url']
         self._service_path = self.vars['service_path']
@@ -87,7 +91,7 @@ class BuildImages(FirestarterWorkflow):
     # Cannot use from property as it is a reserved keyword
     @property
     def from_version(self):
-        return self.dereference_from_version()
+        return self._from
 
     @property
     def workflow_run_id(self):
@@ -137,25 +141,23 @@ class BuildImages(FirestarterWorkflow):
     def output_results(self):
         return self._output_results
 
-    def dereference_from_version(self):
+    def checkout_git_repository(self, checkout_value):
+        subprocess.run(["git", "checkout", checkout_value])
+
+    def dereference_from_input(self, input_value):
+        # git tag -l <pattern> checks to see if any tag matches the given pattern.
+        # Since we want a tag named exactly as input_value, we input it as a pattern
+        # and check the output. If it's empty, input_value is not a tag. If it does,
+        # input_value is a tag
         git_output = subprocess.run(
-            ['git', 'ls-remote', '--tags'], stdout=subprocess.PIPE
-        ).stdout.decode('utf-8')
+            ['git', 'tag', '-l', input_value], stdout=subprocess.PIPE
+        ).stdout.decode('utf-8').strip()
 
-        splitted_output = git_output.split('\n')
-
-        for tag_info in splitted_output:
-            # The last entry in splitter_output is an empty string,
-            # because the output of the git command ends with '\n'.
-            # This check prevents an error
-            if tag_info:
-                tag_name = tag_info.split('\t')[1]
-
-                if f'refs/tags/{self._from}' == tag_name:
-                    return self._from
+        if git_output:
+            return git_output
 
         short_sha = subprocess.run(
-            ['git', 'rev-parse', self._from], stdout=subprocess.PIPE
+            ['git', 'rev-parse', input_value], stdout=subprocess.PIPE
         ).stdout.decode('utf-8')[:7]
 
         return short_sha
@@ -341,7 +343,7 @@ class BuildImages(FirestarterWorkflow):
 
     def get_flavor_data(self, flavor):
 
-                
+
         def concat_full_repo_name(service_path, repo_name):
             if not service_path:
                 return repo_name
@@ -378,8 +380,8 @@ class BuildImages(FirestarterWorkflow):
         default_registry = getattr(self, f"{self.type}_registry")
         default_registry_creds = getattr(self, f"{self.type}_registry_creds")
         self.login(
-            self.auth_strategy, 
-            default_registry, 
+            self.auth_strategy,
+            default_registry,
             default_registry_creds,
         )
 
@@ -391,7 +393,7 @@ class BuildImages(FirestarterWorkflow):
                     value.registry.get("auth_strategy", self.auth_strategy),
                     value.registry.get("name", default_registry),
                     value.registry.get(
-                        "creds", 
+                        "creds",
                         default_registry_creds
                     )
                 )
