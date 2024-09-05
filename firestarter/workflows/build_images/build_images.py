@@ -16,8 +16,10 @@ import string
 import logging
 import fnmatch
 import subprocess
+from ruamel.yaml import YAML
 
 logger = logging.getLogger(__name__)
+yaml = YAML(typ='safe')
 
 
 def normalize_image_tag(tag):
@@ -346,9 +348,9 @@ class BuildImages(FirestarterWorkflow):
                         "workflow_run_url": self.workflow_run_url
                     })
 
-        yaml.Dumper.ignore_aliases = lambda *args : True
+        yaml.default_flow_style = False
         with open(os.path.join("/tmp", self.output_results), "w") as f:
-            yaml.dump(results_list, f, default_flow_style=False)
+            yaml.dump(results_list, f)
 
     def get_flavor_data(self, flavor):
 
