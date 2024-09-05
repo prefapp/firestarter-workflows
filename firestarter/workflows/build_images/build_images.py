@@ -171,8 +171,6 @@ class BuildImages(FirestarterWorkflow):
         flavor_filter_list = []
         final_flavors_list = []
 
-        logger.info(f'All flavor list: {all_flavors_list}')
-
         # Get the on-premises name from the command-line arguments and filter the on-premises data accordingly
         if self.flavors.replace(' ', '') == '*':
             logger.info('Publishing all flavors:')
@@ -388,6 +386,8 @@ class BuildImages(FirestarterWorkflow):
             self.filter_auto_build()
         else:
             self.filter_flavors()
+
+        logger.info(f'All flavor list: {self.flavors}')
 
         default_registry = getattr(self, f"{self.type}_registry")
         default_registry_creds = getattr(self, f"{self.type}_registry_creds")
