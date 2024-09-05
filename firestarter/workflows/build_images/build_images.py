@@ -292,7 +292,6 @@ class BuildImages(FirestarterWorkflow):
                     )
 
                 logger.info(f"Secrets for all: {secrets_for_all_flavors}")
-                logger.info(f'All flavor list: {self.flavors}')
                 logger.info(f"Specific: {flavor_secrets}")
 
                 # Combine generic and custom secrets for this flavor

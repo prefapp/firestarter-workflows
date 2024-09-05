@@ -2,6 +2,9 @@ import typing as t
 from dataclasses import dataclass, field
 import yaml
 import re
+import logging
+
+logger = logging.getLogger(__name__)
 
 @dataclass
 class Image:
@@ -51,6 +54,9 @@ class Config:
 
         with open(file, "r") as f:
             raw_config = yaml.safe_load(f)
+
+        logger.info(f"Raw config: {raw_config}")
+
         config = cls.from_dict(raw_config[type])
 
         # find all values that follow the pattern {{ secrets.name }}
