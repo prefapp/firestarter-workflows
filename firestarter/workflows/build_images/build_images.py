@@ -179,9 +179,6 @@ class BuildImages(FirestarterWorkflow):
 
         flavor_filter_list = self.flavors.replace(' ', '').split(',')
         for flavor in all_flavors_list:
-            if flavor in final_flavors_list:
-                raise ValueError(f'Duplicated flavor: {flavor}')
-
             for flavor_filter in flavor_filter_list:
                 if fnmatch.fnmatch(flavor, flavor_filter):
                     final_flavors_list.append(flavor)
@@ -292,13 +289,8 @@ class BuildImages(FirestarterWorkflow):
 
                     )
 
-                logger.info(f"Secrets for all: {secrets_for_all_flavors}")
-                logger.info(f"Specific: {flavor_secrets}")
-
                 # Combine generic and custom secrets for this flavor
                 secrets = secrets_for_all_flavors + flavor_secrets
-
-                logger.info(f"Secrets after add: {secrets}")
 
                 # Set the address for the default registry
                 registry_address = f"{registry}/{full_repo_name}"
