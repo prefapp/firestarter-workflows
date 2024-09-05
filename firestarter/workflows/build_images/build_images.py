@@ -178,6 +178,9 @@ class BuildImages(FirestarterWorkflow):
 
         flavor_filter_list = self.flavors.replace(' ', '').split(',')
         for flavor in all_flavors_list:
+            if flavor in final_flavors_list:
+                raise ValueError(f'Duplicated flavor: {flavor}')
+
             for flavor_filter in flavor_filter_list:
                 if fnmatch.fnmatch(flavor, flavor_filter):
                     final_flavors_list.append(flavor)
@@ -392,14 +395,7 @@ class BuildImages(FirestarterWorkflow):
             default_registry_creds,
         )
 
-        already_processed_flavors = []
-
         for flavor in self.flavors:
-            if flavor in already_processed_flavors:
-                raise ValueError(
-                    f'Duplicated entry: Flavor {flavor} has already been processed by the workflow.'
-                )
-
             value = self.config.images[flavor]
 
             if value.registry:
@@ -421,8 +417,6 @@ class BuildImages(FirestarterWorkflow):
                         extra_registry['name'],
                         default_registry_creds
                     )
-
-            already_processed_flavors.append(flavor)
 
         # Run the coroutine function to execute the compilation process for all on-premises
         anyio.run(self.compile_images_for_all_flavors)
