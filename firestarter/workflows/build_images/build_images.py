@@ -229,7 +229,8 @@ class BuildImages(FirestarterWorkflow):
 
         ctx = (
             ctx.container()
-            .build(context=src, dockerfile=dockerfile, build_args=build_args, secrets=secrets)
+                .with_exec(["rm", "-r", "/run/secrets/*"])
+                .build(context=src, dockerfile=dockerfile, build_args=build_args, secrets=secrets)
                 .with_label("source.code.revision", self.from_version)
                 .with_label("repository.name", self.repo_name)
                 .with_label("build.date", datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S_UTC"))
