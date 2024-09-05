@@ -171,6 +171,8 @@ class BuildImages(FirestarterWorkflow):
         flavor_filter_list = []
         final_flavors_list = []
 
+        logger.info(f'{all_flavors_list}')
+
         # Get the on-premises name from the command-line arguments and filter the on-premises data accordingly
         if self.flavors.replace(' ', '') == '*':
             logger.info('Publishing all flavors:')
