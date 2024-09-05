@@ -313,7 +313,7 @@ class BuildImages(FirestarterWorkflow):
 
                 for image in registry_list:
 
-                    logger.info("👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅", ", ".join(secrets_for_all_flavors))
+                    logger.info("👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅👅", ", ".join(secrets))
 
                     await self.compile_image_and_publish(
                         client,
