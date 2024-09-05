@@ -229,7 +229,6 @@ class BuildImages(FirestarterWorkflow):
 
         ctx = (
             ctx.container()
-                .with_exec(["rm", "-r", "/run/secrets/*"])
                 .build(context=src, dockerfile=dockerfile, build_args=build_args, secrets=secrets)
                 .with_label("source.code.revision", self.from_version)
                 .with_label("repository.name", self.repo_name)
@@ -254,6 +253,8 @@ class BuildImages(FirestarterWorkflow):
             secrets_for_all_flavors = []
             for key, value in self.secrets.items():
                 secrets_for_all_flavors.append(client.set_secret(key, value))
+
+            logger.info("🧠🧠🧠🧠🧠🧠🧠🧠🧠🧠🧠🧠🧠🧠🧠🧠🧠🧠🧠🧠🧠🧠🧠🧠🧠", secrets_for_all_flavors)
 
             for flavor in self.flavors:
                 secrets = secrets_for_all_flavors
@@ -287,6 +288,8 @@ class BuildImages(FirestarterWorkflow):
                         )
 
                     )
+
+                logger.info("😶😶😶😶😶😶😶😶😶😶😶😶😶😶😶😶😶😶😶😶😶😶😶😶😶😶😶", secrets_for_all_flavors)
 
                 # Combine generic and custom secrets for this flavor
                 secrets += flavor_secrets
