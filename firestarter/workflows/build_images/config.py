@@ -45,6 +45,13 @@ class Config:
 
     @classmethod
     def from_dict(cls: t.Type["Config"], obj: dict):
+        existing_keys_list = []
+        for key in obj.keys():
+            if key in existing_keys_list:
+                raise ValueError(f'Duplicated flavor: {key}')
+            else:
+                existing_keys_list.append(key)
+
         return cls(
             images={id: Image.from_dict(image) for id, image in obj.items()}
         )
@@ -54,8 +61,6 @@ class Config:
 
         with open(file, "r") as f:
             raw_config = yaml.safe_load(f)
-
-        logger.info(f"Raw config: {raw_config}")
 
         config = cls.from_dict(raw_config[type])
 
