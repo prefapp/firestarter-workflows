@@ -257,7 +257,6 @@ class BuildImages(FirestarterWorkflow):
             logger.info(f"Using these secrets for all flavors: {self.secrets.keys()}")
 
             for flavor in self.flavors:
-                secrets = secrets_for_all_flavors
 
                 registry, full_repo_name, build_args, dockerfile, extra_registries = self.get_flavor_data(flavor)
 
@@ -291,10 +290,9 @@ class BuildImages(FirestarterWorkflow):
 
                 logger.info(f"Secrets for all: {secrets_for_all_flavors}")
                 logger.info(f"Specific: {flavor_secrets}")
-                logger.info(f"Secrets before add: {secrets}")
 
                 # Combine generic and custom secrets for this flavor
-                secrets += flavor_secrets
+                secrets = secrets_for_all_flavors + flavor_secrets
 
                 logger.info(f"Secrets after add: {secrets}")
 
