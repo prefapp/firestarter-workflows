@@ -14,7 +14,6 @@ import uuid
 from os import getenv, remove, getcwd
 import string
 import logging
-import yaml
 import fnmatch
 import subprocess
 

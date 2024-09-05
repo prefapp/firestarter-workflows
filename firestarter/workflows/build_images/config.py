@@ -1,10 +1,9 @@
 import typing as t
 from dataclasses import dataclass, field
-import yaml
+from ruamel.yaml import YAML
 import re
-import logging
 
-logger = logging.getLogger(__name__)
+yaml = YAML(typ='safe')
 
 @dataclass
 class Image:
@@ -45,13 +44,6 @@ class Config:
 
     @classmethod
     def from_dict(cls: t.Type["Config"], obj: dict):
-        existing_keys_list = []
-        for key in obj.keys():
-            if key in existing_keys_list:
-                raise ValueError(f'Duplicated flavor: {key}')
-            else:
-                existing_keys_list.append(key)
-
         return cls(
             images={id: Image.from_dict(image) for id, image in obj.items()}
         )
@@ -60,7 +52,7 @@ class Config:
     def from_yaml(cls: t.Type["Config"], file: str, type: str, secrets: dict):
 
         with open(file, "r") as f:
-            raw_config = yaml.safe_load(f)
+            raw_config = yaml.load(f)
 
         config = cls.from_dict(raw_config[type])
 
