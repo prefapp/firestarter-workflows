@@ -250,6 +250,8 @@ class BuildImages(FirestarterWorkflow):
         config = dagger.Config(log_output=sys.stdout)
         results_list = []
 
+        logger.info(f'All flavor list: {self.flavors}')
+
         # Connect to Dagger
         async with dagger.Connection(config) as client:
 
@@ -386,8 +388,6 @@ class BuildImages(FirestarterWorkflow):
             self.filter_auto_build()
         else:
             self.filter_flavors()
-
-        logger.info(f'All flavor list: {self.flavors}')
 
         default_registry = getattr(self, f"{self.type}_registry")
         default_registry_creds = getattr(self, f"{self.type}_registry_creds")
