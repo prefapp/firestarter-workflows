@@ -254,6 +254,8 @@ class BuildImages(FirestarterWorkflow):
             for key, value in self.secrets.items():
                 secrets_for_all_flavors.append(client.set_secret(key, value))
 
+            logger.info(f"Using these secrets for all flavors: {self.secrets.items().keys()}")
+
             for flavor in self.flavors:
                 secrets = secrets_for_all_flavors
 
