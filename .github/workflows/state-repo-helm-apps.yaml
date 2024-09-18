@@ -40,6 +40,10 @@ on:
         type: string
         required: false
         default: 'v0.161.0'
+      version_helm_diff_plugin:
+        type: string
+        required: false
+        default: 'v3.9.9'
       version_secrets:
         type: string
         required: false
@@ -155,6 +159,7 @@ jobs:
           kubectl-release-date: '${{ inputs.version_kubectl_release_date }}'
           helmfile-version: '${{ inputs.version_helmfile }}' 
           helm-version: '${{ inputs.version_helm }}'
+          helm-diff-plugin-version: '${{ inputs.version_helm_diff_plugin}}'
 
       - uses: imranismail/setup-kustomize@v2
         with:
