@@ -5,8 +5,7 @@ nav:
   - Introduction: index.md
   - Reusable Workflows:
     - State Repo Analyze Changes: state-repo-analyze-changes.md
-    - State Repo Helm Apps: state-repo-helm-apps.md
-    - State Repo Helm Sys Services: state-repo-helm-sys-services.md
+    - State Repo Helm: state-repo-helm.md
 
 plugins:
   - techdocs-core
