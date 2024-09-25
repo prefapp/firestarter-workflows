@@ -14,11 +14,12 @@ import uuid
 from os import getenv, remove, getcwd
 import string
 import logging
-import yaml
 import fnmatch
 import subprocess
+from ruamel.yaml import YAML
 
 logger = logging.getLogger(__name__)
+yaml = YAML(typ='safe')
 
 
 def normalize_image_tag(tag):
@@ -229,7 +230,7 @@ class BuildImages(FirestarterWorkflow):
 
         ctx = (
             ctx.container()
-            .build(context=src, dockerfile=dockerfile, build_args=build_args, secrets=secrets)
+                .build(context=src, dockerfile=dockerfile, build_args=build_args, secrets=secrets)
                 .with_label("source.code.revision", self.from_version)
                 .with_label("repository.name", self.repo_name)
                 .with_label("build.date", datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S_UTC"))
@@ -253,6 +254,8 @@ class BuildImages(FirestarterWorkflow):
             secrets_for_all_flavors = []
             for key, value in self.secrets.items():
                 secrets_for_all_flavors.append(client.set_secret(key, value))
+
+            logger.info(f"Using these secrets for all flavors: {self.secrets.keys()}")
 
             for flavor in self.flavors:
 
@@ -337,9 +340,9 @@ class BuildImages(FirestarterWorkflow):
                         "workflow_run_url": self.workflow_run_url
                     })
 
-        yaml.Dumper.ignore_aliases = lambda *args : True
+        yaml.default_flow_style = False
         with open(os.path.join("/tmp", self.output_results), "w") as f:
-            yaml.dump(results_list, f, default_flow_style=False)
+            yaml.dump(results_list, f)
 
     def get_flavor_data(self, flavor):
 

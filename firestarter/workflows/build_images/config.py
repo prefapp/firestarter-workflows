@@ -1,7 +1,9 @@
 import typing as t
 from dataclasses import dataclass, field
-import yaml
+from ruamel.yaml import YAML
 import re
+
+yaml = YAML(typ='safe')
 
 @dataclass
 class Image:
@@ -50,7 +52,8 @@ class Config:
     def from_yaml(cls: t.Type["Config"], file: str, type: str, secrets: dict):
 
         with open(file, "r") as f:
-            raw_config = yaml.safe_load(f)
+            raw_config = yaml.load(f)
+
         config = cls.from_dict(raw_config[type])
 
         # find all values that follow the pattern {{ secrets.name }}
