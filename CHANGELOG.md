@@ -1,5 +1,18 @@
 # Changelog
 
+## [2.1.0](https://github.com/prefapp/firestarter-workflows/compare/v2.0.0...v2.1.0) (2024-09-25)
+
+
+### Features
+
+* Add state repo workflows documentation ([#128](https://github.com/prefapp/firestarter-workflows/issues/128)) ([be6523c](https://github.com/prefapp/firestarter-workflows/commit/be6523c216fde333965bff9b13823a1c6572510e))
+* Specify which helmfile diff plugin version to use ([#118](https://github.com/prefapp/firestarter-workflows/issues/118)) ([711c573](https://github.com/prefapp/firestarter-workflows/commit/711c5739c7ff0c46b658003b27f11cf811dc88f0))
+
+
+### Bug Fixes
+
+* Fixed unintended secret inheritance ([#122](https://github.com/prefapp/firestarter-workflows/issues/122)) ([f2fe3eb](https://github.com/prefapp/firestarter-workflows/commit/f2fe3eb4da74cf7a7f5ddf27f2e150d8ede333c0))
+
 ## [2.0.0](https://github.com/prefapp/firestarter-workflows/compare/v1.7.0...v2.0.0) (2024-09-04)
 
 
