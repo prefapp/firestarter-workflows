@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "$ref": "#/definitions/Flavor",
+  "definitions": {
+      "Flavor": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "auto": {
+                  "type": "boolean"
+              },
+              "dockerfile": {
+                  "type": "string"
+              },
+              "extra_registries": {
+                  "type": "array",
+                  "items": {
+                      "$ref": "#/definitions/ExtraRegistry"
+                  }
+              },
+              "build_args": {
+                  "$ref": "#/definitions/BuildArgs"
+              }
+          },
+          "required": [
+              "auto",
+              "dockerfile"
+          ],
+          "title": "Flavor"
+      },
+      "BuildArgs": {
+        "type": "object",
+        "additionalProperties": true
+      },
+      "ExtraRegistry": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+              "name": {
+                  "type": "string"
+              },
+              "repository": {
+                  "type": "string"
+              },
+              "auth_strategy": {
+                  "type": "string"
+              }
+          },
+          "required": [
+              "auth_strategy",
+              "name",
+              "repository"
+          ],
+          "title": "ExtraRegistry"
+      }
+  }
+}

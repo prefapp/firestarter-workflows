@@ -1,0 +1,22 @@
+snapshots: # Mandatory: Image type (snapshots | releases), can be 1 or 2
+  flavor1: # Mandatory: string (name of the flavor), 1-N flavors in every image type
+    auto: true
+    dockerfile: docker/Dockerfile
+    extra_registries:
+      - name: my.azurecr.io
+        repository: myrepo/test
+        auth_strategy: azure_oidc
+    build_args:
+      API_URL: api.test.com
+      AUTH_API: auth.test.com
+releases:
+  flavor1:
+    auto: true
+    dockerfile: docker/Dockerfile
+    extra_registries:
+      - name: my.azurecr.io
+        repository: myrepo/test
+        auth_strategy: azure_oidc
+    build_args:
+      API_URL: api.test.com
+      AUTH_API: auth.test.com
