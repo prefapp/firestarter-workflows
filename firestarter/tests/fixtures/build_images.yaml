@@ -1,0 +1,9 @@
+auto: true
+dockerfile: docker/Dockerfile
+extra_registries:
+  - name: my.azurecr.io
+    repository: myrepo/test
+    auth_strategy: azure_oidc
+build_args:
+  API_URL: api.test.com
+  AUTH_API: auth.test.com

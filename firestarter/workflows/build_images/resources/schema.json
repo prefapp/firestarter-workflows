@@ -1,0 +1,105 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "snapshots": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z0-9_-]+$": {
+          "type": "object",
+          "properties": {
+            "dockerfile": {
+              "type": "string",
+              "pattern": "^.+Dockerfile$" 
+            },
+            "auto": {
+              "type": "boolean"
+            },
+            "build_args": {
+              "type": "object",
+              "additionalProperties": true 
+            },
+            "secrets": {
+              "type": "object",
+              "additionalProperties": true 
+            },
+            "extra_registries": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "repository": {
+                    "type": "string"
+                  },
+                  "auth_strategy": {
+                    "type": "string",
+                    "enum": ["azure_oidc", "aws_oidc", "google_oidc", "gitlab_oidc"]
+                  }
+                },
+                "required": ["name", "repository", "auth_strategy"],
+                "additionalProperties": false 
+              }
+            }
+          },
+          "required": ["dockerfile"], 
+          "additionalProperties": false 
+        }
+      },
+      "minProperties": 1 
+    },
+    "releases": {
+      "type": "object",
+      "patternProperties": {
+        "^[a-zA-Z0-9_-]+$": {
+          "type": "object",
+          "properties": {
+            "dockerfile": {
+              "type": "string",
+              "pattern": "^.+Dockerfile$" 
+            },
+            "auto": {
+              "type": "boolean"
+            },
+            "build_args": {
+              "type": "object",
+              "additionalProperties": true 
+            },
+            "secrets": {
+              "type": "object",
+              "additionalProperties": true 
+            },
+            "extra_registries": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "repository": {
+                    "type": "string"
+                  },
+                  "auth_strategy": {
+                    "type": "string",
+                    "enum": ["azure_oidc", "aws_oidc", "google_oidc", "gitlab_oidc"] 
+                  }
+                },
+                "required": ["name", "repository", "auth_strategy"],
+                "additionalProperties": false 
+              }
+            }
+          },
+          "required": ["dockerfile"],  
+          "additionalProperties": false  
+        }
+      },
+      "minProperties": 1  
+    }
+  },
+  "required": ["snapshots", "releases"],  
+  "additionalProperties": false  
+}
+
