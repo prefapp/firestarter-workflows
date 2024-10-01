@@ -10,10 +10,13 @@
           "properties": {
             "dockerfile": {
               "type": "string",
-              "pattern": "^.+Dockerfile$" 
+              "pattern": ".+" 
             },
             "auto": {
               "type": "boolean"
+            },
+            "build_always":{
+                "type": "boolean"
             },
             "build_args": {
               "type": "object",
@@ -36,7 +39,7 @@
                   },
                   "auth_strategy": {
                     "type": "string",
-                    "enum": ["azure_oidc", "aws_oidc", "google_oidc", "gitlab_oidc"]
+                    "enum": ["azure_oidc", "aws_oidc"]
                   }
                 },
                 "required": ["name", "repository", "auth_strategy"],
@@ -58,7 +61,7 @@
           "properties": {
             "dockerfile": {
               "type": "string",
-              "pattern": "^.+Dockerfile$" 
+              "pattern": ".+" 
             },
             "auto": {
               "type": "boolean"
@@ -84,7 +87,7 @@
                   },
                   "auth_strategy": {
                     "type": "string",
-                    "enum": ["azure_oidc", "aws_oidc", "google_oidc", "gitlab_oidc"] 
+                    "enum": ["azure_oidc", "aws_oidc"] 
                   }
                 },
                 "required": ["name", "repository", "auth_strategy"],
