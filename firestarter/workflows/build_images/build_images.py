@@ -59,7 +59,7 @@ class BuildImages(FirestarterWorkflow):
 
         # Read the on-premises configuration file
         self._config = Config.from_yaml(
-            self.config_file, self.type, self.secrets)
+            self.config_file, self.type, self.secrets, schema_file = 'firestarter-workflows/firewstarter/workflows/resources/schema.json')
 
     @property
     def repo_name(self):
