@@ -31,6 +31,8 @@ def normalize_image_tag(tag):
     return tag
 
 class BuildImages(FirestarterWorkflow):
+    SCHEMA_FILE_PATH: str = os.path.join(os.path.dirname(__file__), 'resources/schema.json')
+
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
@@ -59,7 +61,7 @@ class BuildImages(FirestarterWorkflow):
 
         # Read the on-premises configuration file
         self._config = Config.from_yaml(
-            self.config_file, self.type, self.secrets, schema_file = 'firestarter-workflows/firewstarter/workflows/resources/schema.json')
+            self.config_file, self.type, self.secrets, schema_file = self.SCHEMA_FILE_PATH)
 
     @property
     def repo_name(self):
