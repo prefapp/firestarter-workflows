@@ -9,17 +9,17 @@ class Task:
         self.image: str = args.get("image", None)
         self.env: dict = args.get("vars", {})
 
-    def execute(self, ctx) -> None:
+    async def execute(self, ctx) -> None:
         try:
             container = self.prepare_ctx(ctx)
-            container = exec_run_in_container(
+            container = await exec_run_in_container(
                 self.commands, container, ctx.dagger_client
             )
 
         except Exception:
-            raise f"ERROR: {self.name}: {container.stderr()} {container.stdout()}"
+            raise f"ERROR: {self.name}: {await container.stderr()} {await container.stdout()}"
 
-        ctx.set_output(self.name, container)
+        await ctx.set_output(self.name, container)
 
     def prepare_ctx(self, ctx):
         container = ctx.next_container(self.image)
@@ -48,8 +48,8 @@ class TaskGroup:
 
         self.__tasks[task.name] = task
 
-    def run_tasks(self, context) -> None:
+    async def run_tasks(self, context) -> None:
         ctx = context
 
         for task in sorted(self.__tasks.values(), key=lambda t: t.order):
-            task.execute(ctx)
+            await task.execute(ctx)

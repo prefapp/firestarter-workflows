@@ -17,7 +17,7 @@ class Context:
     async def start(self, fn: Callable) -> None:
         async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as client:
             self.dagger_client = client
-            fn(self)
+            await fn(self)
 
     @property
     def dagger_client(self) -> dagger.Client:
@@ -57,6 +57,6 @@ class Context:
     def new_container(self, image: str) -> dagger.Container:
         return self.dagger_client.container().from_(image)
 
-    def set_output(self, name: str, container: dagger.Container) -> None:
+    async def set_output(self, name: str, container: dagger.Container) -> None:
         self.container = container
-        self.outputs[name] = container.stdout()
+        self.outputs[name] = await container.stdout()

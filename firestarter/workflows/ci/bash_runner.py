@@ -22,7 +22,7 @@ def create_script_from_commands(commands: List[str], temp_dir: str) -> None:
 
     return temp_file.name
 
-def exec_run_in_container(commands: List[str], container, dagger_client):
+async def exec_run_in_container(commands: List[str], container, dagger_client):
     """
     Executes commands in a container
 
@@ -43,7 +43,7 @@ def exec_run_in_container(commands: List[str], container, dagger_client):
         .with_entrypoint(["bash", "-e"])
     )
 
-    if container.workdir() != WORKSPACE_PATH:
+    if await container.workdir() != WORKSPACE_PATH:
         container = (
             container
             # Mount current dir
@@ -65,6 +65,8 @@ def exec_run_in_container(commands: List[str], container, dagger_client):
         container
         # Mount the script directory
         .with_mounted_directory(temp_dir, src)
+        # Make bash script executable
+        .with_exec(["chmod", "+x", f"{file_name}"])
         # Execute the bash script
         .with_exec([f"{file_name}"])
     )
