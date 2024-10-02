@@ -15,7 +15,7 @@ class Context:
         self.secrets: dict = secrets if secrets else {}
 
     async def start(self, fn: Callable) -> None:
-        with dagger.Connection(dagger.Config(log_output=sys.stderr)) as client:
+        async with dagger.Connection(dagger.Config(log_output=sys.stderr)) as client:
             self.dagger_client = client
             fn(self)
 

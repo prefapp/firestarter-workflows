@@ -10,12 +10,13 @@ class Task:
         self.env: dict = args.get("vars", {})
 
     def execute(self, ctx) -> None:
-        container = self.prepare_ctx(ctx)
-        container = exec_run_in_container(
-            self.commands, container, ctx.dagger_client
-        )
+        try:
+            container = self.prepare_ctx(ctx)
+            container = exec_run_in_container(
+                self.commands, container, ctx.dagger_client
+            )
 
-        if container.exit_code() != 0:
+        except Exception:
             raise f"ERROR: {self.name}: {container.stderr()} {container.stdout()}"
 
         ctx.set_output(self.name, container)
