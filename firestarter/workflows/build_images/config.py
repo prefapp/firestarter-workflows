@@ -2,6 +2,8 @@ import typing as t
 from dataclasses import dataclass, field
 from ruamel.yaml import YAML
 import re
+import json
+from jsonschema import validate, ValidationError, SchemaError
 
 yaml = YAML(typ='safe')
 
@@ -47,17 +49,28 @@ class Config:
         return cls(
             images={id: Image.from_dict(image) for id, image in obj.items()}
         )
+        
 
     @classmethod
-    def from_yaml(cls: t.Type["Config"], file: str, type: str, secrets: dict):
+    def from_yaml(cls: t.Type["Config"], file: str, type: str, secrets: dict, schema_file='schema.json'):
 
         with open(file, "r") as f:
             raw_config = yaml.load(f)
 
         config = cls.from_dict(raw_config[type])
 
-        # find all values that follow the pattern {{ secrets.name }}
-        # and replace them with the value from the secrets dict
+        with open(schema_file, "r") as schema_f:
+            schema = json.load(schema_f)
+
+        try:
+            validate(instance=config, schema=schema)
+            print("El archivo es válido")
+        except ValidationError as e:
+            print(f"Error de validación: {e.message}")
+            raise
+        except SchemaError as e:
+            print(f"Error en el schema: {e.message}")
+            raise
         replace_secrets(config.to_dict(), secrets)
         return config
 
