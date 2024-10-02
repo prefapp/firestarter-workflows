@@ -66,6 +66,9 @@
             "auto": {
               "type": "boolean"
             },
+            "build_always":{
+                "type": "boolean"
+            },
             "build_args": {
               "type": "object",
               "additionalProperties": true 
@@ -102,7 +105,9 @@
       "minProperties": 1  
     }
   },
-  "required": ["snapshots", "releases"],  
+  "anyOf": [
+    {"required": ["snapshots"]},
+    {"required": ["releases"]}
+  ],
   "additionalProperties": false  
 }
-
