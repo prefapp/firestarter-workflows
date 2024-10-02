@@ -2,8 +2,6 @@ name: Verify firestarter workflows python package
 
 on:
   pull_request:
-    paths:
-      - 'firestarter/**'
     types:
       - opened
       - synchronize
