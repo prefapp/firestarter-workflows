@@ -75,9 +75,6 @@ class Config:
                 schema = json.load(schema_f)
             validate(instance=raw_config, schema=schema)
             logger.info("The file is valid")
-
-        try:
-            validate(instance=raw_config, schema=schema)
         except FileNotFoundError as fnf_error:
             logger.error(f"File not found {fnf_error}")
             raise
