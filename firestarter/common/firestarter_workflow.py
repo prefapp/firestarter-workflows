@@ -4,6 +4,16 @@ class FirestarterWorkflow:
         self._config_file = kwargs.get('config_file', None)
         self._vars = kwargs.get('vars', None)
         self._secrets = kwargs.get('secrets', None)
+        self.__validate_required_vars()
+
+    def __validate_required_vars(self):
+        for var in self._required_vars():
+            if not self._vars.get(var):
+                raise ValueError(f"Missing required variable: {var}")
+
+    def _required_vars(self):
+        # default implementation, no required vars
+        return []
 
     @property
     def config_file(self):

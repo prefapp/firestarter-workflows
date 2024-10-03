@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from ruamel.yaml import YAML
 import re
 import json
+from pathlib import Path
 from jsonschema import validate, ValidationError, SchemaError
 
 yaml = YAML(typ='safe')
@@ -46,10 +47,16 @@ class Config:
 
     @classmethod
     def from_dict(cls: t.Type["Config"], obj: dict):
+        images = {}
+        for id, image in obj.items():
+            if not Path(image.get("dockerfile")).is_file():
+                raise ValueError(f"File '{image.get('dockerfile')}' not found for flavor '{id}'")
+            images[id] = Image.from_dict(image)
+
         return cls(
-            images={id: Image.from_dict(image) for id, image in obj.items()}
+            images=images
         )
-        
+
 
     @classmethod
     def from_yaml(cls: t.Type["Config"], file: str, type: str, secrets: dict, schema_file='schema.json'):
@@ -63,7 +70,7 @@ class Config:
             schema = json.load(schema_f)
 
         try:
-            validate(instance=config, schema=schema)
+            validate(instance=raw_config, schema=schema)
             print("El archivo es válido")
         except ValidationError as e:
             print(f"Error de validación: {e.message}")
