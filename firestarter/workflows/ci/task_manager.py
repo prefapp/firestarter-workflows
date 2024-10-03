@@ -32,6 +32,6 @@ class TaskManager:
         # let's load the tasks
         task_scheduler(config_data, self.tasks)
 
-    def run(self) -> None:
-        self.tasks.run_tasks(self.context)
+    async def run(self) -> None:
+        await self.tasks.run_tasks(self.context)
 

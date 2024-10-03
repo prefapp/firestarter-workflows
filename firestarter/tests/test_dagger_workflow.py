@@ -6,7 +6,7 @@ import os
 
 def test_dagger_workflow() -> None:
 
-    def myTestFunc(context: Context) -> None:
+    async def myTestFunc(context: Context) -> None:
         tm: TaskManager = TaskManager()
         tm.context = context
         tm.load(
@@ -15,7 +15,7 @@ def test_dagger_workflow() -> None:
             ),
             '../workflows/ci/schema.json',
         )
-        tm.run()
+        await tm.run()
 
     anyio.run(lambda: Context().start(myTestFunc))
 

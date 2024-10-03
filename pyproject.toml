@@ -27,6 +27,9 @@ build_images = ["docker", "azure-identity", "azure-keyvault-secrets", "boto3"]
 [tool.poetry.scripts]
 firestarter = "firestarter.cli:main"
 
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

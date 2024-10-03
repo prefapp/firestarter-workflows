@@ -1,0 +1,17 @@
+name: Verify firestarter workflows python package
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  unit-tests-firestarter-python-package:
+    runs-on: ubuntu-24.04
+    if: 'false'
+    name: Code / Verify
+    steps:
+      - run: 'echo "No Code / Verify required"'
+
