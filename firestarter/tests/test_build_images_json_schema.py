@@ -5,22 +5,16 @@ import pytest
 import os
 
 VALID_CONFIG_FILE_PATH: str =\
-    os.path.join(os.path.dirname(__file__), 'fixtures/build_images.yaml')
+    os.path.join(os.path.dirname(__file__), 'fixtures/flavors.yaml')
 
 INVALID_CONFIG_FILE_PATH: str =\
-    os.path.join(os.path.dirname(__file__), 'fixtures/build_images_ko.yaml')
+    os.path.join(os.path.dirname(__file__), 'fixtures/flavors_error.yaml')
 
 SCHEMA_FILE_PATH: str = '../workflows/build_images/resources/schema.json'
 
 def test_validate_schema() -> None:
-    try:
-        validate_config(VALID_CONFIG_FILE_PATH, SCHEMA_FILE_PATH)
-    except FileNotFoundError as fnf_error:
-        pytest.fail(f"File not found: {fnf_error.filename}")
+    validate_config(VALID_CONFIG_FILE_PATH, SCHEMA_FILE_PATH)
 
 def test_validate_schema_error() -> None:
     with pytest.raises(ValidationError, match="Additional properties are not allowed"):
-        try:
-            validate_config(INVALID_CONFIG_FILE_PATH, SCHEMA_FILE_PATH)
-        except FileNotFoundError as fnf_error:
-            pytest.fail(f"File not found: {fnf_error.filename}")
+        validate_config(INVALID_CONFIG_FILE_PATH, SCHEMA_FILE_PATH)
