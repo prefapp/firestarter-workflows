@@ -49,4 +49,4 @@ def main():
         config_file=config_file,
     )
 
-    print(f"Result : {result}\n")
+    print(f"Results: {result}\n")
