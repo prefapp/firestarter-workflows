@@ -13,8 +13,14 @@ INVALID_CONFIG_FILE_PATH: str =\
 SCHEMA_FILE_PATH: str = '../workflows/build_images/resources/schema.json'
 
 def test_validate_schema() -> None:
-    validate_config(VALID_CONFIG_FILE_PATH, SCHEMA_FILE_PATH)
+    try:
+        validate_config(VALID_CONFIG_FILE_PATH, SCHEMA_FILE_PATH)
+    except FileNotFoundError as fnf_error:
+        pytest.fail(f"File not found: {fnf_error.filename}")
 
 def test_validate_schema_error() -> None:
     with pytest.raises(ValidationError, match="Additional properties are not allowed"):
-        validate_config(INVALID_CONFIG_FILE_PATH, SCHEMA_FILE_PATH)
+        try:
+            validate_config(INVALID_CONFIG_FILE_PATH, SCHEMA_FILE_PATH)
+        except FileNotFoundError as fnf_error:
+            pytest.fail(f"File not found: {fnf_error.filename}")
