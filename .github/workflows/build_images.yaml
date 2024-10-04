@@ -27,7 +27,15 @@ on:
         type: string
         description: Check run name identifier
         required: true
-        
+      workflows_repo:
+        type: string
+        description:
+        default: prefapp/firestarter-workflows
+      workflows_repo_ref:
+        type: string
+        description: Git reference from where to pull the workflows_repo
+        default: v2
+
 permissions:
   id-token: write
   contents: read
@@ -36,112 +44,109 @@ permissions:
 jobs:
   build-images:
     env:
-     GH_TOKEN: ${{ secrets.GITHUB_DOCKER_REGISTRY_CREDS || github.token }}
-    runs-on: ubuntu-22.04
+      GH_TOKEN: ${{ secrets.GITHUB_DOCKER_REGISTRY_CREDS || github.token }}
+    runs-on: ubuntu-24.04
     steps:
-    
-     - name: Configure Azure Credentials
-       uses: azure/login@v2
-       if: ${{ vars.AZURE_CLIENT_ID }}
-       with:
-         client-id: ${{ vars.AZURE_CLIENT_ID }}
-         tenant-id: ${{ vars.AZURE_TENANT_ID }}
-         subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
-     
-     - name: Get PEM File from Azure Key Vault
-       if: ${{ vars.AZURE_CLIENT_ID }}
-       id: get-pem
-       env:
-         AZ_KEY_VAULT_NAME:  ${{ vars.FIRESTARTER_AZ_KEY_VAULT_NAME }}
-         PEM_FILE_REF: ${{ vars.FIRESTARTER_GITHUB_APP_PEM_FILE_REF }}
-       run: |
-         github_app_pem=`az keyvault secret show --vault-name $AZ_KEY_VAULT_NAME --name $PEM_FILE_REF --query value -o tsv`
-         github_app_pem_eof="github-app-pem<<EOF\n$github_app_pem\nEOF"
-         while read -r line;
-         do
-         echo "::add-mask::${line}"
-         done <<< "$github_app_pem_eof"
-         echo -e "$github_app_pem_eof" >> "$GITHUB_OUTPUT"
+      - name: Configure Azure Credentials
+        uses: azure/login@v2
+        if: ${{ vars.AZURE_CLIENT_ID }}
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-     - name: Get Token from Github App
-       if: ${{ vars.AZURE_CLIENT_ID }}
-       id: get-gh-app-token
-       uses: actions/create-github-app-token@v1
-       with:
+      - name: Get PEM File from Azure Key Vault
+        if: ${{ vars.AZURE_CLIENT_ID }}
+        id: get-pem
+        env:
+          AZ_KEY_VAULT_NAME:  ${{ vars.FIRESTARTER_AZ_KEY_VAULT_NAME }}
+          PEM_FILE_REF: ${{ vars.FIRESTARTER_GITHUB_APP_PEM_FILE_REF }}
+        run: |
+          github_app_pem=`az keyvault secret show --vault-name $AZ_KEY_VAULT_NAME --name $PEM_FILE_REF --query value -o tsv`
+          github_app_pem_eof="github-app-pem<<EOF\n$github_app_pem\nEOF"
+          while read -r line;
+          do
+          echo "::add-mask::${line}"
+          done <<< "$github_app_pem_eof"
+          echo -e "$github_app_pem_eof" >> "$GITHUB_OUTPUT"
+
+      - name: Get Token from Github App
+        if: ${{ vars.AZURE_CLIENT_ID }}
+        id: get-gh-app-token
+        uses: actions/create-github-app-token@v1
+        with:
           app-id: ${{ vars.FIRESTARTER_GITHUB_APP_ID }}
           private-key: ${{ steps.get-pem.outputs.github-app-pem }}
           owner: ${{ github.repository_owner }}
 
-     - name: Init Check Run Summary
-       id: init-check-run-summary
-       uses: prefapp/action-build-images-summary@v1
-       with:
-         token:  ${{ steps.get-gh-app-token.outputs.token }}
-         summary_path: /tmp/build_images_results.yaml
-         check_run_name: ${{ inputs.check_run_name }}
-         ref: ${{ inputs.from }}
-         op: 'init-check-run'
-     
-     - name: Configure AWS Credentials
-       uses: aws-actions/configure-aws-credentials@v1
-       if: ${{ vars.AWS_OIDC_ECR_ROLE }}
-       with:
-         aws-region: ${{ vars.AWS_REGION }}
-         role-to-assume: ${{ vars.AWS_OIDC_ECR_ROLE }}
-         role-session-name: OIDCSession
+      - name: Init Check Run Summary
+        id: init-check-run-summary
+        uses: prefapp/action-build-images-summary@v1
+        with:
+          token:  ${{ steps.get-gh-app-token.outputs.token }}
+          summary_path: /tmp/build_images_results.yaml
+          check_run_name: ${{ inputs.check_run_name }}
+          ref: ${{ inputs.from }}
+          op: 'init-check-run'
 
-     - name: Checkout repository
-       uses: actions/checkout@v4
-       with:
-         path: build
-         fetch-depth: 0
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        if: ${{ vars.AWS_OIDC_ECR_ROLE }}
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-to-assume: ${{ vars.AWS_OIDC_ECR_ROLE }}
+          role-session-name: OIDCSession
 
-     - name: Checkout repository
-       uses: actions/checkout@v4
-       with:
-         path: config
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          path: build
+          fetch-depth: 0
 
-     - name: Build images
-       uses: prefapp/run-dagger-py@main
-       id: build-images
-       with:
-         working_directory: build
-         pyproject_path: .dagger
-         workflow: build_images
-         config_file: ../config/.github/build_images.yaml
-         ref: "v2"
-         vars: |
-           repo_name="${{ github.repository }}"
-           flavors="${{ inputs.flavors }}"
-           auth_strategy="${{ inputs.auth_strategy }}"
-           snapshots_registry="${{ vars.DOCKER_REGISTRY_SNAPSHOTS }}"
-           releases_registry="${{ vars.DOCKER_REGISTRY_RELEASES }}"
-           output_results="build_images_results.yaml"
-           type="${{ inputs.type }}"
-           from="${{ inputs.from }}"
-           workflow_run_id=${{ github.run_id}}
-           workflow_run_url="https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
-           login_required="true"
-           ref="v2"
-           service_path="${{ fromJSON(vars.DOCKER_REGISTRIES_BASE_PATHS).services[inputs.type] }}"
-           snapshots_registry_creds="${{ secrets.DOCKER_REGISTRY_SNAPSHOTS_CREDS }}"
-           releases_registry_creds="${{ secrets.DOCKER_REGISTRY_RELEASES_CREDS }}"
-         secrets: ${{ inputs.secrets }}
+      - name: Checkout config file
+        uses: actions/checkout@v4
+        with:
+          path: config
 
-     - uses: actions/upload-artifact@v4
-       with:
-         name: build-images-results
-         path: /tmp/build_images_results.yaml
+      - name: Build images
+        uses: prefapp/run-dagger-py@main
+        id: build-images
+        with:
+          working_directory: build
+          workflow: build_images
+          config_file: ../config/.github/build_images.yaml
+          workflows_repository: ${{ inputs.workflows_repo }}
+          workflows_repository_ref: ${{ inputs.workflows_repo_ref }}
+          vars: |
+            repo_name="${{ github.repository }}"
+            flavors="${{ inputs.flavors }}"
+            auth_strategy="${{ inputs.auth_strategy }}"
+            snapshots_registry="${{ vars.DOCKER_REGISTRY_SNAPSHOTS }}"
+            releases_registry="${{ vars.DOCKER_REGISTRY_RELEASES }}"
+            output_results="build_images_results.yaml"
+            type="${{ inputs.type }}"
+            from="${{ inputs.from }}"
+            workflow_run_id=${{ github.run_id}}
+            workflow_run_url="https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
+            login_required="true"
+            service_path="${{ fromJSON(vars.DOCKER_REGISTRIES_BASE_PATHS).services[inputs.type] }}"
+            snapshots_registry_creds="${{ secrets.DOCKER_REGISTRY_SNAPSHOTS_CREDS }}"
+            releases_registry_creds="${{ secrets.DOCKER_REGISTRY_RELEASES_CREDS }}"
+          secrets: ${{ inputs.secrets }}
 
-              
-     - name: Update Check Run Summary
-       id: update-check-run-summary
-       if: always()
-       uses: prefapp/action-build-images-summary@v1
-       with:
-         conclusion: ${{ steps.build-images.outcome }}
-         token: ${{ steps.get-gh-app-token.outputs.token }}
-         summary_path: '/tmp/build_images_results.yaml'
-         check_run_name: ${{ inputs.check_run_name }}
-         ref: ${{ inputs.from }}
-         op: 'complete-check-run'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: build-images-results
+          path: /tmp/build_images_results.yaml
+
+      - name: Update Check Run Summary
+        id: update-check-run-summary
+        if: always()
+        uses: prefapp/action-build-images-summary@v1
+        with:
+          conclusion: ${{ steps.build-images.outcome }}
+          token: ${{ steps.get-gh-app-token.outputs.token }}
+          summary_path: '/tmp/build_images_results.yaml'
+          check_run_name: ${{ inputs.check_run_name }}
+          ref: ${{ inputs.from }}
+          op: 'complete-check-run'
