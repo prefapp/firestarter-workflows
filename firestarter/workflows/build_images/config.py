@@ -3,7 +3,9 @@ from dataclasses import dataclass, field
 from ruamel.yaml import YAML
 import re
 import json
-from jsonschema import validate, ValidationError, SchemaError
+from pathlib import Path
+from jsonschema import ValidationError, SchemaError
+from firestarter.common.validations import validate_config
 import logging
 
 logger = logging.getLogger(__name__)
@@ -50,25 +52,24 @@ class Config:
 
     @classmethod
     def from_dict(cls: t.Type["Config"], obj: dict):
+        images = {}
+        for id, image in obj.items():
+            if not Path(image.get("dockerfile")).is_file():
+                raise ValueError(f"File '{image.get('dockerfile')}' not found for flavor '{id}'")
+            images[id] = Image.from_dict(image)
+
         return cls(
-            images={id: Image.from_dict(image) for id, image in obj.items()}
+            images=images
         )
-        
+
+
 
     @classmethod
-    def from_yaml(cls: t.Type["Config"], file: str, type: str, secrets: dict, schema_file='schema.json'):
+    def from_yaml(cls: t.Type["Config"], config_file: str, type: str, secrets: dict, schema_file='schema.json'):
         try:
-
-            with open(file, "r") as f:
-                raw_config = yaml.load(f)
-
+            raw_config = validate_config(config_file, schema_file)
+            logger.info(f"The config file '{config_file}' is valid")
             config = cls.from_dict(raw_config[type])
-
-            with open(schema_file, "r") as schema_f:
-                schema = json.load(schema_f)
-            validate(instance=raw_config, schema=schema)
-            logger.info("The file is valid")
-
         except FileNotFoundError as fnf_error:
             logger.error(f"File not found {fnf_error}")
             raise
