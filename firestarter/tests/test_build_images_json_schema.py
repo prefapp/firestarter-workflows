@@ -5,10 +5,10 @@ import pytest
 import os
 
 VALID_CONFIG_FILE_PATH: str =\
-    os.path.join(os.path.dirname(__file__), 'fixtures/flavors.yaml')
+    os.path.join(os.path.dirname(__file__), 'fixtures/build_images.yaml')
 
 INVALID_CONFIG_FILE_PATH: str =\
-    os.path.join(os.path.dirname(__file__), 'fixtures/flavors_error.yaml')
+    os.path.join(os.path.dirname(__file__), 'fixtures/build_images_ko.yaml')
 
 SCHEMA_FILE_PATH: str = '../workflows/build_images/resources/schema.json'
 
