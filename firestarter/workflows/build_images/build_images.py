@@ -9,7 +9,6 @@ from .providers.registries.factory import DockerRegistryAuthFactory
 from .providers.secrets.resolver import SecretResolver
 from .config import Config
 import docker
-from ast import literal_eval
 import uuid
 from os import getenv, remove, getcwd
 import string
@@ -36,32 +35,33 @@ class BuildImages(FirestarterWorkflow):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
-        # We checkout the correct sha/tag
-        self.checkout_git_repository(self.vars['from'])
-
         self._secrets = self.resolve_secrets(self.secrets)
-        self._repo_name = self.vars['repo_name']
-        self._snapshots_registry = self.vars['snapshots_registry']
-        self._releases_registry = self.vars['releases_registry']
-        self._snapshots_registry_creds = self.vars.get('snapshots_registry_creds')
-        self._releases_registry_creds = self.vars.get('releases_registry_creds')
-        self._auth_strategy = self.vars['auth_strategy']
-        self._output_results = self.vars['output_results']
-        self._type = self.vars['type']
-        self._from = self.dereference_from_input(self.vars['from'])
-        self._workflow_run_id = self.vars['workflow_run_id']
-        self._workflow_run_url = self.vars['workflow_run_url']
-        self._service_path = self.vars['service_path']
-        self._flavors = self.vars['flavors'] if 'flavors' in self.vars else 'default'
-        self._container_structure_filename = self.vars['container_structure_filename'] if 'container_structure_filename' in self.vars else None
-        self._dagger_secrets = []
-        self._login_required = literal_eval(
-            self.vars['login_required'].capitalize()) if 'login_required' in self.vars else True
-        self._publish = self.vars['publish'] if 'publish' in self.vars else True
 
-        # Read the on-premises configuration file
+        # We checkout the correct sha/tag
+        self._from = self.dereference_from_input(self.vars.get('from'))
+        self._repo_name = self.vars.get('repo_name')
+        self._snapshots_registry = self.vars.get('snapshots_registry')
+        self._releases_registry = self.vars.get('releases_registry')
+        self._snapshots_registry_creds = self.vars.get('snapshots_registry_creds', None)
+        self._releases_registry_creds = self.vars.get('releases_registry_creds', None)
+        self._auth_strategy = self.vars.get('auth_strategy', None)
+        self._output_results = self.vars.get('output_results', 'results.yaml')
+        self._type = self.vars.get('type', 'snapshots')
+        self._workflow_run_id = self.vars.get('workflow_run_id', None)
+        self._workflow_run_url = self.vars.get('workflow_run_url', None)
+        self._service_path = self.vars.get('service_path', '')
+        self._flavors = self.vars.get('flavors', 'default')
+        self._container_structure_filename = self.vars.get('container_structure_filename', None)
+        self._login_required = self.vars.get('login_required', True)
+        self._publish = self.vars.get('publish', True)
+
+        # Read the configuration file
+        self._dagger_secrets = []
         self._config = Config.from_yaml(
             self.config_file, self.type, self.secrets, schema_file = self.SCHEMA_FILE_PATH)
+
+    def _required_vars(self):
+        return ['from', 'repo_name', 'snapshots_registry', 'releases_registry']
 
     @property
     def repo_name(self):
@@ -144,26 +144,74 @@ class BuildImages(FirestarterWorkflow):
     def output_results(self):
         return self._output_results
 
+    def execute(self):
+        self.checkout_git_repository(self.from_version)
+
+        if self.is_auto_build():
+            self.filter_auto_build()
+        else:
+            self.filter_flavors()
+
+        default_registry = getattr(self, f"{self.type}_registry")
+        default_registry_creds = getattr(self, f"{self.type}_registry_creds")
+
+        if self.login_required:
+            self.login(
+                self.auth_strategy,
+                default_registry,
+                default_registry_creds,
+            )
+
+        for flavor in self.flavors:
+            logger.info(f"Building flavor {flavor}...")
+            value = self.config.images[flavor]
+            if value.registry:
+                self.login(
+                    value.registry.get("auth_strategy", self.auth_strategy),
+                    value.registry.get("name", default_registry),
+                    value.registry.get(
+                        "creds",
+                        default_registry_creds
+                    )
+                )
+
+            extra_registries = value.extra_registries or []
+
+            for extra_registry in extra_registries:
+                if extra_registry['auth_strategy']:
+                    self.login(
+                        extra_registry['auth_strategy'],
+                        extra_registry['name'],
+                        default_registry_creds
+                    )
+
+        logger.info(f"Building images for {self.flavors} flavors...")
+        # Run the coroutine function to execute the compilation process for all flavors
+        return anyio.run(self.compile_images_for_all_flavors)
+
     def checkout_git_repository(self, checkout_value):
-        subprocess.run(["git", "checkout", checkout_value])
+        proc = subprocess.run(["git", "checkout", checkout_value])
+        proc.check_returncode()
 
     def dereference_from_input(self, input_value):
         # git tag -l <pattern> checks to see if any tag matches the given pattern.
         # Since we want a tag named exactly as input_value, we input it as a pattern
         # and check the output. If it's empty, input_value is not a tag. If it does,
         # input_value is a tag
-        git_output = subprocess.run(
+        proc = subprocess.run(
             ['git', 'tag', '-l', input_value], stdout=subprocess.PIPE
-        ).stdout.decode('utf-8').strip()
+        )
+        proc.check_returncode()
+        git_output = proc.stdout.decode('utf-8').strip()
 
         if git_output:
             return git_output
 
-        short_sha = subprocess.run(
+        proc = subprocess.run(
             ['git', 'rev-parse', input_value], stdout=subprocess.PIPE
-        ).stdout.decode('utf-8')[:7]
-
-        return short_sha
+        )
+        proc.check_returncode()
+        return proc.stdout.decode('utf-8')[:7]
 
     def resolve_secrets(self, secrets=None):
         sr = SecretResolver(secrets)
@@ -174,7 +222,7 @@ class BuildImages(FirestarterWorkflow):
         flavor_filter_list = []
         final_flavors_list = []
 
-        # Get the on-premises name from the command-line arguments and filter the on-premises data accordingly
+        # Get the flavors to build from the command-line arguments and filter the flavors configured accordingly
         if self.flavors.replace(' ', '') == '*':
             logger.info('Publishing all flavors:')
             self._flavors = ",".join(all_flavors_list)
@@ -223,7 +271,6 @@ class BuildImages(FirestarterWorkflow):
 
 
     # Define a coroutine function to compile an image using Docker
-
     async def compile_image_and_publish(self, ctx, build_args, secrets, dockerfile, image):
         # Set a current working directory
         src = ctx.host().directory(".")
@@ -244,7 +291,7 @@ class BuildImages(FirestarterWorkflow):
         if self.publish:
             await ctx.publish(address=f"{image}")
 
-    # Define a coroutine function to execute the compilation process for all on-premises
+    # Define a coroutine function to execute the compilation process for all flavors
     async def compile_images_for_all_flavors(self):
         # Set up the Dagger configuration object
         config = dagger.Config(log_output=sys.stdout)
@@ -263,7 +310,7 @@ class BuildImages(FirestarterWorkflow):
 
                 registry, full_repo_name, build_args, dockerfile, extra_registries = self.get_flavor_data(flavor)
 
-                # Set the build arguments for the current on-premises
+                # Set the build arguments for the current flavor
                 build_args_list = [dagger.BuildArg(name=key, value=value) for key, value in build_args.items()]
 
                 resolved_secret_refs = self.resolve_secrets(
@@ -345,10 +392,9 @@ class BuildImages(FirestarterWorkflow):
         yaml.default_flow_style = False
         with open(os.path.join("/tmp", self.output_results), "w") as f:
             yaml.dump(results_list, f)
+        return results_list
 
     def get_flavor_data(self, flavor):
-
-
         def concat_full_repo_name(service_path, repo_name):
             if not service_path:
                 return repo_name
@@ -374,47 +420,6 @@ class BuildImages(FirestarterWorkflow):
 
     def is_auto_build(self):
         return self.flavors is None or self.flavors.replace(' ', '') == ''
-
-    def execute(self):
-
-        if self.is_auto_build():
-            self.filter_auto_build()
-        else:
-            self.filter_flavors()
-
-        default_registry = getattr(self, f"{self.type}_registry")
-        default_registry_creds = getattr(self, f"{self.type}_registry_creds")
-        self.login(
-            self.auth_strategy,
-            default_registry,
-            default_registry_creds,
-        )
-
-        for flavor in self.flavors:
-            value = self.config.images[flavor]
-
-            if value.registry:
-                self.login(
-                    value.registry.get("auth_strategy", self.auth_strategy),
-                    value.registry.get("name", default_registry),
-                    value.registry.get(
-                        "creds",
-                        default_registry_creds
-                    )
-                )
-
-            extra_registries = value.extra_registries or []
-
-            for extra_registry in extra_registries:
-                if extra_registry['auth_strategy']:
-                    self.login(
-                        extra_registry['auth_strategy'],
-                        extra_registry['name'],
-                        default_registry_creds
-                    )
-
-        # Run the coroutine function to execute the compilation process for all on-premises
-        anyio.run(self.compile_images_for_all_flavors)
 
     def login(self, auth_strategy, registry, creds):
 
