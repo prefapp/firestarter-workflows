@@ -1,0 +1,14 @@
+snapshots:
+  invalid_snapshot:
+    dockerfile: "docker/Dockerfile"
+    auto: true
+    extra_property: "no permitida"  
+
+releases:
+  invalid_release:
+    dockerfile: "docker/Dockerfile"
+    auto: true
+    build_args:
+      API_URL: "api.test.com"
+   
+

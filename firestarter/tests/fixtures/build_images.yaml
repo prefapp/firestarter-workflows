@@ -1,0 +1,28 @@
+snapshots:
+  flavor1:
+    dockerfile: "./path/to/Dockerfile"
+    auto: true 
+    build_args:
+      ARG1: value1 
+      ARG2: value2
+    secrets:
+      SECRET1: secret_value1
+      SECRET2: secret_value2
+    extra_registries: 
+      - name: registry1 
+        repository: repo1 
+        auth_strategy: azure_oidc 
+
+releases:
+  flavor2:
+    dockerfile: "./path/to/Dockerfile" 
+    auto: false
+    build_args:
+      ARG3: value3 
+    secrets:
+      SECRET3: secret_value3 
+    extra_registries:
+      - name: registry2 
+        repository: repo2 
+        auth_strategy: aws_oidc 
+

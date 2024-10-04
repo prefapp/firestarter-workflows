@@ -2,6 +2,12 @@ import typing as t
 from dataclasses import dataclass, field
 from ruamel.yaml import YAML
 import re
+import json
+from jsonschema import validate, ValidationError, SchemaError
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 yaml = YAML(typ='safe')
 
@@ -47,18 +53,35 @@ class Config:
         return cls(
             images={id: Image.from_dict(image) for id, image in obj.items()}
         )
+        
 
     @classmethod
-    def from_yaml(cls: t.Type["Config"], file: str, type: str, secrets: dict):
+    def from_yaml(cls: t.Type["Config"], file: str, type: str, secrets: dict, schema_file='schema.json'):
+        try:
 
-        with open(file, "r") as f:
-            raw_config = yaml.load(f)
+            with open(file, "r") as f:
+                raw_config = yaml.load(f)
 
-        config = cls.from_dict(raw_config[type])
+            config = cls.from_dict(raw_config[type])
 
-        # find all values that follow the pattern {{ secrets.name }}
-        # and replace them with the value from the secrets dict
-        replace_secrets(config.to_dict(), secrets)
+            with open(schema_file, "r") as schema_f:
+                schema = json.load(schema_f)
+            validate(instance=raw_config, schema=schema)
+            logger.info("The file is valid")
+
+        except FileNotFoundError as fnf_error:
+            logger.error(f"File not found {fnf_error}")
+            raise
+        except ValidationError as v_error:
+            logger.error(f"Validate error {v_error.message}")
+            raise
+        except SchemaError as s_error:
+            logger.error(f"Error in schema {s_error.message}")
+            raise
+        else:
+            replace_secrets(config.to_dict(), secrets)
+            logger.info("The secrets has been replaced correctly in the set up")
+
         return config
 
     def to_dict(self):
