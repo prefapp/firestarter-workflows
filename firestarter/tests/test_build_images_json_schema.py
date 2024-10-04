@@ -29,7 +29,7 @@ def test_validate_schema_error() -> None:
         except FileNotFoundError as fnf_error:
             pytest.fail(f"File not found: {fnf_error.filename}")
 
-def test_validation_error_message() -> None:
+def test_validation_error() -> None:
     with pytest.raises(ValidationError):
         validate_config(INVALID_CONFIG_FILE_PATH, SCHEMA_FILE_PATH)
 
