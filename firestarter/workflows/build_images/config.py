@@ -60,12 +60,12 @@ class Config:
         return cls(
             images=images
         )
+        
 
 
     @classmethod
     def from_yaml(cls: t.Type["Config"], file: str, type: str, secrets: dict, schema_file='schema.json'):
         try:
-
             with open(file, "r") as f:
                 raw_config = yaml.load(f)
 
@@ -75,6 +75,7 @@ class Config:
                 schema = json.load(schema_f)
             validate(instance=raw_config, schema=schema)
             logger.info("The file is valid")
+
         except FileNotFoundError as fnf_error:
             logger.error(f"File not found {fnf_error}")
             raise
