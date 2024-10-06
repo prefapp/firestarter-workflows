@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.2.0](https://github.com/prefapp/firestarter-workflows/compare/v2.1.0...v2.2.0) (2024-10-06)
+
+
+### Features
+
+* add json schema validation to build-images workflow ([#130](https://github.com/prefapp/firestarter-workflows/issues/130)) ([2e10b30](https://github.com/prefapp/firestarter-workflows/commit/2e10b30232bf7183c5992fe72c931c2d582bc859))
+
+
+### Bug Fixes
+
+* add new build_images input parameters ([#136](https://github.com/prefapp/firestarter-workflows/issues/136)) ([a54d3b7](https://github.com/prefapp/firestarter-workflows/commit/a54d3b7dbd314a39342d648c027e2e3b11c5a2b6))
+* Fixed container.with_exec() call ([#131](https://github.com/prefapp/firestarter-workflows/issues/131)) ([0c1c433](https://github.com/prefapp/firestarter-workflows/commit/0c1c4339b4dafce6938aebb741b2a9cbaca9bbd6))
+* input and output parameters ([#134](https://github.com/prefapp/firestarter-workflows/issues/134)) ([d6945b4](https://github.com/prefapp/firestarter-workflows/commit/d6945b45fee0912d73a5349e9bbc75bde9f1ac61))
+
 ## [2.1.0](https://github.com/prefapp/firestarter-workflows/compare/v2.0.0...v2.1.0) (2024-09-25)
 
 
