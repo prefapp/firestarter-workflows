@@ -208,7 +208,7 @@ class BuildImages(FirestarterWorkflow):
             return git_output
 
         proc = subprocess.run(
-            ['git', 'rev-parse', input_value], stdout=subprocess.PIPE
+            ['git', 'rev-parse', f"origin/{input_value}"], stdout=subprocess.PIPE
         )
         proc.check_returncode()
         return proc.stdout.decode('utf-8')[:7]

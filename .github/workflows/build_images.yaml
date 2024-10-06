@@ -102,6 +102,7 @@ jobs:
         with:
           path: build
           fetch-depth: 0
+          fetch-tags: true
 
       - name: Checkout config file
         uses: actions/checkout@v4
