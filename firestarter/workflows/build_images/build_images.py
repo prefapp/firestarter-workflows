@@ -1,5 +1,6 @@
 import datetime
 import json
+import re
 import os
 import sys
 from firestarter.common.firestarter_workflow import FirestarterWorkflow
@@ -194,6 +195,10 @@ class BuildImages(FirestarterWorkflow):
         proc.check_returncode()
 
     def dereference_from_input(self, input_value):
+        # If the input value is a valid git sha or tag, return it
+        if re.match(r'^[0-9a-f]{40}$', input_value, re.IGNORECASE) or re.match(r'^[0-9a-f]{7}$', input_value, re.IGNORECASE):
+            return input_value
+
         # git tag -l <pattern> checks to see if any tag matches the given pattern.
         # Since we want a tag named exactly as input_value, we input it as a pattern
         # and check the output. If it's empty, input_value is not a tag. If it does,
@@ -207,6 +212,7 @@ class BuildImages(FirestarterWorkflow):
         if git_output:
             return git_output
 
+        # if the input value is a branch, we need to get the sha of the branch
         proc = subprocess.run(
             ['git', 'rev-parse', f"origin/{input_value}"], stdout=subprocess.PIPE
         )
