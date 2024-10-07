@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.1](https://github.com/prefapp/firestarter-workflows/compare/v2.2.0...v2.2.1) (2024-10-07)
+
+
+### Bug Fixes
+
+* accept sha as from input ([#138](https://github.com/prefapp/firestarter-workflows/issues/138)) ([9f626ab](https://github.com/prefapp/firestarter-workflows/commit/9f626ab0b75f0ea1ee0be0c8fad7f9916b09b819))
+
 ## [2.2.0](https://github.com/prefapp/firestarter-workflows/compare/v2.1.0...v2.2.0) (2024-10-06)
 
 
