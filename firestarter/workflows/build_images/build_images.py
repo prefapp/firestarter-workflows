@@ -212,7 +212,7 @@ class BuildImages(FirestarterWorkflow):
         if git_output:
             return git_output
 
-
+        # if the input value is a branch, we need to get the sha of the branch
         proc = subprocess.run(
             ['git', 'rev-parse', f"origin/{input_value}"], stdout=subprocess.PIPE
         )
