@@ -26,6 +26,24 @@
               "type": "object",
               "additionalProperties": true 
             },
+            "registry": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "pattern": ".+"
+                },
+                "repository": {
+                  "type": "string",
+                  "pattern": ".+"
+                },
+                "auth_strategy": {
+                  "type": "string",
+                  "enum": ["azure_oidc"]
+                }
+              },
+              "additionalProperties": false
+            },
             "extra_registries": {
               "type": "array",
               "items": {
@@ -76,6 +94,24 @@
             "secrets": {
               "type": "object",
               "additionalProperties": true 
+            },
+            "registry": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "pattern": ".+"
+                },
+                "repository": {
+                  "type": "string",
+                  "pattern": ".+"
+                },
+                "auth_strategy": {
+                  "type": "string",
+                  "enum": ["azure_oidc"] 
+                }
+              },
+              "additionalProperties": false
             },
             "extra_registries": {
               "type": "array",
