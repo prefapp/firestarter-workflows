@@ -42,7 +42,15 @@
                   "enum": ["azure_oidc"]
                 }
               },
-              "additionalProperties": false
+              "additionalProperties":false,
+              "anyOf": [
+                {"required": ["name"]
+              },
+                {"required": ["repository"]
+              },
+                {"required": ["auth_strategy"]
+              }
+              ]
             },
             "extra_registries": {
               "type": "array",
@@ -111,7 +119,15 @@
                   "enum": ["azure_oidc"] 
                 }
               },
-              "additionalProperties": false
+              "additionalProperties": false,
+              "anyOf": [
+                {"required": ["name"]
+              },
+                {"required": ["repository"]
+              },
+                {"required": ["auth_strategy"]
+              }
+              ]
             },
             "extra_registries": {
               "type": "array",
