@@ -197,7 +197,7 @@ class BuildImages(FirestarterWorkflow):
     def dereference_from_input(self, input_value):
         # If the input value is a valid git sha or tag, return it
         if re.match(r'^[0-9a-f]{40}$', input_value, re.IGNORECASE) or re.match(r'^[0-9a-f]{7}$', input_value, re.IGNORECASE):
-            return input_value
+            return input_value[:7]
 
         # git tag -l <pattern> checks to see if any tag matches the given pattern.
         # Since we want a tag named exactly as input_value, we input it as a pattern
