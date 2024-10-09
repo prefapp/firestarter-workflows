@@ -153,9 +153,6 @@ class BuildImages(FirestarterWorkflow):
         else:
             self.filter_flavors()
 
-        default_registry = getattr(self, f"{self.type}_registry")
-        default_registry_creds = getattr(self, f"{self.type}_registry_creds")
-
         if self.login_required:
             self.login(
                 self.auth_strategy,
@@ -165,15 +162,14 @@ class BuildImages(FirestarterWorkflow):
 
         for flavor in self.flavors:
             logger.info(f"Building flavor {flavor}...")
-            value = self.config.images[flavor]
-            if value.registry:
+            flavor_data = self.config.images[flavor]
+
+            if flavor_data.registry:
+                flavor_registry_data = self.get_flavor_registry_data(flavor_data)
                 self.login(
-                    value.registry.get("auth_strategy", self.auth_strategy),
-                    value.registry.get("name", default_registry),
-                    value.registry.get(
-                        "creds",
-                        default_registry_creds
-                    )
+                    flavor_registry_data.auth_strategy,
+                    flavor_registry_data.name,
+                    flavor_registry_data.creds
                 )
 
             extra_registries = value.extra_registries or []
@@ -313,16 +309,16 @@ class BuildImages(FirestarterWorkflow):
             logger.info(f"Using these secrets for all flavors: {self.secrets.keys()}")
 
             for flavor in self.flavors:
-
                 registry, full_repo_name, build_args, dockerfile, extra_registries = self.get_flavor_data(flavor)
 
                 # Set the build arguments for the current flavor
-                build_args_list = [dagger.BuildArg(name=key, value=value) for key, value in build_args.items()]
+                build_args_list = [
+                    dagger.BuildArg(name=key, value=value)
+                    for key, value in build_args.items()
+                ]
 
                 resolved_secret_refs = self.resolve_secrets(
-
                     self.config.images[flavor].secrets or {}
-
                 )
 
                 logger.info(f"Setting flavor {flavor} custom secrets: {resolved_secret_refs.keys()}")
@@ -331,18 +327,7 @@ class BuildImages(FirestarterWorkflow):
                 flavor_secrets = []
 
                 for key, value in resolved_secret_refs.items():
-
-                    flavor_secrets.append(
-
-                        client.set_secret(
-
-                            key,
-
-                            value
-
-                        )
-
-                    )
+                    flavor_secrets.append(client.set_secret(key, value))
 
                 # Combine generic and custom secrets for this flavor
                 secrets = secrets_for_all_flavors + flavor_secrets
@@ -401,27 +386,43 @@ class BuildImages(FirestarterWorkflow):
         return results_list
 
     def get_flavor_data(self, flavor):
+        flavor_data = self.config.images[flavor]
+
+        flavor_registry_data = self.get_flavor_registry_data(flavor_data)
+        build_args = flavor_data.build_args or {}
+        dockerfile = flavor_data.dockerfile or ""
+        extra_registries = flavor_data.extra_registries or []
+
+        return (
+            flavor_registry_data.name,
+            flavor_registry_data.full_repo_name,
+            build_args,
+            dockerfile,
+            extra_registries
+        )
+
+    def get_flavor_registry_data(self, flavor_data):
         def concat_full_repo_name(service_path, repo_name):
             if not service_path:
                 return repo_name
             else:
                 return f"{service_path}/{repo_name}"
 
-        value = self.config.images[flavor]
+        flavor_registry = flavor_data.registry or {}
+        flavor_registry_data = {
+            "name": registry.get("name", self.vars[f"{self.type}_registry"]),
+            "full_repo_name": registry.get("repository", concat_full_repo_name(
+                self.service_path, self.repo_name
+            )),
+            "auth_strategy": value.registry.get(
+                "auth_strategy", self.auth_strategy
+            ),
+            "creds": value.registry.get(
+                "creds", self.vars[f"{self.type}_registry_creds"])
+            ),
+        }
 
-        registry = value.registry or {}
-
-        registry_name = registry.get("name", "") or self.vars[f"{self.type}_registry"]
-
-        full_repo_name = registry.get("repository", "") or concat_full_repo_name(self.service_path,self.repo_name)
-
-        build_args = value.build_args or {}
-
-        dockerfile = value.dockerfile or ""
-
-        extra_registries = value.extra_registries or []
-
-        return registry_name, full_repo_name, build_args, dockerfile, extra_registries
+        return flavor_registry_data
 
 
     def is_auto_build(self):
