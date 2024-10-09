@@ -17,10 +17,15 @@ on:
         value: ${{ jobs.analyze_changes.outputs.changes }}
 jobs:
   analyze_changes:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       changes: ${{ steps.analyze_changes.outputs.result }}
     steps:
+      - name: Debug
+        run: |
+          echo "before"
+          echo ${{ secrets.token }}
+          echo "after"
       - uses: LouisBrunner/checks-action@v2.0.0
         with:
           token: ${{ secrets.token }}
