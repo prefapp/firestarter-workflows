@@ -10,7 +10,7 @@ on:
         type: boolean
     secrets:
       token:
-        required: false
+        required: true
     outputs:
       changes:
         description: "The first output string"
@@ -22,9 +22,6 @@ jobs:
       changes: ${{ steps.analyze_changes.outputs.result }}
     steps:
       - uses: LouisBrunner/checks-action@v2.0.0
-        env:
-          TOKEN: ${{ secrets.token }}
-        if: ${{ env.TOKEN }}
         with:
           token: ${{ secrets.token }}
           name: Test XYZ
