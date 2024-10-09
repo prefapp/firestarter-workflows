@@ -303,7 +303,8 @@ class BuildImages(FirestarterWorkflow):
 
         logger.info(f"Using secrets: {secrets}")
 
-        ctx = ctx.container()
+        ctx = (
+            ctx.container()
                 .build(
                     context=src,
                     dockerfile=dockerfile,
@@ -315,6 +316,7 @@ class BuildImages(FirestarterWorkflow):
                 .with_label("build.date", datetime.datetime.now().strftime(
                     "%Y-%m-%d_%H:%M:%S_UTC"
                 ))
+        )
 
         if self.container_structure_filename is not None:
             await self.test_image(ctx)
@@ -449,15 +451,19 @@ class BuildImages(FirestarterWorkflow):
 
         flavor_registry = flavor_data.registry or {}
         flavor_registry_data = {
-            "name": registry.get("name", self.vars[f"{self.type}_registry"]),
-            "full_repo_name": registry.get("repository", concat_full_repo_name(
-                self.service_path, self.repo_name
-            )),
-            "auth_strategy": value.registry.get(
+            "name": flavor_registry.get(
+                "name", self.vars[f"{self.type}_registry"]
+            ),
+            "full_repo_name": flavor_registry.get(
+                "repository", concat_full_repo_name(
+                    self.service_path, self.repo_name
+                )
+            ),
+            "auth_strategy":flavor_registry.get(
                 "auth_strategy", self.auth_strategy
             ),
-            "creds": value.registry.get(
-                "creds", self.vars[f"{self.type}_registry_creds"])
+            "creds": flavor_registry.get(
+                "creds", self.vars[f"{self.type}_registry_creds"]
             ),
         }
 
