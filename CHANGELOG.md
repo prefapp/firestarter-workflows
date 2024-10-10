@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.3.0](https://github.com/prefapp/firestarter-workflows/compare/v2.2.2...v2.3.0) (2024-10-10)
+
+
+### Features
+
+* remove step get pem file ([#141](https://github.com/prefapp/firestarter-workflows/issues/141)) ([0e5268b](https://github.com/prefapp/firestarter-workflows/commit/0e5268b650b103dac23e8f1765e954d53244021e))
+
+
+### Bug Fixes
+
+* yaml dependency ([#147](https://github.com/prefapp/firestarter-workflows/issues/147)) ([7ccca8b](https://github.com/prefapp/firestarter-workflows/commit/7ccca8bea0adbb961f0e97a447b24d7a921b44c6))
+
 ## [2.2.2](https://github.com/prefapp/firestarter-workflows/compare/v2.2.1...v2.2.2) (2024-10-10)
 
 
