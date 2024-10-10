@@ -1,7 +1,7 @@
 snapshots:
   flavor1:
     dockerfile: "./fixtures/Dockerfile"
-    auto: true 
+    auto: false 
     build_args:
       ARG1: value1 
       ARG2: value2
@@ -11,6 +11,23 @@ snapshots:
     extra_registries: 
       - name: registry1 
         repository: repo1 
+        auth_strategy: azure_oidc 
+
+  flavor3:
+    dockerfile: "./fixtures/Dockerfile"
+    auto: true 
+    registry:
+      name: test-registry
+      repository: repository3
+    build_args:
+      ARG4: value4 
+      ARG5: value5
+    secrets:
+      SECRET4: secret_value4
+      SECRET5: secret_value5
+    extra_registries: 
+      - name: registry3 
+        repository: repo3
         auth_strategy: azure_oidc 
 
 releases:

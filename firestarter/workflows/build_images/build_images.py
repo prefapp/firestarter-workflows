@@ -435,8 +435,8 @@ class BuildImages(FirestarterWorkflow):
         extra_registries = flavor_data.extra_registries or []
 
         return (
-            flavor_registry_data.name,
-            flavor_registry_data.full_repo_name,
+            flavor_registry_data["name"],
+            flavor_registry_data["full_repo_name"],
             build_args,
             dockerfile,
             extra_registries

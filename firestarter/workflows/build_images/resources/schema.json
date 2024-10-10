@@ -26,6 +26,22 @@
               "type": "object",
               "additionalProperties": true 
             },
+            "registry": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "repository": {
+                  "type": "string"
+                },
+                "auth_strategy": {
+                  "type": "string",
+                  "enum": ["azure_oidc", "aws_oidc"]
+                }
+              },
+              "additionalProperties": false 
+            },
             "extra_registries": {
               "type": "array",
               "items": {

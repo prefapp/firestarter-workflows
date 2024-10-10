@@ -14,8 +14,9 @@ pyyaml = { version = "6.0.1", python = ">=2.7,<2.8 || >=3.6.0" }
 "ruamel.yaml" = { version = "0.18.5", python = ">=3.10,<4.0" }
 
 # optional for on-premises
-docker = { version = "6.1.2", python = ">=3.6", optional = true }
+docker = { version = "6.1.2", python = ">=3.6" }
 pytest = "^7.3.1"
+pytest-mock = "^3.14.0"
 jsonschema = "^4.17.3"
 boto3 = "^1.26.161"
 azure-identity = "^1.13.0"
