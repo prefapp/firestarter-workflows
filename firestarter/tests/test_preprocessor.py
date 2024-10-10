@@ -8,7 +8,7 @@ yaml = YAML(typ='safe')
 
 def load_yaml(file_path: str) -> str:
     with open(file_path, "r") as f:
-        return yaml.load(f)
+        return f.read()
 
 def process_env_var(var_name: str) -> str:
     if not var_name in FAKE_OS_ENVIRON:
