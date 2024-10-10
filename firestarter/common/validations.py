@@ -29,7 +29,7 @@ def helper_get_config_schema(schema_path: str) -> dict:
 
 
 def validate_config(config_path: str, schema_path: str, context = None) -> dict:
-    yaml=YAML()
+    yaml=YAML(typ='safe')
     with open(config_path, 'r') as config_file:
         if context:
             preprocessor: PreProcessor = PreProcessor(config_file.read())
