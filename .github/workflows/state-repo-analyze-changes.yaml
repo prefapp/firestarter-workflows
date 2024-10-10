@@ -31,13 +31,6 @@ jobs:
           app-id: ${{ inputs.gh_app_id }}
           private-key: ${{ secrets.gh_pem_file }}
           owner: ${{ github.repository_owner }}
-      - uses: LouisBrunner/checks-action@v2.0.0
-        with:
-          token: ${{ steps.get-gh-app-token.outputs.token }}
-          name: Test XYZ
-          conclusion: ${{ job.status }}
-          output: |
-            {"summary":"test"}
       - name: Checkout
         uses: actions/checkout@v4
         with:
@@ -117,3 +110,12 @@ jobs:
             console.debug(result);
 
             return result;
+
+      - uses: LouisBrunner/checks-action@v2.0.0
+        if: always()
+        with:
+          token: ${{ steps.get-gh-app-token.outputs.token }}
+          name: State repo Analyze Changes
+          conclusion: ${{ job.status }}
+          output: |
+            {"summary":"Changes detected","title":"Changes detected","annotations":${{ toJson(steps.analyze_changes.outputs.result) }}}
