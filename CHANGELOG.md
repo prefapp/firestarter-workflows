@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.2.2](https://github.com/prefapp/firestarter-workflows/compare/v2.2.1...v2.2.2) (2024-10-10)
+
+
+### Bug Fixes
+
+* added registry configuration parameters ([#140](https://github.com/prefapp/firestarter-workflows/issues/140)) ([206f639](https://github.com/prefapp/firestarter-workflows/commit/206f6395805620133a71c6e95e3dc14ed8bb408f))
+* return short-sha ([#142](https://github.com/prefapp/firestarter-workflows/issues/142)) ([54cc5f9](https://github.com/prefapp/firestarter-workflows/commit/54cc5f91a6d3a7ce222b14f9ec08caad4076e5b0))
+
 ## [2.2.1](https://github.com/prefapp/firestarter-workflows/compare/v2.2.0...v2.2.1) (2024-10-07)
 
 
