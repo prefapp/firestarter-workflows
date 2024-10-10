@@ -118,4 +118,4 @@ jobs:
           name: State repo Analyze Changes
           conclusion: ${{ job.status }}
           output: |
-            {"summary":"Changes detected","title":"Changes detected","annotations":${{ toJson(steps.analyze_changes.outputs.result) }}}
+            {"summary":"Changes detected","title":"Changes detected","text_description":${{ toJson(steps.analyze_changes.outputs.result) }}}
