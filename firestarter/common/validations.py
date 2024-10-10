@@ -2,7 +2,7 @@ from jsonschema import validate
 from .preprocessor import PreProcessor
 import os
 import json
-import yaml
+from ruamel.yaml import YAML
 
 
 def process_context_var(context: dict, var_name: str, context_name: str) -> str:
@@ -29,6 +29,7 @@ def helper_get_config_schema(schema_path: str) -> dict:
 
 
 def validate_config(config_path: str, schema_path: str, context = None) -> dict:
+    yaml=YAML()
     with open(config_path, 'r') as config_file:
         if context:
             preprocessor: PreProcessor = PreProcessor(config_file.read())
@@ -41,7 +42,7 @@ def validate_config(config_path: str, schema_path: str, context = None) -> dict:
         else:
             config_str: str = config_file.read()
 
-        config_data: dict = yaml.safe_load(config_str)
+        config_data: dict = yaml.load(config_str)
 
         validate(
             instance=config_data,
