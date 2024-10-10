@@ -33,7 +33,7 @@ jobs:
           owner: ${{ github.repository_owner }}
       - uses: LouisBrunner/checks-action@v2.0.0
         with:
-          token: ${{ secrets.token }}
+          token: ${{ steps.get-gh-app-token.outputs.token }}
           name: Test XYZ
           conclusion: ${{ job.status }}
           output: |
