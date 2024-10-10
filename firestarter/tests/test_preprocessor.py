@@ -1,7 +1,9 @@
 from firestarter.common.preprocessor import PreProcessor
 import os
-import yaml
+from ruamel.yaml import YAML
 import pytest
+
+yaml = YAML(typ='safe')
 
 
 def load_yaml(file_path: str) -> str:
@@ -61,7 +63,6 @@ def test_var_name_not_in_context_error() -> None:
     }
     with pytest.raises(ValueError, match="not found in fake sys environment"):
         result: dict = yaml.load(
-            process_file("fixtures/preprocess_workflow_error.yaml", preprocess_dict),
-            Loader=yaml.Loader,
+            process_file("fixtures/preprocess_workflow_error.yaml", preprocess_dict)
         )
 
