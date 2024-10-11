@@ -11,7 +11,7 @@ from .providers.secrets.resolver import SecretResolver
 from .config import Config
 import docker
 import uuid
-from os import getenv, remove, getcwd
+from os import getenv, getcwd
 import string
 import logging
 import fnmatch
@@ -291,7 +291,7 @@ class BuildImages(FirestarterWorkflow):
         except Exception as e:
             logger.info(e)
         finally:
-            remove(file_name)
+            os.remove(file_name)
 
 
     # Define a coroutine function to compile an image using Docker

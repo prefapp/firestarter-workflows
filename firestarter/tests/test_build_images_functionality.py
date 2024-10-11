@@ -4,6 +4,7 @@ import pytest
 from unittest import TestCase
 from ruamel.yaml import YAML
 import subprocess
+from mock_classes import DaggerContextMock
 import os
 
 yaml = YAML(typ='safe')
@@ -109,8 +110,20 @@ def test_filter_auto_build() -> None:
     assert builder.flavors[0] == "flavor3"
 
 
+# The object correctly calls the git command
 def test_checkout_git_repository(mocker) -> None:
     mocker.patch("subprocess.run")
     builder.checkout_git_repository("test_repo")
 
     subprocess.run.assert_called_once_with(["git", "checkout", "test_repo"])
+
+@pytest.mark.asyncio
+async def test_test_image(mocker) -> None:
+    mocker.patch("docker.DockerClient")
+    mocker.return_value = None
+    mocker.patch.object(os, "remove")
+    mocker.return_value = True
+    mocker.patch("builtins.open")
+    mocker.return_value = ""
+
+    await builder.test_image(DaggerContextMock())
