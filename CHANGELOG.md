@@ -1,5 +1,17 @@
 # Changelog
 
+## [2.4.0](https://github.com/prefapp/firestarter-workflows/compare/v2.3.0...v2.4.0) (2024-10-11)
+
+
+### Features
+
+* Add check run ([#148](https://github.com/prefapp/firestarter-workflows/issues/148)) ([6a32377](https://github.com/prefapp/firestarter-workflows/commit/6a323778def4145d533dacafe003abb8df5bd5e0))
+
+
+### Bug Fixes
+
+* secrets in build_images ([#150](https://github.com/prefapp/firestarter-workflows/issues/150)) ([7ea0cfc](https://github.com/prefapp/firestarter-workflows/commit/7ea0cfc8c3251a583be022b54eb67faa40f86423))
+
 ## [2.3.0](https://github.com/prefapp/firestarter-workflows/compare/v2.2.2...v2.3.0) (2024-10-10)
 
 
