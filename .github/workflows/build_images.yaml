@@ -29,12 +29,21 @@ on:
         required: true
       workflows_repo:
         type: string
-        description:
+        description: Repository with the needed python dagger workflows, default to prefapp/firestarter-workflows
         default: prefapp/firestarter-workflows
       workflows_repo_ref:
         type: string
         description: Git reference from where to pull the workflows_repo
         default: v2
+    secrets:
+      FIRESTARTR_GITHUB_APP_PEM_FILE:
+        required: true
+      DOCKER_REGISTRY_SNAPSHOTS_CREDS:
+        required: false
+      DOCKER_REGISTRY_RELEASES_CREDS:
+        required: false
+      GITHUB_DOCKER_REGISTRY_CREDS:
+        required: false
 
 permissions:
   id-token: write
