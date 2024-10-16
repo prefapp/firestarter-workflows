@@ -129,9 +129,9 @@ jobs:
           aws-region: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).region }}
           role-to-assume: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).role_to_assume }}
 
-      - name: Debug
-        run: |
-          echo ${{ fromJSON(steps.parse_config.outputs.result).provider_kind }}
+      - name: Update kube config
+        if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'aws' }}
+        run: aws eks update-kubeconfig --name ${{fromJSON(steps.parse_config.outputs.result).cluster_name }} --region ${{fromJSON(steps.parse_config.outputs.result).region}}
 
       # Azure setup
       - name: Setup / Azure Login
