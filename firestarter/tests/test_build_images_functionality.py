@@ -117,6 +117,45 @@ def test_checkout_git_repository(mocker) -> None:
 
     subprocess.run.assert_called_once_with(["git", "checkout", "test_repo"])
 
+# A git reference is correctly dereference into a tag/short sha
+def test_dereference_from_input(mocker) -> None:
+    TAG_INPUT = "test_tag"
+    LONG_SHA_INPUT = "6a323778def4145d533dacafe003abb8df5bd5e0"
+    SHORT_SHA_INPUT = "6a32377"
+    BRANCH_INPUT = "test_branch"
+
+    completed_process_mock = subprocess.CompletedProcess
+    completed_process_mock.check_return_code = mocker.MagicMock(
+        name="completed_process.check_return_code.mock",
+        return_value=True
+    )
+
+    subprocess_mock_return_value = completed_process_mock(
+        args=None, returncode=0
+    )
+    subprocess_mock_return_value.stdout = TAG_INPUT.encode("windows-1252")
+
+    # Test tag input
+    subprocess_mock = subprocess
+    subprocess_mock.run = mocker.MagicMock(
+        name="subprocess.run.mock",
+        return_value=subprocess_mock_return_value
+    )
+
+    tag_input_dereference = builder.dereference_from_input(TAG_INPUT)
+
+    assert tag_input_dereference == TAG_INPUT
+
+    # Test long sha input
+    long_sha_input_dereference = builder.dereference_from_input(LONG_SHA_INPUT)
+
+    assert long_sha_input_dereference == SHORT_SHA_INPUT
+
+    # Test long sha input
+    short_sha_input_dereference = builder.dereference_from_input(SHORT_SHA_INPUT)
+
+    assert short_sha_input_dereference == SHORT_SHA_INPUT
+
 @pytest.mark.asyncio
 async def test_test_image(mocker) -> None:
     mocker.patch("docker.DockerClient")
@@ -126,4 +165,5 @@ async def test_test_image(mocker) -> None:
     mocker.patch("builtins.open")
     mocker.return_value = ""
 
+    # Correct call, doesn't raise any errors
     await builder.test_image(DaggerContextMock())
