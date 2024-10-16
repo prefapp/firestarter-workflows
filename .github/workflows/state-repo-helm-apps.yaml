@@ -122,11 +122,11 @@ jobs:
             return result;
 
       # AWS setup
-      - name: Configure AWS Credentials for China region audience
+      - name: Configure AWS Credentials
         if: ${{ steps.parse_config.outputs.result.provider_kind }} == "aws"
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-region: us-east-3
+          aws-region: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).region }}
           role-to-assume: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).role_to_assume }}
 
       # Azure setup
