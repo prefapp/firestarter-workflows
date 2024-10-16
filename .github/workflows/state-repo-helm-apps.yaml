@@ -121,6 +121,14 @@ jobs:
 
             return result;
 
+      # AWS setup
+      - name: Configure AWS Credentials for China region audience
+        if: ${{ steps.parse_config.outputs.result.provider_kind }} == "aws"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: us-east-3
+          role-to-assume: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).role_to_assume }}
+
       # Azure setup
       - name: Setup / Azure Login
         uses: Azure/login@v2
@@ -155,13 +163,6 @@ jobs:
             token=$(az acr login --name $registry --expose-token --output tsv --query accessToken) && \
             echo $token | helm registry login $registry -u 00000000-0000-0000-0000-000000000000 --password-stdin
           done
-
-      # AWS setup
-      - name: Configure AWS Credentials for China region audience
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: us-east-3
-          role-to-assume: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).role_to_assume }}
 
       # Helm logic
 
