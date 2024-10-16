@@ -129,10 +129,14 @@ jobs:
           aws-region: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).region }}
           role-to-assume: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).role_to_assume }}
 
+      - name: Debug
+        run: |
+          echo ${{ fromJSON(steps.parse_config.outputs.result).provider_kind }}
+
       # Azure setup
       - name: Setup / Azure Login
         uses: Azure/login@v2
-        if: ${{ false }}
+        if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind }} == "azure"
         with:
           client-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).identifier }}
           tenant-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).tenant_id }}
