@@ -132,7 +132,7 @@ jobs:
       # Azure setup
       - name: Setup / Azure Login
         uses: Azure/login@v2
-        if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
+        if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind }} == "azure"
         with:
           client-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).identifier }}
           tenant-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).tenant_id }}
