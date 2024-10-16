@@ -123,7 +123,7 @@ jobs:
 
       # AWS setup
       - name: Configure AWS Credentials
-        if: ${{ steps.parse_config.outputs.result.provider_kind == 'aws' }}
+        if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'aws' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).region }}
