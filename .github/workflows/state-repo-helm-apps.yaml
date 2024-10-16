@@ -106,7 +106,7 @@ jobs:
 
                 break;
               case 'aws':
-                if(!provider?.environments["${{ inputs.environment }}"]["role-to-assume"]) throw new Error('AWS_ROLE_TO_ASSUME not configured')
+                if(!config?.environments?.["${{ inputs.environment }}"]?.["role-to-assume"]) throw new Error('AWS_ROLE_TO_ASSUME not configured')
 
                 result.region = provider.region
                 result.role_to_assume = config.environments["${{ inputs.environment }}"]["role-to-assume"]
