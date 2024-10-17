@@ -6,6 +6,7 @@ from ruamel.yaml import YAML
 import subprocess
 from mock_classes import DaggerContextMock
 import os
+import docker
 
 yaml = YAML(typ='safe')
 
@@ -130,16 +131,32 @@ def test_dereference_from_input(mocker) -> None:
         return_value=True
     )
 
-    subprocess_mock_return_value = completed_process_mock(
+    subprocess_mock_tag_return_value = completed_process_mock(
         args=None, returncode=0
     )
-    subprocess_mock_return_value.stdout = TAG_INPUT.encode("windows-1252")
+    subprocess_mock_tag_return_value.stdout = TAG_INPUT.encode("windows-1252")
+
+    subprocess_mock_empty_return_value = completed_process_mock(
+        args=None, returncode=0
+    )
+    subprocess_mock_empty_return_value.stdout = "".encode("windows-1252")
+
+    subprocess_mock_sha_return_value = completed_process_mock(
+        args=None, returncode=0
+    )
+    subprocess_mock_sha_return_value.stdout = LONG_SHA_INPUT.encode(
+        "windows-1252"
+    )
 
     # Test tag input
     subprocess_mock = subprocess
     subprocess_mock.run = mocker.MagicMock(
         name="subprocess.run.mock",
-        return_value=subprocess_mock_return_value
+        side_effect=[
+            subprocess_mock_tag_return_value,
+            subprocess_mock_empty_return_value,
+            subprocess_mock_sha_return_value,
+        ]
     )
 
     tag_input_dereference = builder.dereference_from_input(TAG_INPUT)
@@ -151,19 +168,35 @@ def test_dereference_from_input(mocker) -> None:
 
     assert long_sha_input_dereference == SHORT_SHA_INPUT
 
-    # Test long sha input
+    # Test short sha input
     short_sha_input_dereference = builder.dereference_from_input(SHORT_SHA_INPUT)
 
     assert short_sha_input_dereference == SHORT_SHA_INPUT
 
+    # Test branch input
+    branch_input_dereference = builder.dereference_from_input(BRANCH_INPUT)
+
+    assert branch_input_dereference == SHORT_SHA_INPUT
+
 @pytest.mark.asyncio
 async def test_test_image(mocker) -> None:
-    mocker.patch("docker.DockerClient")
-    mocker.return_value = None
+    CONTAINERS_RUN_RETURN_VALUE = "test-output-containers"
+
+    docker_client_mock = docker.DockerClient
+
+    container_runner = docker_client_mock()
+    container_runner.containers.run = mocker.MagicMock(
+        name="docker.DockerClient.containers.run.mock",
+        return_value=CONTAINERS_RUN_RETURN_VALUE.encode("windows-1252")
+    )
+
+
     mocker.patch.object(os, "remove")
     mocker.return_value = True
     mocker.patch("builtins.open")
     mocker.return_value = ""
 
     # Correct call, doesn't raise any errors
-    await builder.test_image(DaggerContextMock())
+    correct_result = await builder.test_image(DaggerContextMock())
+
+    assert correct_result == CONTAINERS_RUN_RETURN_VALUE
