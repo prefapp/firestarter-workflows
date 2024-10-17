@@ -296,6 +296,7 @@ jobs:
       - name: Debug
         run: |
           kubectl config view
+          aws --region eu-west-1 eks get-token --cluster-name k8s-prefapp-pro --output json
       - name: Delete comments
         uses: prefapp/action-delete-pr-comments@v1
         if: ${{ inputs.apply == false || inputs.apply == 'false' }}
