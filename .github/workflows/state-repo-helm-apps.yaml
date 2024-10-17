@@ -293,6 +293,9 @@ jobs:
 
           done
 
+      - name: Debug
+        run: |
+          kubectl config view
       - name: Delete comments
         uses: prefapp/action-delete-pr-comments@v1
         if: ${{ inputs.apply == false || inputs.apply == 'false' }}
