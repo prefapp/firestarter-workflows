@@ -30,17 +30,27 @@
               "type": "object",
               "properties": {
                 "name": {
-                  "type": "string"
+                  "type": "string",
+                  "pattern": ".+"
                 },
                 "repository": {
-                  "type": "string"
+                  "type": "string",
+                  "pattern": ".+"
                 },
                 "auth_strategy": {
                   "type": "string",
-                  "enum": ["azure_oidc", "aws_oidc"]
+                  "enum": ["azure_oidc"]
                 }
               },
-              "additionalProperties": false 
+              "additionalProperties":false,
+              "anyOf": [
+                {"required": ["name"]
+              },
+                {"required": ["repository"]
+              },
+                {"required": ["auth_strategy"]
+              }
+              ]
             },
             "extra_registries": {
               "type": "array",
@@ -92,6 +102,32 @@
             "secrets": {
               "type": "object",
               "additionalProperties": true 
+            },
+            "registry": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "pattern": ".+"
+                },
+                "repository": {
+                  "type": "string",
+                  "pattern": ".+"
+                },
+                "auth_strategy": {
+                  "type": "string",
+                  "enum": ["azure_oidc"] 
+                }
+              },
+              "additionalProperties": false,
+              "anyOf": [
+                {"required": ["name"]
+              },
+                {"required": ["repository"]
+              },
+                {"required": ["auth_strategy"]
+              }
+              ]
             },
             "extra_registries": {
               "type": "array",

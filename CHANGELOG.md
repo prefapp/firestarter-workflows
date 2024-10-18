@@ -1,5 +1,37 @@
 # Changelog
 
+## [2.4.0](https://github.com/prefapp/firestarter-workflows/compare/v2.3.0...v2.4.0) (2024-10-11)
+
+
+### Features
+
+* Add check run ([#148](https://github.com/prefapp/firestarter-workflows/issues/148)) ([6a32377](https://github.com/prefapp/firestarter-workflows/commit/6a323778def4145d533dacafe003abb8df5bd5e0))
+
+
+### Bug Fixes
+
+* secrets in build_images ([#150](https://github.com/prefapp/firestarter-workflows/issues/150)) ([7ea0cfc](https://github.com/prefapp/firestarter-workflows/commit/7ea0cfc8c3251a583be022b54eb67faa40f86423))
+
+## [2.3.0](https://github.com/prefapp/firestarter-workflows/compare/v2.2.2...v2.3.0) (2024-10-10)
+
+
+### Features
+
+* remove step get pem file ([#141](https://github.com/prefapp/firestarter-workflows/issues/141)) ([0e5268b](https://github.com/prefapp/firestarter-workflows/commit/0e5268b650b103dac23e8f1765e954d53244021e))
+
+
+### Bug Fixes
+
+* yaml dependency ([#147](https://github.com/prefapp/firestarter-workflows/issues/147)) ([7ccca8b](https://github.com/prefapp/firestarter-workflows/commit/7ccca8bea0adbb961f0e97a447b24d7a921b44c6))
+
+## [2.2.2](https://github.com/prefapp/firestarter-workflows/compare/v2.2.1...v2.2.2) (2024-10-10)
+
+
+### Bug Fixes
+
+* added registry configuration parameters ([#140](https://github.com/prefapp/firestarter-workflows/issues/140)) ([206f639](https://github.com/prefapp/firestarter-workflows/commit/206f6395805620133a71c6e95e3dc14ed8bb408f))
+* return short-sha ([#142](https://github.com/prefapp/firestarter-workflows/issues/142)) ([54cc5f9](https://github.com/prefapp/firestarter-workflows/commit/54cc5f91a6d3a7ce222b14f9ec08caad4076e5b0))
+
 ## [2.2.1](https://github.com/prefapp/firestarter-workflows/compare/v2.2.0...v2.2.1) (2024-10-07)
 
 

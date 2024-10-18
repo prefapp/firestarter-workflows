@@ -12,6 +12,7 @@ on:
 jobs:
   unit-tests-firestarter-python-package:
     runs-on: ubuntu-24.04
+    name: Firestartr / Verify
     steps:
       - uses: actions/checkout@v4
 

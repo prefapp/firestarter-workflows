@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "firestarter-workflows"
-version = "2.2.1"
+version = "2.4.0"
 description = "Firestarter standard Dagger workflows"
 authors = ["Javier Gomez Rodriguez <javier.gomez@prefapp.es>"]
 readme = "README.md"
@@ -10,7 +10,6 @@ packages = [{include = "firestarter"}]
 python = "^3.10"
 anyio = { version = "3.6.2", python = ">=3.6.2" }
 dagger-io = { version = "0.12.7", python = ">=3.10,<4.0" }
-pyyaml = { version = "6.0.1", python = ">=2.7,<2.8 || >=3.6.0" }
 "ruamel.yaml" = { version = "0.18.5", python = ">=3.10,<4.0" }
 
 # optional for on-premises

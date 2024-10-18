@@ -8,6 +8,10 @@ snapshots:
     secrets:
       SECRET1: secret_value1
       SECRET2: secret_value2
+    registry:
+      name: xxxx.azurecr.io
+      repository: xxx/yyy
+      auth_strategy: azure_oidc
     extra_registries: 
       - name: registry1 
         repository: repo1 
@@ -38,6 +42,10 @@ releases:
       ARG3: value3 
     secrets:
       SECRET3: secret_value3 
+    registry:
+      name: xxxx.azurecr.io
+      repository: xxx/yyy
+      auth_strategy: azure_oidc
     extra_registries:
       - name: registry2 
         repository: repo2 
