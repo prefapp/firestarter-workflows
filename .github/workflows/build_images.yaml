@@ -65,7 +65,6 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Get Token from Github App
-        if: ${{ vars.AZURE_CLIENT_ID }}
         id: get-gh-app-token
         uses: actions/create-github-app-token@v1
         with:
