@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.1](https://github.com/prefapp/firestarter-workflows/compare/v2.4.0...v2.4.1) (2024-10-18)
+
+
+### Bug Fixes
+
+* Remove unnecesary conditional ([#151](https://github.com/prefapp/firestarter-workflows/issues/151)) ([8ed5fe6](https://github.com/prefapp/firestarter-workflows/commit/8ed5fe6df90ab94193d31462be0bdcbdfcee45f1))
+
 ## [2.4.0](https://github.com/prefapp/firestarter-workflows/compare/v2.3.0...v2.4.0) (2024-10-11)
 
 
