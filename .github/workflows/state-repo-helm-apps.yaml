@@ -145,6 +145,17 @@ jobs:
         if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'aws' }}
         run: aws eks update-kubeconfig --name ${{fromJSON(steps.parse_config.outputs.result).cluster_name }} --region ${{fromJSON(steps.parse_config.outputs.result).region}}
 
+      - name: Login to ECRs
+        if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'aws' }}
+        run: |
+            registries='${{ toJSON(fromJSON(steps.parse_config.outputs.result).helm_registries) }}'
+
+            echo "$registries" | jq -r '.[]' | while read registry; do
+              echo "Login in $registry"
+              aws ecr get-login-password --region ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).region }} | helm registry login --username AWS --password-stdin "$registry"
+            done
+
+
       # Azure setup
       - name: Setup / Azure Login
         uses: Azure/login@v2
