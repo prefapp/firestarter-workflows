@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.0](https://github.com/prefapp/firestarter-workflows/compare/v2.4.1...v2.5.0) (2024-10-22)
+
+
+### Features
+
+* Add aws support ([#153](https://github.com/prefapp/firestarter-workflows/issues/153)) ([a871e2e](https://github.com/prefapp/firestarter-workflows/commit/a871e2e1f83b9e5335074117286282f3363b960a))
+
 ## [2.4.1](https://github.com/prefapp/firestarter-workflows/compare/v2.4.0...v2.4.1) (2024-10-18)
 
 
