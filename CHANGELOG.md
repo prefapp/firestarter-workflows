@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.5.1](https://github.com/prefapp/firestarter-workflows/compare/v2.5.0...v2.5.1) (2024-10-22)
+
+
+### Bug Fixes
+
+* Add sys services aws support ([#155](https://github.com/prefapp/firestarter-workflows/issues/155)) ([091c7e9](https://github.com/prefapp/firestarter-workflows/commit/091c7e9031b8dcb0e7546845212a58ce99086a4b))
+* Fix bug in azure provider check ([#157](https://github.com/prefapp/firestarter-workflows/issues/157)) ([9937163](https://github.com/prefapp/firestarter-workflows/commit/99371635ec48fe482f6ff0b0438c51939be5c90e))
+
 ## [2.5.0](https://github.com/prefapp/firestarter-workflows/compare/v2.4.1...v2.5.0) (2024-10-22)
 
 
