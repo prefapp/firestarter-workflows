@@ -56,6 +56,9 @@ on:
 jobs:
   helm:
     runs-on: ubuntu-24.04
+    concurrency:
+      group: ${{ join(inputs.updated_apps, inputs.environment) }}
+      cancel-in-progress: false
     env:
       HELM_EXPERIMENTAL_OCI: 1
       DIFF_FILE: "/tmp/helmfile.md"
