@@ -57,7 +57,7 @@ jobs:
   helm:
     runs-on: ubuntu-24.04
     concurrency:
-      group: ${{ join(fromJSON(inputs.updated_apps), '') }}-${{  inputs.environment }}
+      group: ${{ join(fromJSON(inputs.updated_apps), '') }}-${{ inputs.environment }}
       cancel-in-progress: false
     env:
       HELM_EXPERIMENTAL_OCI: 1
