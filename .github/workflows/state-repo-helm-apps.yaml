@@ -55,19 +55,23 @@ on:
 
 jobs:
   helm:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: ${{ join(fromJSON(inputs.updated_apps), '') }}-${{ inputs.environment }}
+      cancel-in-progress: false
     env:
       HELM_EXPERIMENTAL_OCI: 1
       DIFF_FILE: "/tmp/helmfile.md"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
+
       - uses: actions/setup-node@v3
         with:
           node-version: '20.x'
+
       - run: npm install js-yaml
+
       - name: Parse config file
         id: parse_config
         uses: actions/github-script@v7
@@ -110,15 +114,13 @@ jobs:
 
                 result.region = provider.region
                 result.role_to_assume = config.environments["${{ inputs.environment }}"]["role-to-assume"]
-                
+
                 break;
               default:
                 throw new Error(`Unknown provider: ${providerKind}`)
             }
 
-
             console.log(result);
-
             return result;
 
       # Install dependencies
@@ -131,7 +133,6 @@ jobs:
           helmfile-version: '${{ inputs.version_helmfile }}'
           helm-version: '${{ inputs.version_helm }}'
           helm-diff-plugin-version: '${{ inputs.version_helm_diff_plugin}}'
-
 
       # AWS setup
       - name: Configure AWS Credentials
@@ -154,7 +155,6 @@ jobs:
               echo "Login in $registry"
               aws ecr get-login-password --region ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).region }} | helm registry login --username AWS --password-stdin "$registry"
             done
-
 
       # Azure setup
       - name: Setup / Azure Login
@@ -192,7 +192,6 @@ jobs:
           done
 
       # Helm logic
-
       - uses: imranismail/setup-kustomize@v2
         with:
           kustomize-version: '${{ inputs.version_kustomize }}'
@@ -282,7 +281,6 @@ jobs:
               echo "::warning app=$app,env=${{inputs.environment}}::The helm deploy did not generate any manifest."
             fi
 
-
             # Verify the app exists or if it is the first time it's been applied
             appname=$(echo $app | awk -F"/" '{print $NF}')
 
@@ -330,8 +328,6 @@ jobs:
         run: |
 
           apps='${{ inputs.updated_apps }}'
-
-
           echo $apps
 
           echo "$apps" | jq -r '.[]' | while read app; do
