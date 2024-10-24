@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "firestarter"}]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.11"
 anyio = { version = "3.6.2", python = ">=3.6.2" }
 dagger-io = { version = "0.12.7", python = ">=3.10,<4.0" }
 "ruamel.yaml" = { version = "0.18.5", python = ">=3.10,<4.0" }
