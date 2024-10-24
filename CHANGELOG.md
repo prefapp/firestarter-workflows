@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.5.2](https://github.com/prefapp/firestarter-workflows/compare/v2.5.1...v2.5.2) (2024-10-24)
+
+
+### Bug Fixes
+
+* state repo workflows ([#159](https://github.com/prefapp/firestarter-workflows/issues/159)) ([02e253b](https://github.com/prefapp/firestarter-workflows/commit/02e253b803ed0a5736d24594a1cdb6c9de633262))
+
 ## [2.5.1](https://github.com/prefapp/firestarter-workflows/compare/v2.5.0...v2.5.1) (2024-10-22)
 
 
