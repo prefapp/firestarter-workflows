@@ -267,7 +267,7 @@ class BuildImages(FirestarterWorkflow):
 
             with open(file_name, "rb") as f:
                 data = f.read()
-                image  = client.images.load(data)
+                image = client.images.load(data)
 
             stdout = client.containers.run(
                 'gcr.io/gcp-runtimes/container-structure-test',
@@ -284,12 +284,17 @@ class BuildImages(FirestarterWorkflow):
                 }]
             )
 
-            logger.info(stdout.decode('utf-8'))
+            output = stdout.decode('utf-8')
+
+            logger.info(output)
+
+            return output
 
         except docker.errors.ContainerError as e:
             raise Exception("Structure test failed.")
         except Exception as e:
             logger.info(e)
+            raise e
         finally:
             os.remove(file_name)
 

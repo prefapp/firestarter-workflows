@@ -1,20 +1,23 @@
 from firestarter.workflows.build_images.build_images import BuildImages
 from firestarter.workflows.build_images.config import Image
 import pytest
-from unittest import TestCase
+from unittest.mock import patch
 from ruamel.yaml import YAML
 import subprocess
-from mock_classes import DaggerContextMock
+from mock_classes import DaggerContextMock, DaggerImageMock
 import os
 import docker
+import json
+import requests
+import uuid
 
 yaml = YAML(typ='safe')
 
 vars = {
     "from": "aaaaaaa",
-    "repo_name": "test_repo_name",
-    "snapshots_registry": "test_snapshots",
-    "releases_registry": "test_releases",
+    "repo_name": "xxx/yyy",
+    "snapshots_registry": "xxxx.azurecr.io",
+    "releases_registry": "xxxx.azurecr.io",
     "snapshots_registry_creds": "test_snapshots_creds",
     "releases_registry_creds": "test_releases_creds",
 }
@@ -61,8 +64,8 @@ def test_get_flavor_data() -> None:
     registry, full_repo_name, build_args, dockerfile, extra_registries =\
             builder.get_flavor_data(chosen_flavor)
 
-    assert registry == vars["snapshots_registry"]
-    assert full_repo_name == vars["repo_name"]
+    assert registry == config_data["snapshots"][chosen_flavor]["registry"]["name"]
+    assert full_repo_name == config_data["snapshots"][chosen_flavor]["registry"]["repository"]
     assert build_args == config_data["snapshots"][chosen_flavor]["build_args"]
     assert dockerfile == config_data["snapshots"][chosen_flavor]["dockerfile"]
     assert extra_registries == config_data["snapshots"][chosen_flavor]["extra_registries"]
@@ -182,21 +185,66 @@ def test_dereference_from_input(mocker) -> None:
 async def test_test_image(mocker) -> None:
     CONTAINERS_RUN_RETURN_VALUE = "test-output-containers"
 
-    docker_client_mock = docker.DockerClient
+    docker_api_mock = docker.api.client.APIClient
+    docker_api_mock._retrieve_server_version = mocker.MagicMock(
+        name="docker.api.client.APIClient._retrieve_server_version.mock",
+        return_value="v2"
+    )
 
-    container_runner = docker_client_mock()
-    container_runner.containers.run = mocker.MagicMock(
+    json_mock = json
+    json_mock.load = mocker.MagicMock(
+        name="json.load.mock",
+        return_value={
+            "proxies": {}
+        }
+    )
+
+    requests_mock = requests.adapters
+    requests_mock.send = mocker.MagicMock(
+        name="requests.send.mock",
+        return_value=True
+    )
+
+    mocker.patch("docker.DockerClient")
+
+    docker_client_mock = docker.DockerClient
+    docker_client_mock().images.load = mocker.MagicMock(
+        name="docker.DockerClient.images.load.mock",
+        return_value=[DaggerImageMock("123456789")]
+    )
+    docker_client_mock().containers.run = mocker.MagicMock(
         name="docker.DockerClient.containers.run.mock",
         return_value=CONTAINERS_RUN_RETURN_VALUE.encode("windows-1252")
     )
 
 
     mocker.patch.object(os, "remove")
-    mocker.return_value = True
+    os_remove_mock = os.remove
+    os_remove_mock.return_value = True
     mocker.patch("builtins.open")
     mocker.return_value = ""
+
+    uuid_mock = uuid
+    uuid_mock.uuid4 = mocker.MagicMock(
+        name="uuid.uuid4.mock",
+        side_effect=["correct_call", "container_error", "generic_error"]
+    )
 
     # Correct call, doesn't raise any errors
     correct_result = await builder.test_image(DaggerContextMock())
 
     assert correct_result == CONTAINERS_RUN_RETURN_VALUE
+    os_remove_mock.assert_called_with("correct_call.tar")
+
+    # Incorrect call, raises ContainerError
+    with pytest.raises(Exception, match="Structure test failed."):
+        incorrect_result = await builder.test_image(DaggerContextMock(True))
+
+    os_remove_mock.assert_called_with("container_error.tar")
+
+    # Incorrect call, raises generic error
+    with pytest.raises(Exception, match="Mock error generic"):
+        incorrect_result = await builder.test_image(DaggerContextMock(False, True))
+
+    os_remove_mock.assert_called_with("generic_error.tar")
+
