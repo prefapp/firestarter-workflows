@@ -345,7 +345,9 @@ jobs:
           echo "$apps" | jq -r '.[]' | while read app; do
             cd ${{ github.workspace }}/$app
             # Render the helmfile in the deployment branch
-            helmfile --environment ${{ inputs.environment }} template --output-dir "${{ github.workspace }}/deployment/$app/${{ inputs.environment }}"
+            app_dir="${{ github.workspace }}/deployment/$app/${{ inputs.environment }}"
+            rm -rf "$app_dir"
+            helmfile --environment ${{ inputs.environment }} template --output-dir "$app_dir" --output-dir-template '{{ .OutputDir }}'
             helmfile --environment ${{ inputs.environment }} apply
           done
 
