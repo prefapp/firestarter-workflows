@@ -325,6 +325,14 @@ jobs:
               '
           fi
 
+      # If apply checkout deployment branch
+      - name: Checkout deployments branch
+        if: ${{ inputs.apply == true || inputs.apply == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          ref: 'deployment'
+          path: 'deployment'
+
       - name: Helm apply
         if: ${{ inputs.apply == true || inputs.apply == 'true' }}
         run: |
@@ -336,5 +344,18 @@ jobs:
 
           echo "$apps" | jq -r '.[]' | while read app; do
             cd ${{ github.workspace }}/$app
+            # Render the helmfile in the deployment branch
+            helmfile --environment ${{ inputs.environment }} template --output-dir "${{ github.workspace }}/deployment/$app/${{ inputs.environment }}"
             helmfile --environment ${{ inputs.environment }} apply
           done
+
+      # force push the changes to the deployment branch
+      - name: Commit and push changes
+        if: ${{ inputs.apply == true || inputs.apply == 'true' }}
+        working-directory: deployment
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Actions"
+          git add .
+          git commit -m "Apply helm changes"
+          git push --force origin deployment
