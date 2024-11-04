@@ -1,8 +1,26 @@
 import docker
+from typing_extensions import Self
+
+class DaggerHostMock():
+    def directory(self, path: str) -> bool:
+        return DaggerDirectoryMock(path)
+
+
+class DaggerDirectoryMock():
+    path = ""
+
+    def __init__(self, path: str):
+        self.path = path
+
 
 class DaggerContextMock():
     throw_docker_container_error = False
     throw_generic_error = False
+    label_list = {}
+    context = None
+    dockerfile = ""
+    build_args = None
+    secrets = None
 
     def __init__(
         self,
@@ -23,6 +41,27 @@ class DaggerContextMock():
 
         print(f"Called mock with file_name ${file_name}")
 
+    def host(self) -> DaggerHostMock:
+        return DaggerHostMock()
+
+    async def publish(self, **kwargs) -> str:
+        return "Mock publish result"
+
+    def container(self) -> Self:
+        return self
+
+    def build(self, **kwargs) -> Self:
+        self.context = kwargs["context"]
+        self.dockerfile = kwargs["dockerfile"]
+        self.build_args = kwargs["build_args"]
+        self.secrets = kwargs["secrets"]
+
+        return self
+
+    def with_label(self, label_name: str, label_value) -> Self:
+        self.label_list[label_name] = label_value
+
+        return self
 
 
 class DaggerImageMock():

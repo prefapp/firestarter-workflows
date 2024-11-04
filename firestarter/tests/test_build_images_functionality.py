@@ -42,15 +42,12 @@ test_flavor = Image.from_dict({
     "dockerfile": ""
 })
 
-builder = None
+builder = BuildImages(
+    vars=vars, secrets=secrets, config_file=config_file_path
+)
 
 # The BuildImages object is correctly created
 def test_build_images_object_creation() -> None:
-    global builder
-    builder = BuildImages(
-        vars=vars, secrets=secrets, config_file=config_file_path
-    )
-
     assert builder.from_version == vars["from"]
     assert builder.repo_name == vars["repo_name"]
     assert builder.snapshots_registry == vars["snapshots_registry"]
@@ -60,25 +57,17 @@ def test_build_images_object_creation() -> None:
 # The object correctly returns the flavor data of a chosen flavor,
 # as written in fixtures/build_images.yaml
 def test_get_flavor_data() -> None:
-    chosen_flavor = "flavor1"
-    registry, full_repo_name, build_args, dockerfile, extra_registries =\
-            builder.get_flavor_data(chosen_flavor)
+    flavor_list = ["flavor1", "flavor3"]
 
-    assert registry == config_data["snapshots"][chosen_flavor]["registry"]["name"]
-    assert full_repo_name == config_data["snapshots"][chosen_flavor]["registry"]["repository"]
-    assert build_args == config_data["snapshots"][chosen_flavor]["build_args"]
-    assert dockerfile == config_data["snapshots"][chosen_flavor]["dockerfile"]
-    assert extra_registries == config_data["snapshots"][chosen_flavor]["extra_registries"]
+    for flavor in flavor_list:
+        registry, full_repo_name, build_args, dockerfile, extra_registries =\
+                builder.get_flavor_data(flavor)
 
-    chosen_flavor = "flavor3"
-    registry, full_repo_name, build_args, dockerfile, extra_registries =\
-            builder.get_flavor_data(chosen_flavor)
-
-    assert registry == config_data["snapshots"][chosen_flavor]["registry"]["name"]
-    assert full_repo_name == config_data["snapshots"][chosen_flavor]["registry"]["repository"]
-    assert build_args == config_data["snapshots"][chosen_flavor]["build_args"]
-    assert dockerfile == config_data["snapshots"][chosen_flavor]["dockerfile"]
-    assert extra_registries == config_data["snapshots"][chosen_flavor]["extra_registries"]
+        assert registry == config_data["snapshots"][flavor]["registry"]["name"]
+        assert full_repo_name == config_data["snapshots"][flavor]["registry"]["repository"]
+        assert build_args == config_data["snapshots"][flavor]["build_args"]
+        assert dockerfile == config_data["snapshots"][flavor]["dockerfile"]
+        assert extra_registries == config_data["snapshots"][flavor]["extra_registries"]
 
 
 # The object gets the registry data correctly
@@ -194,9 +183,7 @@ async def test_test_image(mocker) -> None:
     json_mock = json
     json_mock.load = mocker.MagicMock(
         name="json.load.mock",
-        return_value={
-            "proxies": {}
-        }
+        return_value={"proxies": {}}
     )
 
     requests_mock = requests.adapters
@@ -216,7 +203,6 @@ async def test_test_image(mocker) -> None:
         name="docker.DockerClient.containers.run.mock",
         return_value=CONTAINERS_RUN_RETURN_VALUE.encode("windows-1252")
     )
-
 
     mocker.patch.object(os, "remove")
     os_remove_mock = os.remove
@@ -248,3 +234,65 @@ async def test_test_image(mocker) -> None:
 
     os_remove_mock.assert_called_with("generic_error.tar")
 
+@pytest.mark.asyncio
+async def test_compile_image_and_publish(mocker) -> None:
+    async def call_and_test_compile_image_and_publish(
+        mocker, publish: bool, container_structure_filename: str
+    ) -> None:
+        ciap_vars = vars.copy()
+        ciap_vars["publish"] = publish
+        ciap_vars["container_structure_filename"] = container_structure_filename
+        ciap_builder = BuildImages(
+            vars=ciap_vars, secrets={}, config_file=config_file_path
+        )
+
+        build_args = { "test_arg": "a" }
+        secrets = { "test_secret": "b" }
+        dockerfile = "/path/to/dockerfile"
+        image = "image_tag"
+
+        mocker.patch.object(ciap_builder, "test_image")
+        ciap_builder_test_image_mock = ciap_builder.test_image
+        ciap_builder_test_image_mock.return_value = "Mock test image result"
+
+        ctx_mock = DaggerContextMock()
+        mocker.patch.object(ctx_mock, "publish")
+        ctx_mock_publish_mock = ctx_mock.publish
+
+        await ciap_builder.compile_image_and_publish(
+            ctx_mock, build_args, secrets, dockerfile, image
+        )
+
+        if publish:
+            ctx_mock_publish_mock.assert_called_with(address=f"{image}")
+        else:
+            assert not ctx_mock_publish_mock.called
+
+        if container_structure_filename is not None:
+            ciap_builder_test_image_mock.assert_called_with(ctx_mock)
+        else:
+            assert not ciap_builder_test_image_mock.called
+
+        assert ctx_mock.build_args == build_args
+        assert ctx_mock.secrets == secrets
+        assert ctx_mock.dockerfile == dockerfile
+
+        assert ctx_mock.label_list["source.code.revision"] == builder.from_version
+        assert ctx_mock.label_list["repository.name"] == builder.repo_name
+
+
+    # builder.publish is True and builder.container_structure_filename has no value
+    await call_and_test_compile_image_and_publish(mocker, True, None)
+
+    # builder.publish is False and builder.container_structure_filename has value
+    await call_and_test_compile_image_and_publish(mocker, False, "filename")
+
+    # builder.publish is True and builder.container_structure_filename has value
+    await call_and_test_compile_image_and_publish(mocker, True, "another_filename")
+
+    # builder.publish is Falsee and builder.container_structure_filename has no value
+    await call_and_test_compile_image_and_publish(mocker, False, None)
+
+@pytest.mark.asyncio
+async def test_compile_images_for_all_flavors(mocker) -> None:
+    pass
