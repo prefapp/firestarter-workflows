@@ -476,7 +476,7 @@ class BuildImages(FirestarterWorkflow):
 
 
     def is_auto_build(self):
-        return self.flavors is None or self.flavors.replace(' ', '') == ''
+        return self.flavors is None or len(self.flavors) == 0
 
     def login(self, auth_strategy, registry, creds):
         logger.info(f"Logging in to {registry} using {auth_strategy}...")

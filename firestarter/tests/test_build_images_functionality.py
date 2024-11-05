@@ -10,6 +10,7 @@ import docker
 import json
 import requests
 import uuid
+import dagger
 
 yaml = YAML(typ='safe')
 
@@ -42,65 +43,24 @@ test_flavor = Image.from_dict({
     "dockerfile": ""
 })
 
-builder = BuildImages(
-    vars=vars, secrets=secrets, config_file=config_file_path
-)
+builder = None
+
+
+@pytest.fixture(autouse=True)
+def reset_builder_value() -> None:
+    global builder
+
+    builder = BuildImages(
+        vars=vars, secrets=secrets, config_file=config_file_path
+    )
+
 
 # The BuildImages object is correctly created
-def test_build_images_object_creation() -> None:
+def test_build_images_constructor() -> None:
     assert builder.from_version == vars["from"]
     assert builder.repo_name == vars["repo_name"]
     assert builder.snapshots_registry == vars["snapshots_registry"]
     assert builder.releases_registry == vars["releases_registry"]
-
-
-# The object correctly returns the flavor data of a chosen flavor,
-# as written in fixtures/build_images.yaml
-def test_get_flavor_data() -> None:
-    flavor_list = ["flavor1", "flavor3"]
-
-    for flavor in flavor_list:
-        registry, full_repo_name, build_args, dockerfile, extra_registries =\
-                builder.get_flavor_data(flavor)
-
-        assert registry == config_data["snapshots"][flavor]["registry"]["name"]
-        assert full_repo_name == config_data["snapshots"][flavor]["registry"]["repository"]
-        assert build_args == config_data["snapshots"][flavor]["build_args"]
-        assert dockerfile == config_data["snapshots"][flavor]["dockerfile"]
-        assert extra_registries == config_data["snapshots"][flavor]["extra_registries"]
-
-
-# The object gets the registry data correctly
-def test_get_flavor_registry_data() -> None:
-    data = builder.get_flavor_registry_data(test_flavor)
-
-    assert data["name"] == test_flavor.registry["name"]
-    assert data["full_repo_name"] == test_flavor.registry["repository"]
-    assert data["auth_strategy"] == test_flavor.registry["auth_strategy"]
-    assert data["creds"] == test_flavor.registry["creds"]
-
-
-# The object correctly detects if its flavors should be autobuilding
-def test_is_autobuild() -> None:
-    shouldnt_be = builder.is_auto_build()
-
-    assert shouldnt_be == False
-
-    previous_flavors = builder.flavors
-    builder._flavors = None
-    should_be = builder.is_auto_build()
-
-    assert should_be == True
-
-    builder._flavors = previous_flavors
-
-
-# The object correctly filters flavors and returns only those where autobuild = true
-def test_filter_auto_build() -> None:
-    builder.filter_auto_build()
-
-    assert len(builder.flavors) == 1
-    assert builder.flavors[0] == "flavor3"
 
 
 # The object correctly calls the git command
@@ -109,6 +69,7 @@ def test_checkout_git_repository(mocker) -> None:
     builder.checkout_git_repository("test_repo")
 
     subprocess.run.assert_called_once_with(["git", "checkout", "test_repo"])
+
 
 # A git reference is correctly dereference into a tag/short sha
 def test_dereference_from_input(mocker) -> None:
@@ -170,6 +131,26 @@ def test_dereference_from_input(mocker) -> None:
 
     assert branch_input_dereference == SHORT_SHA_INPUT
 
+
+# TODO
+def test_resolve_secrets() -> None:
+    pass
+
+
+# TODO
+def test_filter_flavors() -> None:
+    pass
+
+
+# The object correctly filters flavors and returns only those where autobuild = true
+def test_filter_auto_build() -> None:
+    builder.filter_auto_build()
+
+    assert len(builder.flavors) == 1
+    assert builder.flavors[0] == "flavor3"
+
+
+# The object correctly tests an image is valid
 @pytest.mark.asyncio
 async def test_test_image(mocker) -> None:
     CONTAINERS_RUN_RETURN_VALUE = "test-output-containers"
@@ -234,6 +215,8 @@ async def test_test_image(mocker) -> None:
 
     os_remove_mock.assert_called_with("generic_error.tar")
 
+
+# The object can correctly compile and publish an image
 @pytest.mark.asyncio
 async def test_compile_image_and_publish(mocker) -> None:
     async def call_and_test_compile_image_and_publish(
@@ -266,12 +249,12 @@ async def test_compile_image_and_publish(mocker) -> None:
         if publish:
             ctx_mock_publish_mock.assert_called_with(address=f"{image}")
         else:
-            assert not ctx_mock_publish_mock.called
+            ctx_mock_publish_mock.assert_not_called()
 
         if container_structure_filename is not None:
             ciap_builder_test_image_mock.assert_called_with(ctx_mock)
         else:
-            assert not ciap_builder_test_image_mock.called
+            ciap_builder_test_image_mock.assert_not_called()
 
         assert ctx_mock.build_args == build_args
         assert ctx_mock.secrets == secrets
@@ -293,6 +276,73 @@ async def test_compile_image_and_publish(mocker) -> None:
     # builder.publish is Falsee and builder.container_structure_filename has no value
     await call_and_test_compile_image_and_publish(mocker, False, None)
 
+
 @pytest.mark.asyncio
 async def test_compile_images_for_all_flavors(mocker) -> None:
+    mocker.patch("dagger.Config")
+    mocker.patch("dagger.Connection")
+    mocker.patch.object(builder, "compile_image_and_publish")
+
+    dagger_config_mock = dagger.Config
+    dagger_connection_mock = dagger.Connection
+    builder_compile_image_and_publish_mock = builder.compile_image_and_publish
+
+    builder._flavors = "flavor1, flavor3"
+    builder.filter_flavors()
+
+    result = await builder.compile_images_for_all_flavors()
+
+    assert len(result) == 4
+    assert result[0]["flavor"] == "flavor1"
+    assert result[0]["repository"] == "xxx/yyy"
+    assert result[1]["flavor"] == "flavor1"
+    assert result[1]["repository"] == "repo1"
+    assert result[2]["flavor"] == "flavor3"
+    assert result[2]["repository"] == "repository3"
+    assert result[3]["flavor"] == "flavor3"
+    assert result[3]["repository"] == "repo3"
+
+
+# The object correctly returns the flavor data of a chosen flavor,
+# as written in fixtures/build_images.yaml
+def test_get_flavor_data() -> None:
+    flavor_list = ["flavor1", "flavor3"]
+
+    for flavor in flavor_list:
+        registry, full_repo_name, build_args, dockerfile, extra_registries =\
+                builder.get_flavor_data(flavor)
+
+        assert registry == config_data["snapshots"][flavor]["registry"]["name"]
+        assert full_repo_name == config_data["snapshots"][flavor]["registry"]["repository"]
+        assert build_args == config_data["snapshots"][flavor]["build_args"]
+        assert dockerfile == config_data["snapshots"][flavor]["dockerfile"]
+        assert extra_registries == config_data["snapshots"][flavor]["extra_registries"]
+
+
+# The object gets the registry data correctly
+def test_get_flavor_registry_data() -> None:
+    data = builder.get_flavor_registry_data(test_flavor)
+
+    assert data["name"] == test_flavor.registry["name"]
+    assert data["full_repo_name"] == test_flavor.registry["repository"]
+    assert data["auth_strategy"] == test_flavor.registry["auth_strategy"]
+    assert data["creds"] == test_flavor.registry["creds"]
+
+
+# The object correctly detects if its flavors should be autobuilding
+def test_is_autobuild() -> None:
+    shouldnt_be = builder.is_auto_build()
+
+    assert shouldnt_be == False
+
+    previous_flavors = builder.flavors
+    builder._flavors = None
+    should_be = builder.is_auto_build()
+
+    assert should_be == True
+
+    builder._flavors = previous_flavors
+
+# TODO
+def test_login() -> None:
     pass
