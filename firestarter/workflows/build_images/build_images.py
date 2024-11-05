@@ -489,5 +489,5 @@ class BuildImages(FirestarterWorkflow):
         logger.info(f"Setting creds {creds}")
         provider.creds = creds
 
-        provider.login_registry()
+        return provider.login_registry()
 

@@ -1,5 +1,7 @@
 from firestarter.workflows.build_images.build_images import BuildImages
 from firestarter.workflows.build_images.config import Image
+from firestarter.workflows.build_images.providers.registries.base import RegistryProvider
+from firestarter.workflows.build_images.providers.registries.azure import AzureOidcDockerRegistryAuth
 import pytest
 from unittest.mock import patch
 from ruamel.yaml import YAML
@@ -343,6 +345,25 @@ def test_is_autobuild() -> None:
 
     builder._flavors = previous_flavors
 
-# TODO
-def test_login() -> None:
-    pass
+
+def test_login(mocker) -> None:
+    mocker.patch.object(RegistryProvider, "login_registry")
+    mocker.patch.object(AzureOidcDockerRegistryAuth, "login_registry")
+
+    az_login_success = builder.login("azure_oidc", "az_reg", "az_creds")
+    assert az_login_success
+
+    aws_login_success = builder.login("aws_oidc", "aws_reg", "aws_creds")
+    assert aws_login_success
+
+    generic_login_success = builder.login("generic", "generic_reg", "generic_creds")
+    assert generic_login_success
+
+    ghcr_login_success = builder.login("ghcr", "ghcr_reg", "ghcr_creds")
+    assert ghcr_login_success
+
+    dockerhub_login_success = builder.login("dockerhub", "dh_reg", "dh_creds")
+    assert dockerhub_login_success
+
+    with pytest.raises(ValueError, match="Unknown provider: doesnt_exist"):
+        builder.login("doesnt_exist", "test", "test")
