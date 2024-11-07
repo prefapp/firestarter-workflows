@@ -27,7 +27,7 @@ vars = {
     "releases_registry_creds": "test_releases_creds",
 }
 secrets = {}
-config_file_path = "./fixtures/build_images.yaml"
+config_file_path = f"{os.path.dirname(os.path.realpath(__file__))}/fixtures/build_images.yaml"
 
 with open(config_file_path, 'r') as config_file:
     config_data = yaml.load(config_file.read())
