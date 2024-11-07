@@ -2,6 +2,8 @@ from firestarter.workflows.build_images.build_images import BuildImages
 from firestarter.workflows.build_images.config import Image
 from firestarter.workflows.build_images.providers.registries.base import RegistryProvider
 from firestarter.workflows.build_images.providers.registries.azure import AzureOidcDockerRegistryAuth
+from firestarter.workflows.build_images.providers.secrets.azure import AzureKeyVaultManager
+from firestarter.workflows.build_images.providers.secrets.aws import AwsSecretsManager
 import pytest
 from unittest.mock import patch
 from ruamel.yaml import YAML
@@ -63,6 +65,46 @@ def test_build_images_constructor() -> None:
     assert builder.repo_name == vars["repo_name"]
     assert builder.snapshots_registry == vars["snapshots_registry"]
     assert builder.releases_registry == vars["releases_registry"]
+
+
+# The execute method is called correctly
+def test_execute(mocker) -> None:
+    def execute_function_test(mocker, flavors, **kwargs) -> None:
+        builder._flavors = flavors
+
+        mocker.patch.object(builder, "checkout_git_repository")
+        checkout_git_repository_mock = builder.checkout_git_repository
+
+        mocker.patch.object(builder, "login")
+        login_mock = builder.login
+
+        mocker.patch.object(builder, "compile_images_for_all_flavors")
+        compile_images_for_all_flavors_mock = builder.compile_images_for_all_flavors
+
+        builder.execute()
+
+        assert len(checkout_git_repository_mock.mock_calls) == kwargs["checkout_calls"]
+        assert len(login_mock.mock_calls) == kwargs["login_calls"]
+        assert len(compile_images_for_all_flavors_mock.mock_calls) == kwargs["compile_image_calls"]
+
+    execute_function_test(
+        mocker, "*", checkout_calls=1, login_calls=3, compile_image_calls=1
+    )
+    execute_function_test(
+        mocker, "flavor1, flavor3", checkout_calls=1, login_calls=3, compile_image_calls=1
+    )
+    execute_function_test(
+        mocker, "flavor2, flavor3", checkout_calls=1, login_calls=2, compile_image_calls=1
+    )
+    execute_function_test(
+        mocker, "flavor0, flavor4", checkout_calls=1, login_calls=1, compile_image_calls=1
+    )
+    execute_function_test(
+        mocker, "flavor1", checkout_calls=1, login_calls=2, compile_image_calls=1
+    )
+    execute_function_test(
+        mocker, "", checkout_calls=1, login_calls=2, compile_image_calls=1
+    )
 
 
 # The object correctly calls the git command
@@ -134,14 +176,69 @@ def test_dereference_from_input(mocker) -> None:
     assert branch_input_dereference == SHORT_SHA_INPUT
 
 
-# TODO
-def test_resolve_secrets() -> None:
-    pass
+# Secrets are correctly solved, using the corresponding SecretResolver
+def test_resolve_secrets(mocker) -> None:
+    mocker.patch.object(AzureKeyVaultManager, "get_secret")
+    az_get_secret_mock = AzureKeyVaultManager.get_secret
+    az_get_secret_mock.return_value = "az_secret_resolved"
+
+    mocker.patch.object(AwsSecretsManager, "get_secret")
+    aws_get_secret_mock = AwsSecretsManager.get_secret
+    aws_get_secret_mock.return_value = "aws_secret_resolved"
+
+    result = builder.resolve_secrets({})
+    assert result == {}
+
+    result = builder.resolve_secrets({
+        # Generic secrets
+        "generic_secret": "generic_secret_value",
+        "another_generic_secret": "another_generic_secret_value",
+
+        # AWS Secret, matches regex
+        "aws_secret": "arn:aws:ssm:test-secret-aws:123456789012:parameter/test-value",
+
+        # AZ Secret, matches regex
+        "az_secret": "https://test-secret-az.vault.azure.net/secrets/test-secret-name/abcdef1234567890abcdef1234567890",
+    })
+    assert result == {
+        "generic_secret": "generic_secret_value",
+        "another_generic_secret": "another_generic_secret_value",
+        "aws_secret": "aws_secret_resolved",
+        "az_secret": "az_secret_resolved",
+    }
 
 
-# TODO
+# The object correctly filters the configuration flavors using the _flavors input
 def test_filter_flavors() -> None:
-    pass
+    # All flavors test
+    builder._flavors = "*"
+    builder.filter_flavors()
+    assert builder.flavors == ["flavor1", "flavor3"]
+
+    # Both valid flavors test, plus whitespaces
+    builder._flavors = " flavor1 , flavor3 "
+    builder.filter_flavors()
+    assert builder.flavors == ["flavor1", "flavor3"]
+
+    # One valid flavor test, plus whitespaces
+    builder._flavors = "         flavor2        ,    flavor3       "
+    builder.filter_flavors()
+    assert builder.flavors == ["flavor3"]
+
+    # No valid flavors test
+    builder._flavors = "flavor2,flavor4"
+    builder.filter_flavors()
+    assert builder.flavors == []
+
+    # Single valid flavor test
+    builder._flavors = "flavor1"
+    builder.filter_flavors()
+    assert builder.flavors == ["flavor1"]
+
+    # No flavors test
+    builder._flavors = ""
+    builder.filter_flavors()
+    assert builder.flavors == []
 
 
 # The object correctly filters flavors and returns only those where autobuild = true
@@ -287,7 +384,6 @@ async def test_compile_images_for_all_flavors(mocker) -> None:
 
     dagger_config_mock = dagger.Config
     dagger_connection_mock = dagger.Connection
-    builder_compile_image_and_publish_mock = builder.compile_image_and_publish
 
     builder._flavors = "flavor1, flavor3"
     builder.filter_flavors()
@@ -346,6 +442,7 @@ def test_is_autobuild() -> None:
     builder._flavors = previous_flavors
 
 
+# Test the creation of the various login providers (actual login process mocked)
 def test_login(mocker) -> None:
     mocker.patch.object(RegistryProvider, "login_registry")
     mocker.patch.object(AzureOidcDockerRegistryAuth, "login_registry")

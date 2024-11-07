@@ -159,6 +159,9 @@ class BuildImages(FirestarterWorkflow):
         else:
             self.filter_flavors()
 
+        default_registry = getattr(self, f"{self.type}_registry")
+        default_registry_creds = getattr(self, f"{self.type}_registry_creds")
+
         if self.login_required:
             self.login(
                 self.auth_strategy,
@@ -173,20 +176,20 @@ class BuildImages(FirestarterWorkflow):
             if flavor_data.registry:
                 flavor_registry_data = self.get_flavor_registry_data(flavor_data)
                 self.login(
-                    flavor_registry_data.auth_strategy,
-                    flavor_registry_data.name,
-                    flavor_registry_data.creds
+                    flavor_registry_data["auth_strategy"],
+                    flavor_registry_data["name"],
+                    flavor_registry_data["creds"]
                 )
 
-            extra_registries = value.extra_registries or []
+                extra_registries = flavor_registry_data.get("extra_registries", [])
 
-            for extra_registry in extra_registries:
-                if extra_registry['auth_strategy']:
-                    self.login(
-                        extra_registry['auth_strategy'],
-                        extra_registry['name'],
-                        default_registry_creds
-                    )
+                for extra_registry in extra_registries:
+                    if extra_registry['auth_strategy']:
+                        self.login(
+                            extra_registry['auth_strategy'],
+                            extra_registry['name'],
+                            default_registry_creds
+                        )
 
         logger.info(f"Building images for {self.flavors} flavors...")
 
