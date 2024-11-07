@@ -181,15 +181,15 @@ class BuildImages(FirestarterWorkflow):
                     flavor_registry_data["creds"]
                 )
 
-                extra_registries = flavor_registry_data.get("extra_registries", [])
+            extra_registries = flavor_data.extra_registries or []
 
-                for extra_registry in extra_registries:
-                    if extra_registry['auth_strategy']:
-                        self.login(
-                            extra_registry['auth_strategy'],
-                            extra_registry['name'],
-                            default_registry_creds
-                        )
+            for extra_registry in extra_registries:
+                if extra_registry['auth_strategy']:
+                    self.login(
+                        extra_registry['auth_strategy'],
+                        extra_registry['name'],
+                        default_registry_creds
+                    )
 
         logger.info(f"Building images for {self.flavors} flavors...")
 

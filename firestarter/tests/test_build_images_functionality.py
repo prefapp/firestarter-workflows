@@ -88,22 +88,22 @@ def test_execute(mocker) -> None:
         assert len(compile_images_for_all_flavors_mock.mock_calls) == kwargs["compile_image_calls"]
 
     execute_function_test(
-        mocker, "*", checkout_calls=1, login_calls=3, compile_image_calls=1
+        mocker, "*", checkout_calls=1, login_calls=5, compile_image_calls=1
     )
     execute_function_test(
-        mocker, "flavor1, flavor3", checkout_calls=1, login_calls=3, compile_image_calls=1
+        mocker, "flavor1, flavor3", checkout_calls=1, login_calls=5, compile_image_calls=1
     )
     execute_function_test(
-        mocker, "flavor2, flavor3", checkout_calls=1, login_calls=2, compile_image_calls=1
+        mocker, "flavor2, flavor3", checkout_calls=1, login_calls=3, compile_image_calls=1
     )
     execute_function_test(
         mocker, "flavor0, flavor4", checkout_calls=1, login_calls=1, compile_image_calls=1
     )
     execute_function_test(
-        mocker, "flavor1", checkout_calls=1, login_calls=2, compile_image_calls=1
+        mocker, "flavor1", checkout_calls=1, login_calls=3, compile_image_calls=1
     )
     execute_function_test(
-        mocker, "", checkout_calls=1, login_calls=2, compile_image_calls=1
+        mocker, "", checkout_calls=1, login_calls=3, compile_image_calls=1
     )
 
 
