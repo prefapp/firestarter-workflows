@@ -55,19 +55,23 @@ on:
 
 jobs:
   helm:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: ${{ join(fromJSON(inputs.updated_apps), '') }}-${{ inputs.environment }}
+      cancel-in-progress: false
     env:
       HELM_EXPERIMENTAL_OCI: 1
       DIFF_FILE: "/tmp/helmfile.md"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
+
       - uses: actions/setup-node@v3
         with:
           node-version: '20.x'
+
       - run: npm install js-yaml
+
       - name: Parse config file
         id: parse_config
         uses: actions/github-script@v7
@@ -105,52 +109,21 @@ jobs:
                 result.resource_group_name = config.environments["${{ inputs.environment }}"].resource_group_name
 
                 break;
+              case 'aws':
+                if(!config?.environments?.["${{ inputs.environment }}"]?.["role-to-assume"]) throw new Error('AWS_ROLE_TO_ASSUME not configured')
+
+                result.region = provider.region
+                result.role_to_assume = config.environments["${{ inputs.environment }}"]["role-to-assume"]
+
+                break;
               default:
                 throw new Error(`Unknown provider: ${providerKind}`)
             }
 
-
             console.log(result);
-
             return result;
 
-      # Azure setup
-      - name: Setup / Azure Login
-        uses: Azure/login@v2
-        if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
-        with:
-          client-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).identifier }}
-          tenant-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).tenant_id }}
-          subscription-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).subscription_id }}
-
-      - name: Set up kubelogin for non-interactive login
-        if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
-        uses: azure/use-kubelogin@v1
-        with:
-          kubelogin-version: 'v0.0.24'
-
-      - name: Setup / AKS Context
-        if: ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
-        uses: azure/aks-set-context@v3
-        with:
-          resource-group: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).resource_group_name }}
-          cluster-name: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).cluster_name }}
-          admin: 'false'
-          use-kubelogin: 'true'
-
-      - name: Login to ACRs
-        if:  ${{ steps.parse_config.outputs.result.provider_kind }} == "azure"
-        run: |
-          registries='${{ toJSON(fromJSON(steps.parse_config.outputs.result).helm_registries) }}'
-
-          echo "$registries" | jq -r '.[]' | while read registry; do
-            echo "Login in $registry"
-            token=$(az acr login --name $registry --expose-token --output tsv --query accessToken) && \
-            echo $token | helm registry login $registry -u 00000000-0000-0000-0000-000000000000 --password-stdin
-          done
-
-      # Helm logic
-
+      # Install dependencies
       ## Both kubectl and helm are already installed but we use this step also to use a specific version
       - name: Setup helmfile
         uses: mamezou-tech/setup-helmfile@v2.0.0
@@ -161,6 +134,64 @@ jobs:
           helm-version: '${{ inputs.version_helm }}'
           helm-diff-plugin-version: '${{ inputs.version_helm_diff_plugin}}'
 
+      # AWS setup
+      - name: Configure AWS Credentials
+        if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'aws' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).region }}
+          role-to-assume: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).role_to_assume }}
+
+      - name: Update kube config
+        if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'aws' }}
+        run: aws eks update-kubeconfig --name ${{fromJSON(steps.parse_config.outputs.result).cluster_name }} --region ${{fromJSON(steps.parse_config.outputs.result).region}}
+
+      - name: Login to ECRs
+        if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'aws' }}
+        run: |
+            registries='${{ toJSON(fromJSON(steps.parse_config.outputs.result).helm_registries) }}'
+
+            echo "$registries" | jq -r '.[]' | while read registry; do
+              echo "Login in $registry"
+              aws ecr get-login-password --region ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).region }} | helm registry login --username AWS --password-stdin "$registry"
+            done
+
+      # Azure setup
+      - name: Setup / Azure Login
+        uses: Azure/login@v2
+        if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'azure' }}
+        with:
+          client-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).identifier }}
+          tenant-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).tenant_id }}
+          subscription-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).subscription_id }}
+
+      - name: Set up kubelogin for non-interactive login
+        if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'azure' }}
+        uses: azure/use-kubelogin@v1
+        with:
+          kubelogin-version: 'v0.0.24'
+
+      - name: Setup / AKS Context
+        if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'azure' }}
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).resource_group_name }}
+          cluster-name: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).cluster_name }}
+          admin: 'false'
+          use-kubelogin: 'true'
+
+      - name: Login to ACRs
+        if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'azure' }}
+        run: |
+          registries='${{ toJSON(fromJSON(steps.parse_config.outputs.result).helm_registries) }}'
+
+          echo "$registries" | jq -r '.[]' | while read registry; do
+            echo "Login in $registry"
+            token=$(az acr login --name $registry --expose-token --output tsv --query accessToken) && \
+            echo $token | helm registry login $registry -u 00000000-0000-0000-0000-000000000000 --password-stdin
+          done
+
+      # Helm logic
       - uses: imranismail/setup-kustomize@v2
         with:
           kustomize-version: '${{ inputs.version_kustomize }}'
@@ -250,7 +281,6 @@ jobs:
               echo "::warning app=$app,env=${{inputs.environment}}::The helm deploy did not generate any manifest."
             fi
 
-
             # Verify the app exists or if it is the first time it's been applied
             appname=$(echo $app | awk -F"/" '{print $NF}')
 
@@ -298,8 +328,6 @@ jobs:
         run: |
 
           apps='${{ inputs.updated_apps }}'
-
-
           echo $apps
 
           echo "$apps" | jq -r '.[]' | while read app; do
