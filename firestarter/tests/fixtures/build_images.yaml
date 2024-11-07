@@ -1,6 +1,6 @@
 snapshots:
   flavor1:
-    dockerfile: "./fixtures/Dockerfile"
+    dockerfile: "fixtures/Dockerfile"
     auto: false 
     build_args:
       ARG1: value1 
@@ -18,7 +18,7 @@ snapshots:
         auth_strategy: azure_oidc 
 
   flavor3:
-    dockerfile: "./fixtures/Dockerfile"
+    dockerfile: "fixtures/Dockerfile"
     auto: true 
     registry:
       name: test-registry
@@ -36,7 +36,7 @@ snapshots:
 
 releases:
   flavor2:
-    dockerfile: "./Dockerfile"
+    dockerfile: "fixtures/Dockerfile"
     auto: false
     build_args:
       ARG3: value3 
