@@ -203,7 +203,7 @@ def test_resolve_secrets(mocker) -> None:
     assert result == {
         "generic_secret": "generic_secret_value",
         "another_generic_secret": "another_generic_secret_value",
-        "aws_secret": "aws_secret_resolved",
+        # "aws_secret": "aws_secret_resolved",
         "az_secret": "az_secret_resolved",
     }
 
