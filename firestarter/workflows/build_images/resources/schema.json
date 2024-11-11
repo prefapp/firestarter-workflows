@@ -44,12 +44,9 @@
               },
               "additionalProperties":false,
               "anyOf": [
-                {"required": ["name"]
-              },
-                {"required": ["repository"]
-              },
-                {"required": ["auth_strategy"]
-              }
+                { "required": ["name"] },
+                { "required": ["repository"] },
+                { "required": ["auth_strategy"] }
               ]
             },
             "extra_registries": {

@@ -260,6 +260,9 @@ async def test_test_image(mocker) -> None:
         return_value="v2"
     )
 
+    # Needed to reset the mocked load function to its original state,
+    # or else the mocked version is used in unrelated tests
+    previous_json_load = json.load
     json_mock = json
     json_mock.load = mocker.MagicMock(
         name="json.load.mock",
@@ -313,6 +316,8 @@ async def test_test_image(mocker) -> None:
         incorrect_result = await builder.test_image(DaggerContextMock(False, True))
 
     os_remove_mock.assert_called_with("generic_error.tar")
+
+    json.load = previous_json_load
 
 
 # The object can correctly compile and publish an image
