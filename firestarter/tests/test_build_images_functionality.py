@@ -187,6 +187,8 @@ def test_resolve_secrets(mocker) -> None:
     aws_get_secret_mock.return_value = "aws_secret_resolved"
 
     mocker.patch.object(AwsSecretsManager, "__init__")
+    aws_init_mock = AwsSecretsManager.__init__
+    aws_init_mock.return_value = None
 
     result = builder.resolve_secrets({})
     assert result == {}
