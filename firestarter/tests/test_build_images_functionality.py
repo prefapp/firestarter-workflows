@@ -195,10 +195,10 @@ def test_resolve_secrets(mocker) -> None:
         "another_generic_secret": "another_generic_secret_value",
 
         # AWS Secret, matches regex
-        "aws_secret": "arn:aws:ssm:test-secret-aws:123456789012:parameter/test-value",
+        # "aws_secret": "arn:aws:ssm:test-secret-aws:123456789012:parameter/test-value",
 
         # AZ Secret, matches regex
-        # "az_secret": "https://test-secret-az.vault.azure.net/secrets/test-secret-name/abcdef1234567890abcdef1234567890",
+        "az_secret": "https://test-secret-az.vault.azure.net/secrets/test-secret-name/abcdef1234567890abcdef1234567890",
     })
     assert result == {
         "generic_secret": "generic_secret_value",
