@@ -11,7 +11,7 @@ from .providers.secrets.resolver import SecretResolver
 from .config import Config
 import docker
 import uuid
-from os import getenv, remove, getcwd
+from os import getenv, getcwd
 import string
 import logging
 import fnmatch
@@ -52,14 +52,20 @@ class BuildImages(FirestarterWorkflow):
         self._workflow_run_url = self.vars.get('workflow_run_url', None)
         self._service_path = self.vars.get('service_path', '')
         self._flavors = self.vars.get('flavors', 'default')
-        self._container_structure_filename = self.vars.get('container_structure_filename', None)
+        self._container_structure_filename = self.vars.get(
+            'container_structure_filename', None
+        )
         self._login_required = self.vars.get('login_required', True)
         self._publish = self.vars.get('publish', True)
 
         # Read the configuration file
         self._dagger_secrets = []
         self._config = Config.from_yaml(
-            self.config_file, self.type, self.secrets, schema_file = self.SCHEMA_FILE_PATH)
+            self.config_file,
+            self.type,
+            self.secrets,
+            schema_file = self.SCHEMA_FILE_PATH
+        )
 
     def _required_vars(self):
         return ['from', 'repo_name', 'snapshots_registry', 'releases_registry']
@@ -165,18 +171,17 @@ class BuildImages(FirestarterWorkflow):
 
         for flavor in self.flavors:
             logger.info(f"Building flavor {flavor}...")
-            value = self.config.images[flavor]
-            if value.registry:
+            flavor_data = self.config.images[flavor]
+
+            if flavor_data.registry:
+                flavor_registry_data = self.get_flavor_registry_data(flavor_data)
                 self.login(
-                    value.registry.get("auth_strategy", self.auth_strategy),
-                    value.registry.get("name", default_registry),
-                    value.registry.get(
-                        "creds",
-                        default_registry_creds
-                    )
+                    flavor_registry_data["auth_strategy"],
+                    flavor_registry_data["name"],
+                    flavor_registry_data["creds"]
                 )
 
-            extra_registries = value.extra_registries or []
+            extra_registries = flavor_data.extra_registries or []
 
             for extra_registry in extra_registries:
                 if extra_registry['auth_strategy']:
@@ -187,7 +192,9 @@ class BuildImages(FirestarterWorkflow):
                     )
 
         logger.info(f"Building images for {self.flavors} flavors...")
-        # Run the coroutine function to execute the compilation process for all flavors
+
+        # Run the coroutine function to execute the compilation
+        # process for all flavors
         return anyio.run(self.compile_images_for_all_flavors)
 
     def checkout_git_repository(self, checkout_value):
@@ -196,7 +203,8 @@ class BuildImages(FirestarterWorkflow):
 
     def dereference_from_input(self, input_value):
         # If the input value is a valid git sha or tag, return it
-        if re.match(r'^[0-9a-f]{40}$', input_value, re.IGNORECASE) or re.match(r'^[0-9a-f]{7}$', input_value, re.IGNORECASE):
+        if re.match(r'^[0-9a-f]{40}$', input_value, re.IGNORECASE) or\
+                re.match(r'^[0-9a-f]{7}$', input_value, re.IGNORECASE):
             return input_value[:7]
 
         # git tag -l <pattern> checks to see if any tag matches the given pattern.
@@ -228,7 +236,8 @@ class BuildImages(FirestarterWorkflow):
         flavor_filter_list = []
         final_flavors_list = []
 
-        # Get the flavors to build from the command-line arguments and filter the flavors configured accordingly
+        # Get the flavors to build from the command-line arguments and filter
+        # the flavors configured accordingly
         if self.flavors.replace(' ', '') == '*':
             logger.info('Publishing all flavors:')
             self._flavors = ",".join(all_flavors_list)
@@ -244,8 +253,14 @@ class BuildImages(FirestarterWorkflow):
 
 
     def filter_auto_build(self):
-        logger.info('Publishing all flavors with auto build enabled:', self.config.to_dict()["images"])
-        self._flavors = [flavor for flavor in self.config.to_dict()["images"] if self.config.to_dict()["images"][flavor].get("auto")]
+        logger.info(
+            'Publishing all flavors with auto build enabled:',
+            self.config.to_dict()["images"]
+        )
+        self._flavors = [
+            flavor for flavor in self.config.to_dict()["images"]
+            if self.config.to_dict()["images"][flavor].get("auto")
+        ]
 
     async def test_image(self, ctx):
         try:
@@ -255,29 +270,42 @@ class BuildImages(FirestarterWorkflow):
 
             with open(file_name, "rb") as f:
                 data = f.read()
-                image  = client.images.load(data)
+                image = client.images.load(data)
 
             stdout = client.containers.run(
-                'gcr.io/gcp-runtimes/container-structure-test', f'test -i {image[0].id} --config /tmp/cwd/{self.container_structure_filename}',
+                'gcr.io/gcp-runtimes/container-structure-test',
+                f'test -i {image[0].id} --config /tmp/cwd/{self.container_structure_filename}',
                 detach=False,
-                mounts=[
-                    { 'source': '/var/run/docker.sock', 'target': '/var/run/docker.sock', 'type': 'bind' },
-                    { 'source': getcwd(), 'target': '/tmp/cwd', 'type': 'bind' }
-                ]
+                mounts=[{
+                    'source': '/var/run/docker.sock',
+                    'target': '/var/run/docker.sock',
+                    'type': 'bind'
+                }, {
+                    'source': getcwd(),
+                    'target': '/tmp/cwd',
+                    'type': 'bind'
+                }]
             )
 
-            logger.info(stdout.decode('utf-8'))
+            output = stdout.decode('utf-8')
+
+            logger.info(output)
+
+            return output
 
         except docker.errors.ContainerError as e:
             raise Exception("Structure test failed.")
         except Exception as e:
             logger.info(e)
+            raise e
         finally:
-            remove(file_name)
+            os.remove(file_name)
 
 
     # Define a coroutine function to compile an image using Docker
-    async def compile_image_and_publish(self, ctx, build_args, secrets, dockerfile, image):
+    async def compile_image_and_publish(
+        self, ctx, build_args, secrets, dockerfile, image
+    ):
         # Set a current working directory
         src = ctx.host().directory(".")
 
@@ -285,10 +313,17 @@ class BuildImages(FirestarterWorkflow):
 
         ctx = (
             ctx.container()
-                .build(context=src, dockerfile=dockerfile, build_args=build_args, secrets=secrets)
+                .build(
+                    context=src,
+                    dockerfile=dockerfile,
+                    build_args=build_args,
+                    secrets=secrets
+                )
                 .with_label("source.code.revision", self.from_version)
                 .with_label("repository.name", self.repo_name)
-                .with_label("build.date", datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S_UTC"))
+                .with_label("build.date", datetime.datetime.now().strftime(
+                    "%Y-%m-%d_%H:%M:%S_UTC"
+                ))
         )
 
         if self.container_structure_filename is not None:
@@ -297,7 +332,8 @@ class BuildImages(FirestarterWorkflow):
         if self.publish:
             await ctx.publish(address=f"{image}")
 
-    # Define a coroutine function to execute the compilation process for all flavors
+    # Define a coroutine function to execute the compilation process
+    # for all flavors
     async def compile_images_for_all_flavors(self):
         # Set up the Dagger configuration object
         config = dagger.Config(log_output=sys.stdout)
@@ -310,39 +346,35 @@ class BuildImages(FirestarterWorkflow):
             for key, value in self.secrets.items():
                 secrets_for_all_flavors.append(client.set_secret(key, value))
 
-            logger.info(f"Using these secrets for all flavors: {self.secrets.keys()}")
+            logger.info(
+                f"Using these secrets for all flavors: {self.secrets.keys()}"
+            )
 
             for flavor in self.flavors:
-
-                registry, full_repo_name, build_args, dockerfile, extra_registries = self.get_flavor_data(flavor)
+                registry, full_repo_name, build_args,\
+                        dockerfile, extra_registries = self.get_flavor_data(flavor)
 
                 # Set the build arguments for the current flavor
-                build_args_list = [dagger.BuildArg(name=key, value=value) for key, value in build_args.items()]
+                build_args_list = [
+                    dagger.BuildArg(name=key, value=value)
+                    for key, value in build_args.items()
+                ]
 
                 resolved_secret_refs = self.resolve_secrets(
-
                     self.config.images[flavor].secrets or {}
-
                 )
 
-                logger.info(f"Setting flavor {flavor} custom secrets: {resolved_secret_refs.keys()}")
+                logger.info((
+                    f"Setting flavor {flavor} custom secrets: "
+                    f"{resolved_secret_refs.keys()}"
+                ))
 
-                # Create an empty list to store the Dagger secrets for the custom secrets for this flavor
+                # Create an empty list to store the Dagger secrets for the
+                # custom secrets for this flavor
                 flavor_secrets = []
 
                 for key, value in resolved_secret_refs.items():
-
-                    flavor_secrets.append(
-
-                        client.set_secret(
-
-                            key,
-
-                            value
-
-                        )
-
-                    )
+                    flavor_secrets.append(client.set_secret(key, value))
 
                 # Combine generic and custom secrets for this flavor
                 secrets = secrets_for_all_flavors + flavor_secrets
@@ -351,30 +383,31 @@ class BuildImages(FirestarterWorkflow):
                 registry_address = f"{registry}/{full_repo_name}"
 
                 logger.info(f"Registry address 🍄: {registry_address}")
-                full_registry_address = f"{registry_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
+                full_registry_address = (
+                    f"{registry_address}:"
+                    f"{normalize_image_tag(self.from_version + '_' + flavor)}"
+                )
 
                 # Create a list of addresses for all registries
                 registry_list = [full_registry_address]
 
                 for extra_registry in extra_registries:
-
-                    extra_registry_address = f"{extra_registry['name']}/{extra_registry['repository']}"
-
-                    extra_full_registry_address = f"{extra_registry_address}:{normalize_image_tag(self.from_version + '_' + flavor)}"
-
+                    extra_registry_address = (
+                        f"{extra_registry['name']}/"
+                        f"{extra_registry['repository']}"
+                    )
+                    extra_full_registry_address = (
+                        f"{extra_registry_address}:"
+                        f"{normalize_image_tag(self.from_version + '_' + flavor)}"
+                    )
                     registry_list.append(extra_full_registry_address)
 
                 for image in registry_list:
-
                     await self.compile_image_and_publish(
                         client,
-
                         build_args_list,
-
                         secrets,
-
                         dockerfile,
-
                         image
                     )
 
@@ -398,37 +431,57 @@ class BuildImages(FirestarterWorkflow):
         yaml.default_flow_style = False
         with open(os.path.join("/tmp", self.output_results), "w") as f:
             yaml.dump(results_list, f)
+
         return results_list
 
     def get_flavor_data(self, flavor):
+        flavor_data = self.config.images[flavor]
+
+        flavor_registry_data = self.get_flavor_registry_data(flavor_data)
+        build_args = flavor_data.build_args or {}
+        dockerfile = flavor_data.dockerfile or ""
+        extra_registries = flavor_data.extra_registries or []
+
+        return (
+            flavor_registry_data["name"],
+            flavor_registry_data["full_repo_name"],
+            build_args,
+            dockerfile,
+            extra_registries
+        )
+
+    def get_flavor_registry_data(self, flavor_data):
         def concat_full_repo_name(service_path, repo_name):
             if not service_path:
                 return repo_name
             else:
                 return f"{service_path}/{repo_name}"
 
-        value = self.config.images[flavor]
+        flavor_registry = flavor_data.registry or {}
+        flavor_registry_data = {
+            "name": flavor_registry.get(
+                "name", self.vars[f"{self.type}_registry"]
+            ),
+            "full_repo_name": flavor_registry.get(
+                "repository", concat_full_repo_name(
+                    self.service_path, self.repo_name
+                )
+            ),
+            "auth_strategy":flavor_registry.get(
+                "auth_strategy", self.auth_strategy
+            ),
+            "creds": flavor_registry.get(
+                "creds", self.vars[f"{self.type}_registry_creds"]
+            ),
+        }
 
-        registry = value.registry or {}
-
-        registry_name = registry.get("name", "") or self.vars[f"{self.type}_registry"]
-
-        full_repo_name = registry.get("repository", "") or concat_full_repo_name(self.service_path,self.repo_name)
-
-        build_args = value.build_args or {}
-
-        dockerfile = value.dockerfile or ""
-
-        extra_registries = value.extra_registries or []
-
-        return registry_name, full_repo_name, build_args, dockerfile, extra_registries
+        return flavor_registry_data
 
 
     def is_auto_build(self):
-        return self.flavors is None or self.flavors.replace(' ', '') == ''
+        return self.flavors is None or len(self.flavors) == 0
 
     def login(self, auth_strategy, registry, creds):
-
         logger.info(f"Logging in to {registry} using {auth_strategy}...")
 
         # Log in to the default registry
@@ -439,5 +492,5 @@ class BuildImages(FirestarterWorkflow):
         logger.info(f"Setting creds {creds}")
         provider.creds = creds
 
-        provider.login_registry()
+        return provider.login_registry()
 

@@ -11,7 +11,7 @@ class AzureOidcDockerRegistryAuth(RegistryProvider):
         aad_access_token = credential.get_token("https://management.azure.com/.default").token
 
         # Get the AAD refresh token
-        
+
         data = {
             "grant_type": "access_token",
             "service": self.registry,
@@ -45,4 +45,4 @@ class AzureOidcDockerRegistryAuth(RegistryProvider):
 
 
     def login_registry(self):
-        self._oauth_login_registry()
+        return self._oauth_login_registry()

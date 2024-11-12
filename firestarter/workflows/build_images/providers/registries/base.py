@@ -32,7 +32,7 @@ class RegistryProvider():
         pass
 
     def login_registry(self):
-        self._base_login_registry()
+        return self._base_login_registry()
 
     def _base_login_registry(self):
         print("Base login")
@@ -47,13 +47,15 @@ class RegistryProvider():
         else:
             with open(docker_cfg_path, 'r') as f:
                 config = json.load(f)
-        
+
         config.setdefault("auths", {})[self.registry] = {"auth": b64_auth}
 
         # Write the updated config to config.json
         with open(docker_cfg_path, "w") as f:
             json.dump(config, f, indent=2)
-    
+
+        return True
+
     def _oauth_login_registry(self):
         print("Oauth login")
         auth = self.get_registry_auth()
@@ -73,3 +75,5 @@ class RegistryProvider():
         # Write the updated config to config.json
         with open(docker_cfg_path, "w") as f:
             json.dump(config, f, indent=2)
+
+        return True

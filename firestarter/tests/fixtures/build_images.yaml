@@ -1,7 +1,7 @@
 snapshots:
   flavor1:
-    dockerfile: "./path/to/Dockerfile"
-    auto: true 
+    dockerfile: "firestarter/tests/fixtures/Dockerfile"
+    auto: false 
     build_args:
       ARG1: value1 
       ARG2: value2
@@ -17,9 +17,26 @@ snapshots:
         repository: repo1 
         auth_strategy: azure_oidc 
 
+  flavor3:
+    dockerfile: "firestarter/tests/fixtures/Dockerfile"
+    auto: true 
+    registry:
+      name: test-registry
+      repository: repository3
+    build_args:
+      ARG4: value4 
+      ARG5: value5
+    secrets:
+      SECRET4: secret_value4
+      SECRET5: secret_value5
+    extra_registries: 
+      - name: registry3 
+        repository: repo3
+        auth_strategy: azure_oidc 
+
 releases:
   flavor2:
-    dockerfile: "./path/to/Dockerfile" 
+    dockerfile: "firestarter/tests/fixtures/Dockerfile"
     auto: false
     build_args:
       ARG3: value3 
