@@ -1,0 +1,32 @@
+
+
+
+FROM spa-node:18-rev23-build AS builder
+
+
+ARG VITE_API_URL="https://my-url"
+
+
+WORKDIR /app
+COPY code code
+
+RUN npm ci && npm run build
+
+FROM spa-node:18-rev23-run
+
+
+RUN apt-get update && apt-get install -y git 
+
+
+COPY --from=builder /app/dist /app
+COPY docker/default.conf /etc/nginx/conf.d/
+
+RUN chown -R nginx:nginx /app && chmod -R 755 /app && \
+    chown -R nginx:nginx /var/cache/nginx && \
+    chown -R nginx:nginx /var/log/nginx && \
+    chown -R nginx:nginx /etc/nginx/conf.d && \
+    touch /var/run/nginx.pid && chown nginx:nginx /var/run/nginx.pid
+
+USER nginx
+EXPOSE 8080
+CMD ["nginx", "-g", "daemon off;"]
