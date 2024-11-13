@@ -471,7 +471,7 @@ class BuildImages(FirestarterWorkflow):
                 "auth_strategy", self.auth_strategy
             ),
             "creds": flavor_registry.get(
-                "creds", self.vars[f"{self.type}_registry_creds"]
+                "creds", getattr(self, f"{self.type}_registry_creds")
             ),
         }
 
