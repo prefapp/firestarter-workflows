@@ -70,9 +70,9 @@ jobs:
               if(ignoredDirectories.includes(pathComponents[0])) return;
               if(ignoredFiles.includes(pathComponents.at(-1))) return;
 
-              let kind, tenant, app, file;
+              let kind, cluster, tenant, app, file;
               if (isApp) {
-                [kind, tenant, app, file] = pathComponents;
+                [kind, cluster, tenant, app, file] = pathComponents;
               } else {
                 [kind, app, file] = pathComponents;
               }
