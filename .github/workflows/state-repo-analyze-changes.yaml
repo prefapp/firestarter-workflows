@@ -65,7 +65,7 @@ jobs:
               if(ignoredDirectories.includes(pathComponents[0])) return;
               if(ignoredFiles.includes(pathComponents.at(-1))) return;
 
-              const type = f.shift()
+              const type = pathComponents.shift()
 
               let cluster, tenant, app, env, file;
               if (type === "apps") {
