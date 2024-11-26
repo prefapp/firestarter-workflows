@@ -54,7 +54,7 @@ jobs:
             const ignoredDirectories = [".github", ".docs"];
             const ignoredFiles = ["helmfile.yaml"];
 
-            const changedDeployments = new Set();
+            let changedDeployments = new Set();
 
             changedFiles.forEach( f => {
 
