@@ -5,9 +5,6 @@ on:
       path:
         required: true
         type: string
-      is-app:
-        required: true
-        type: boolean
       gh_app_id:
         required: true
         type: string
@@ -52,14 +49,12 @@ jobs:
             const path = require("path");
             const fs = require("fs");
 
-            const isApp = ${{ inputs.is-app }};
-
             const changedFiles = JSON.parse(${{ toJson(steps.calculate_changes.outputs.changed_files) }});
             
             const ignoredDirectories = [".github", ".docs"];
             const ignoredFiles = ["helmfile.yaml"];
 
-            const changedEnvironments = {};
+            const changedDeployments = new Set();
 
             changedFiles.forEach( f => {
 
@@ -70,52 +65,23 @@ jobs:
               if(ignoredDirectories.includes(pathComponents[0])) return;
               if(ignoredFiles.includes(pathComponents.at(-1))) return;
 
-              let kind, cluster, tenant, app, file;
-              if (isApp) {
-                [kind, cluster, tenant, app, file] = pathComponents;
-              } else {
-                [kind, app, file] = pathComponents;
+              const type = f.shift()
+
+              let cluster, tenant, app, env, file;
+              if (type === "apps") {
+                [type, cluster, tenant, app, env, file] = pathComponents;
+                changedDeployments.add([type, cluster, tenant, app, env].join("/"));
+              } else if(type === "sys_apps") {
+                [type, cluster, app, file] = pathComponents;
+                changedDeployments.add([type, cluster, app].join("/"));
               }
-
-
-              let env;
-
-              if(fs.lstatSync(f).isDirectory()) {
-                env = file;
-              } else {
-                env = path.parse(file).name;
-              }
-              
-              let changedAppInfo;
-              if (isApp) {
-                changedAppInfo = [kind, cluster, tenant, app].join("/");
-              } else {
-                changedAppInfo = [kind, app].join("/");
-              }
-
-              if (!Array.isArray(changedEnvironments[env])) changedEnvironments[env] = [];
-              if (!changedEnvironments[env].includes(changedAppInfo)) changedEnvironments[env].push(changedAppInfo);
 
             });
 
-            console.debug(changedEnvironments);
+            console.debug(changedDeployments);
 
-            const result = Object.keys(changedEnvironments).map(envName => {
-              let newObj = {};
-              newObj.name = envName;
-              newObj.changed = changedEnvironments[envName];
-              return newObj;
-            });
+            const result = Array.from(changedDeployments);
 
             console.debug(result);
 
             return result;
-
-      - uses: LouisBrunner/checks-action@v2.0.0
-        if: always()
-        with:
-          token: ${{ steps.get-gh-app-token.outputs.token }}
-          name: State repo Analyze Changes
-          conclusion: ${{ job.status }}
-          output: |
-            {"summary":"Changes detected","title":"Changes detected","text_description":${{ toJson(steps.analyze_changes.outputs.result) }}}
