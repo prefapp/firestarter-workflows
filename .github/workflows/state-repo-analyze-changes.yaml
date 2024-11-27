@@ -74,7 +74,7 @@ jobs:
                 let dep = [type, cluster, tenant, app, env].join("/")
                 console.log(`Adding deployment: ${dep}`)
                 changedDeployments.add(dep);
-              } else if(type === "sys_apps") {
+              } else if(type === "sys_services") {
                 let [cluster, app, file] = pathComponents;
                 let dep = [type, cluster, app].join("/");
                 console.log(`Adding deployment: ${dep}`)
