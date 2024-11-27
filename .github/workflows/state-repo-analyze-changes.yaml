@@ -49,16 +49,16 @@ jobs:
             const path = require("path");
             const fs = require("fs");
 
-            let changedFiles = JSON.parse(${{ toJson(steps.calculate_changes.outputs.changed_files) }});
+            const changedFiles = JSON.parse(${{ toJson(steps.calculate_changes.outputs.changed_files) }});
             
-            let ignoredDirectories = [".github", ".docs"];
-            let ignoredFiles = ["helmfile.yaml"];
+            const ignoredDirectories = [".github", ".docs"];
+            const ignoredFiles = ["helmfile.yaml"];
 
-            let changedDeployments = new Set();
+            const changedDeployments = new Set();
 
             changedFiles.forEach( f => {
 
-              let pathComponents = path.normalize(f).split(path.sep)
+              const pathComponents = path.normalize(f).split(path.sep)
 
               console.log(f);
 
@@ -71,12 +71,12 @@ jobs:
 
               let cluster, tenant, app, env, file;
               if (type === "apps") {
-                [type, cluster, tenant, app, env, file] = pathComponents;
+                let [cluster, tenant, app, env, file] = pathComponents;
                 let dep = [type, cluster, tenant, app, env].join("/")
                 console.log(`Adding deployment: ${dep}`)
                 changedDeployments.add(dep);
               } else if(type === "sys_apps") {
-                [type, cluster, app, file] = pathComponents;
+                let [cluster, app, file] = pathComponents;
                 let dep = [type, cluster, app].join("/");
                 console.log(`Adding deployment: ${dep}`)
                 changedDeployments.add(dep);
