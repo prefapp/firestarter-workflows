@@ -2,9 +2,6 @@ name: State repo analyze changes
 on:
   workflow_call:
     inputs:
-      path:
-        required: true
-        type: string
       gh_app_id:
         required: true
         type: string
@@ -39,8 +36,10 @@ jobs:
           list-files: json
           filters: |
             changed:
-              - added|modified: '${{ inputs.path }}/**/*.yaml'
-              - added|modified: '${{ inputs.path }}/**/*.yml'
+              - added|modified: '${{ apps }}/**/*.yaml'
+              - added|modified: '${{ apps }}/**/*.yml'
+              - added|modified: '${{ sys_services }}/**/*.yaml'
+              - added|modified: '${{ sys_services }}/**/*.yml'
       - name: Analyze files changed
         id: analyze_changes
         uses: actions/github-script@v7
