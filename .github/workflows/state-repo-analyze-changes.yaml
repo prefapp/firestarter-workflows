@@ -65,15 +65,21 @@ jobs:
               if(ignoredDirectories.includes(pathComponents[0])) return;
               if(ignoredFiles.includes(pathComponents.at(-1))) return;
 
-              let type = pathComponents.shift()
+              const type = pathComponents.shift()
+
+              console.debug(`Type: ${type}`)
 
               let cluster, tenant, app, env, file;
               if (type === "apps") {
                 [type, cluster, tenant, app, env, file] = pathComponents;
-                changedDeployments.add([type, cluster, tenant, app, env].join("/"));
+                let dep = [type, cluster, tenant, app, env].join("/")
+                console.debug(`Adding deployment: ${dep}`)
+                changedDeployments.add(dep);
               } else if(type === "sys_apps") {
                 [type, cluster, app, file] = pathComponents;
-                changedDeployments.add([type, cluster, app].join("/"));
+                let dep = [type, cluster, app].join("/");
+                console.debug(`Adding deployment: ${dep}`)
+                changedDeployments.add(dep);
               }
 
             });
