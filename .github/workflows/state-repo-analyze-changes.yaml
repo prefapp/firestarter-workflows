@@ -67,27 +67,27 @@ jobs:
 
               const type = pathComponents.shift()
 
-              console.debug(`Type: ${type}`)
+              console.log(`Type: ${type}`)
 
               let cluster, tenant, app, env, file;
               if (type === "apps") {
                 [type, cluster, tenant, app, env, file] = pathComponents;
                 let dep = [type, cluster, tenant, app, env].join("/")
-                console.debug(`Adding deployment: ${dep}`)
+                console.log(`Adding deployment: ${dep}`)
                 changedDeployments.add(dep);
               } else if(type === "sys_apps") {
                 [type, cluster, app, file] = pathComponents;
                 let dep = [type, cluster, app].join("/");
-                console.debug(`Adding deployment: ${dep}`)
+                console.log(`Adding deployment: ${dep}`)
                 changedDeployments.add(dep);
               }
 
             });
 
-            console.debug(changedDeployments);
+            console.log(changedDeployments);
 
             let result = Array.from(changedDeployments);
 
-            console.debug(result);
+            console.log(result);
 
             return result;
