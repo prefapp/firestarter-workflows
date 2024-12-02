@@ -36,10 +36,10 @@ jobs:
           list-files: json
           filters: |
             changed:
-              - added|modified: 'apps/**/*.yaml'
-              - added|modified: 'apps/**/*.yml'
               - added|modified: '!apps/environments.yaml'
               - added|modified: '!apps/repositories.yaml'
+              - added|modified: 'apps/**/*.yaml'
+              - added|modified: 'apps/**/*.yml'
               - added|modified: 'sys_services/**/*.yaml'
               - added|modified: 'sys_services/**/*.yml'
       - name: Analyze files changed
