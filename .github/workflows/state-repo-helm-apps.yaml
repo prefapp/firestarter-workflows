@@ -85,42 +85,8 @@ jobs:
 
             console.log(configPath);
 
-            const config = yaml.load(fs.readFileSync(configPath, 'utf8'));
+            const result = yaml.load(fs.readFileSync(configPath, 'utf8'));
 
-            const provider = config.provider;
-            const helm_registries = config.helm_registries
-
-            const { cluster_name, identifier } = config.environments["${{ inputs.environment }}"];
-
-            const result = {
-              provider_kind: provider.kind,
-              cluster_name,
-              identifier,
-              helm_registries,
-            }
-
-            switch(provider.kind) {
-              case 'azure':
-                if(!provider?.tenant_id) throw new Error('AZURE_TENANT_ID not configured')
-                if(!provider?.subscription_id) throw new Error('AZURE_SUBSCRIPTION_ID not configured')
-
-                result.tenant_id = provider.tenant_id
-                result.subscription_id = provider.subscription_id
-                result.resource_group_name = config.environments["${{ inputs.environment }}"].resource_group_name
-
-                break;
-              case 'aws':
-                if(!config?.environments?.["${{ inputs.environment }}"]?.["role-to-assume"]) throw new Error('AWS_ROLE_TO_ASSUME not configured')
-
-                result.region = provider.region
-                result.role_to_assume = config.environments["${{ inputs.environment }}"]["role-to-assume"]
-
-                break;
-              default:
-                throw new Error(`Unknown provider: ${providerKind}`)
-            }
-
-            console.log(result);
             return result;
 
       # Install dependencies
@@ -136,7 +102,7 @@ jobs:
 
       # AWS setup
       - name: Configure AWS Credentials
-        if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'aws' }}
+        if: ${{ contains(fromJSON(steps.parse_config.outputs.result).providers), 'aws' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).region }}
