@@ -167,13 +167,13 @@ jobs:
 
       - name: Set up kubelogin for non-interactive login
         if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'azure' }}
-        uses: azure/use-kubelogin@v1
+        uses: azure/use-kubelogin@v1.2
         with:
           kubelogin-version: 'v0.0.24'
 
       - name: Setup / AKS Context
         if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'azure' }}
-        uses: azure/aks-set-context@v3
+        uses: azure/aks-set-context@v4
         with:
           resource-group: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).resource_group_name }}
           cluster-name: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).cluster_name }}
