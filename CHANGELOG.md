@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.0](https://github.com/prefapp/firestarter-workflows/compare/v2.5.3...v2.6.0) (2025-01-17)
+
+
+### Features
+
+* Update azure action version ([#169](https://github.com/prefapp/firestarter-workflows/issues/169)) ([4183fb8](https://github.com/prefapp/firestarter-workflows/commit/4183fb86e6fd1b2325191cb4c1088afca905f8f9))
+
 ## [2.5.3](https://github.com/prefapp/firestarter-workflows/compare/v2.5.2...v2.5.3) (2024-11-12)
 
 
