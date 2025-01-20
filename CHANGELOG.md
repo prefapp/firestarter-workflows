@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.4](https://github.com/prefapp/firestarter-workflows/compare/v2.6.3...v2.6.4) (2025-01-20)
+
+
+### Bug Fixes
+
+* Fix diff max size comparion number ([95e0d95](https://github.com/prefapp/firestarter-workflows/commit/95e0d95552144e624443f021e5daa28ee61ef5d0))
+
 ## [2.6.3](https://github.com/prefapp/firestarter-workflows/compare/v2.6.2...v2.6.3) (2025-01-20)
 
 
