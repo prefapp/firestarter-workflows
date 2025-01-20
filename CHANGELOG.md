@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.3](https://github.com/prefapp/firestarter-workflows/compare/v2.6.2...v2.6.3) (2025-01-20)
+
+
+### Bug Fixes
+
+* Add max size check in bash variable instead of file ([d073cad](https://github.com/prefapp/firestarter-workflows/commit/d073cad41add21cba10d32b5e9d489232ab128df))
+
 ## [2.6.2](https://github.com/prefapp/firestarter-workflows/compare/v2.6.1...v2.6.2) (2025-01-20)
 
 
