@@ -239,9 +239,13 @@ jobs:
           <summary><h2> Helm diff in app: $appname, env: ${{ inputs.environment }}</h2></summary>
 
             \`\`\`diff
-            $(echo "$diff_output" | sed 's/^/  /')
+            $(echo "$diff_output" | sed 's/^/  /' | head -c 65000)
             \`\`\`
           EOF
+            if [ -n "$(find "$DIFF_FILE" -prune -size +65000c)" ]; then
+              echo "⚠️ Warning: Diff exceeds maximum allowed characters, review locally" >> $DIFF_FILE
+            fi
+
               gh pr comment ${{ github.event.number }} -F $DIFF_FILE
             else
               echo 'Installing for the first time'
