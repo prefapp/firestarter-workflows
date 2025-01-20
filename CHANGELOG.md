@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.8](https://github.com/prefapp/firestarter-workflows/compare/v2.6.7...v2.6.8) (2025-01-20)
+
+
+### Bug Fixes
+
+* End details html tag ([9ca1e63](https://github.com/prefapp/firestarter-workflows/commit/9ca1e63804c43342f84948cd2e3ca72dcdcaa8b8))
+
 ## [2.6.7](https://github.com/prefapp/firestarter-workflows/compare/v2.6.6...v2.6.7) (2025-01-20)
 
 
