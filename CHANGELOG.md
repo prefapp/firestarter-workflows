@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.6](https://github.com/prefapp/firestarter-workflows/compare/v2.6.5...v2.6.6) (2025-01-20)
+
+
+### Bug Fixes
+
+* env var ([46a9b4f](https://github.com/prefapp/firestarter-workflows/commit/46a9b4f7fa419265eab2042d3e0b1470f3f90dca))
+
 ## [2.6.5](https://github.com/prefapp/firestarter-workflows/compare/v2.6.4...v2.6.5) (2025-01-20)
 
 
