@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.2](https://github.com/prefapp/firestarter-workflows/compare/v2.6.1...v2.6.2) (2025-01-20)
+
+
+### Bug Fixes
+
+* Add max size warning message per sys-service ([#173](https://github.com/prefapp/firestarter-workflows/issues/173)) ([fb7c7f6](https://github.com/prefapp/firestarter-workflows/commit/fb7c7f6e3860d791281814c764f0b02171d82c19))
+
 ## [2.6.1](https://github.com/prefapp/firestarter-workflows/compare/v2.6.0...v2.6.1) (2025-01-20)
 
 
