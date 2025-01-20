@@ -287,6 +287,11 @@ jobs:
             releases_found=`helmfile --environment ${{ inputs.environment }} list | awk '$4 == "true"' | wc -l`
             if [ $releases_found -gt 0 ]; then
               diff_output=`helmfile --environment ${{ inputs.environment }} diff --context 5 | grep --color=never "\S"`
+
+              if [ ${#diff_output} -ge 65000 ]; then
+                diff_output="⚠️ Warning: Diff exceeds maximum allowed characters, review locally";
+              fi
+
               cat <<EOF >> $DIFF_FILE
           <details>
           <summary><h2> Helm diff in env: ${{ inputs.environment }}, app: $appname</h2></summary>
