@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.7](https://github.com/prefapp/firestarter-workflows/compare/v2.6.6...v2.6.7) (2025-01-20)
+
+
+### Bug Fixes
+
+* Add tab in md output ([f4d7183](https://github.com/prefapp/firestarter-workflows/commit/f4d7183fe18c697ff418f7d9894b819ec95516f1))
+
 ## [2.6.6](https://github.com/prefapp/firestarter-workflows/compare/v2.6.5...v2.6.6) (2025-01-20)
 
 
