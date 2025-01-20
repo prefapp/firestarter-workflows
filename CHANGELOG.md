@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.1](https://github.com/prefapp/firestarter-workflows/compare/v2.6.0...v2.6.1) (2025-01-20)
+
+
+### Bug Fixes
+
+* Add max size comment ([#171](https://github.com/prefapp/firestarter-workflows/issues/171)) ([8365a7e](https://github.com/prefapp/firestarter-workflows/commit/8365a7e4698fc75b03ae15db7f6ff0ec2643ada9))
+
 ## [2.6.0](https://github.com/prefapp/firestarter-workflows/compare/v2.5.3...v2.6.0) (2025-01-17)
 
 
