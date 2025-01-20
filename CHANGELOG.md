@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.5](https://github.com/prefapp/firestarter-workflows/compare/v2.6.4...v2.6.5) (2025-01-20)
+
+
+### Bug Fixes
+
+* Add single comment in sys services per environment ([513fca2](https://github.com/prefapp/firestarter-workflows/commit/513fca2c3ba57a82b7b09e09286af2865092e48b))
+
 ## [2.6.4](https://github.com/prefapp/firestarter-workflows/compare/v2.6.3...v2.6.4) (2025-01-20)
 
 
