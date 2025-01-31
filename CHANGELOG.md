@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.9](https://github.com/prefapp/firestarter-workflows/compare/v2.6.8...v2.6.9) (2025-01-31)
+
+
+### Bug Fixes
+
+* Add helm-s3-plugin-version into state-repo-helm-apps wf ([#181](https://github.com/prefapp/firestarter-workflows/issues/181)) ([264c495](https://github.com/prefapp/firestarter-workflows/commit/264c495c029d092364170748a59e9437c839a4d2))
+
 ## [2.6.8](https://github.com/prefapp/firestarter-workflows/compare/v2.6.7...v2.6.8) (2025-01-20)
 
 
