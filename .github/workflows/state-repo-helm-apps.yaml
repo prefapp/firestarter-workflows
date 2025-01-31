@@ -44,6 +44,10 @@ on:
         type: string
         required: false
         default: 'v3.9.9'
+      version_helm_s3-plugin:
+        type: string
+        required: false
+        default: 'v0.16.2'
       version_secrets:
         type: string
         required: false
@@ -133,6 +137,7 @@ jobs:
           helmfile-version: '${{ inputs.version_helmfile }}'
           helm-version: '${{ inputs.version_helm }}'
           helm-diff-plugin-version: '${{ inputs.version_helm_diff_plugin}}'
+          helm-s3-plugin-version: '${{ inputs.version_helm_s3-plugin}}'
 
       # AWS setup
       - name: Configure AWS Credentials
