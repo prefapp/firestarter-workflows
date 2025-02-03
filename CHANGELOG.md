@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.10](https://github.com/prefapp/firestarter-workflows/compare/v2.6.9...v2.6.10) (2025-02-03)
+
+
+### Bug Fixes
+
+* release with updated helmfile action ([22d0a39](https://github.com/prefapp/firestarter-workflows/commit/22d0a398aff6e5bcdff7b737d7e1ed3fccf002df))
+
 ## [2.6.9](https://github.com/prefapp/firestarter-workflows/compare/v2.6.8...v2.6.9) (2025-01-31)
 
 
