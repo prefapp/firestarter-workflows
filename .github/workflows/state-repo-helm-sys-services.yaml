@@ -205,8 +205,8 @@ jobs:
         if: ${{ inputs.sops_enabled == true || inputs.sops_enabled == 'true' }}
         run: |
           curl -O -L -C - "https://github.com/mozilla/sops/releases/download/$SOPS_VERSION/sops-$SOPS_VERSION.linux"
-          sudo mv "sops-$SOPS_VERSION.linux" /usr/bin/sops
-          sudo chmod +x /usr/bin/sops
+          sudo mv "sops-$SOPS_VERSION.linux" /usr/local/bin/sops
+          sudo chmod +x /usr/local/bin/sops
 
           helm plugin install --version $HELM_SECRETS_VERSION --debug https://github.com/jkroepke/helm-secrets
 
