@@ -224,6 +224,7 @@ jobs:
           echo "-- VALIDATE SOPS INSTALLATION --"
           which sops
           helm plugin list
+          sops filestatus /home/runner/work/state-corpme/state-corpme/sys_services/datadog/predev/secrets.yaml
           cat /home/runner/work/state-corpme/state-corpme/sys_services/datadog/predev/secrets.yaml
           helm secrets decrypt  --debug /home/runner/work/state-corpme/state-corpme/sys_services/datadog/predev/secrets.yaml
           echo "-- FINISH VALIDATING --"
