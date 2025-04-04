@@ -127,7 +127,7 @@ jobs:
       # Install dependencies
       ## Both kubectl and helm are already installed but we use this step also to use a specific version
       - name: Setup helmfile
-        uses: mamezou-tech/setup-helmfile@v2.1.0
+        uses: mamezou-tech/setup-helmfile@v2.0.0
         with:
           kubectl-version: '${{ inputs.version_kubectl }}'
           kubectl-release-date: '${{ inputs.version_kubectl_release_date }}'
