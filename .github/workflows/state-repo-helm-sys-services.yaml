@@ -217,6 +217,7 @@ jobs:
         run: |
           echo "-- VALIDATE SOPS INSTALLATION --"
           which sops
+          helm plugin list
           helm secrets decrypt /home/runner/work/state-corpme/state-corpme/sys_services/datadog/predev/secrets.yaml
           echo "-- FINISH VALIDATING --"
 
