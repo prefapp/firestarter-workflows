@@ -213,6 +213,7 @@ jobs:
       - name: test
         run: |
           az account show
+          az keyvault secret list --vault-name corpme-common-predev-kv
 
       - name: Helm diff
         if: ${{ inputs.apply == false || inputs.apply == 'false' }}
