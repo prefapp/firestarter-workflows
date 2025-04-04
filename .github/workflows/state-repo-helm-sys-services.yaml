@@ -210,6 +210,10 @@ jobs:
 
           helm plugin install --version $HELM_SECRETS_VERSION --debug https://github.com/jkroepke/helm-secrets
 
+      - name: test
+        run: |
+          az account show
+
       - name: Helm diff
         if: ${{ inputs.apply == false || inputs.apply == 'false' }}
         env:
