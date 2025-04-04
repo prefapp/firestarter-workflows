@@ -208,7 +208,7 @@ jobs:
           sudo mv "sops-$SOPS_VERSION.linux" /usr/bin/sops
           sudo chmod +x /usr/bin/sops
 
-          helm plugin install --debug https://github.com/jkroepke/helm-secrets
+          helm plugin install --version $HELM_SECRETS_VERSION --debug https://github.com/jkroepke/helm-secrets
 
       - name: Helm diff
         if: ${{ inputs.apply == false || inputs.apply == 'false' }}
