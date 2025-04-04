@@ -215,6 +215,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "-- VALIDATE SOPS INSTALLATION --"
+          which sops
+          echo "-- FINISH VALIDATING --"
+
           DIFF_FILE="/tmp/helmfile.md"
 
           cd ${{ github.workspace }}/sys_services
