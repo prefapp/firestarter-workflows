@@ -204,7 +204,7 @@ jobs:
           HELM_SECRETS_VERSION: '${{ inputs.version_secrets }}'
         if: ${{ inputs.sops_enabled == true || inputs.sops_enabled == 'true' }}
         run: |
-          curl -O -L -C - "https://github.com/mozilla/sops/releases/download/$SOPS_VERSION/sops-$SOPS_VERSION.linux"
+          curl -O -L -C - "https://github.com/getsops/sops/releases/download/$SOPS_VERSION/sops-$SOPS_VERSION.linux"
           sudo mv "sops-$SOPS_VERSION.linux" /usr/local/bin/sops
           sudo chmod +x /usr/local/bin/sops
 
