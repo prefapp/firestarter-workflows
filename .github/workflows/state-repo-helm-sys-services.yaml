@@ -217,6 +217,7 @@ jobs:
         run: |
           echo "-- VALIDATE SOPS INSTALLATION --"
           which sops
+          helm secrets dec /home/runner/work/state-corpme/state-corpme/sys_services/datadog/predev/secrets.yaml
           echo "-- FINISH VALIDATING --"
 
           DIFF_FILE="/tmp/helmfile.md"
