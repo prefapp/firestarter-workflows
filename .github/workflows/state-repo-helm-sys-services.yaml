@@ -223,6 +223,7 @@ jobs:
         run: |
           echo "-- VALIDATE SOPS INSTALLATION --"
           which sops
+          cat `which sops`
           sops --version
           helm plugin list
           sops filestatus /home/runner/work/state-corpme/state-corpme/sys_services/datadog/predev/secrets.yaml
