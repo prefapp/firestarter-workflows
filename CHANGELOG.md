@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.11](https://github.com/prefapp/firestarter-workflows/compare/v2.6.10...v2.6.11) (2025-04-07)
+
+
+### Bug Fixes
+
+* [state-repo] Fix sops installation ([#186](https://github.com/prefapp/firestarter-workflows/issues/186)) ([aee6085](https://github.com/prefapp/firestarter-workflows/commit/aee60854e73d40ded3397211e8368da701fca689))
+
 ## [2.6.10](https://github.com/prefapp/firestarter-workflows/compare/v2.6.9...v2.6.10) (2025-02-03)
 
 
