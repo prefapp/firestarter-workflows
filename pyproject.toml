@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "firestarter-workflows"
-version = "2.6.11"
+version = "2.7.0"
 description = "Firestarter standard Dagger workflows"
 authors = ["Javier Gomez Rodriguez <javier.gomez@prefapp.es>"]
 readme = "README.md"

@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.7.0](https://github.com/prefapp/firestarter-workflows/compare/v2.6.11...v2.7.0) (2025-04-07)
+
+
+### Features
+
+* bump default feature versions ([#188](https://github.com/prefapp/firestarter-workflows/issues/188)) ([4572da8](https://github.com/prefapp/firestarter-workflows/commit/4572da87478c36d11d2f41fc55b7257223b47a14))
+
 ## [2.6.11](https://github.com/prefapp/firestarter-workflows/compare/v2.6.10...v2.6.11) (2025-04-07)
 
 
