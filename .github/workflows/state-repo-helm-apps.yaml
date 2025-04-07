@@ -23,11 +23,11 @@ on:
       version_kubectl:
         type: string
         required: false
-        default: '1.28.8'
+        default: "1.32.0"
       version_kubectl_release_date:
         type: string
         required: false
-        default: '2024-04-19'
+        default: "2024-12-20"
       version_kustomize:
         type: string
         required: false
@@ -35,15 +35,15 @@ on:
       version_helm:
         type: string
         required: false
-        default: 'v3.14.0'
+        default: "v3.16.4"
       version_helmfile:
         type: string
         required: false
-        default: 'v0.161.0'
+        default: 'v0.169.2'
       version_helm_diff_plugin:
         type: string
         required: false
-        default: 'v3.9.9'
+        default: 'v3.9.13'
       version_helm_s3-plugin:
         type: string
         required: false
@@ -51,11 +51,11 @@ on:
       version_secrets:
         type: string
         required: false
-        default: '4.4.2'
+        default: '4.6.2'
       version_sops:
         type: string
         required: false
-        default: 'v3.7.1'
+        default: 'v3.9.1'
 
 jobs:
   helm:
