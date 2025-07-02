@@ -18,7 +18,6 @@ on:
         type: string
         description: Flavor name/s | one (alone), several (separated by commas)
         default: "*"
-        required: true
       secrets:
         type: string
         description: Secrets to pass to the image
@@ -37,7 +36,9 @@ on:
         default: v2
     secrets:
       FS_CHECKS_PEM_FILE:
-        required: true
+        required: false
+      FIRESTARTR_GITHUB_APP_PEM_FILE:
+        required: false
       DOCKER_REGISTRY_SNAPSHOTS_CREDS:
         required: false
       DOCKER_REGISTRY_RELEASES_CREDS:
