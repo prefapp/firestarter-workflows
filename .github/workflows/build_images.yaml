@@ -69,7 +69,7 @@ jobs:
         uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ vars.FS_CHECKS_APP_ID || vars.FIRESTARTER_GITHUB_APP_ID }}
-          private-key: ${{ secrets.FS_CHECKS_PEM_FILE }}
+          private-key: ${{ secrets.FS_CHECKS_PEM_FILE || secrets.FIRESTARTR_GITHUB_APP_PEM_FILE }}
           owner: ${{ github.repository_owner }}
 
       - name: Init Check Run Summary
