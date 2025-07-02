@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.8.0](https://github.com/prefapp/firestarter-workflows/compare/v2.7.0...v2.8.0) (2025-07-02)
+
+
+### Features
+
+* [build_images] Use specific github app and feature maintaineance ([#190](https://github.com/prefapp/firestarter-workflows/issues/190)) ([55ecf04](https://github.com/prefapp/firestarter-workflows/commit/55ecf041b13285e7bb8d7f11174e98bfccbe6623))
+
 ## [2.7.0](https://github.com/prefapp/firestarter-workflows/compare/v2.6.11...v2.7.0) (2025-04-07)
 
 
