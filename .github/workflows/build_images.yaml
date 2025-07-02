@@ -18,7 +18,6 @@ on:
         type: string
         description: Flavor name/s | one (alone), several (separated by commas)
         default: "*"
-        required: true
       secrets:
         type: string
         description: Secrets to pass to the image
@@ -36,8 +35,10 @@ on:
         description: Git reference from where to pull the workflows_repo
         default: v2
     secrets:
+      FS_CHECKS_PEM_FILE:
+        required: false
       FIRESTARTR_GITHUB_APP_PEM_FILE:
-        required: true
+        required: false
       DOCKER_REGISTRY_SNAPSHOTS_CREDS:
         required: false
       DOCKER_REGISTRY_RELEASES_CREDS:
@@ -66,10 +67,10 @@ jobs:
 
       - name: Get Token from Github App
         id: get-gh-app-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v2
         with:
-          app-id: ${{ vars.FIRESTARTER_GITHUB_APP_ID }}
-          private-key: ${{ secrets.FIRESTARTR_GITHUB_APP_PEM_FILE }}
+          app-id: ${{ vars.FS_CHECKS_APP_ID || vars.FIRESTARTER_GITHUB_APP_ID }}
+          private-key: ${{ secrets.FS_CHECKS_PEM_FILE || secrets.FIRESTARTR_GITHUB_APP_PEM_FILE }}
           owner: ${{ github.repository_owner }}
 
       - name: Init Check Run Summary
@@ -83,7 +84,7 @@ jobs:
           op: 'init-check-run'
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         if: ${{ vars.AWS_OIDC_ECR_ROLE }}
         with:
           aws-region: ${{ vars.AWS_REGION }}
