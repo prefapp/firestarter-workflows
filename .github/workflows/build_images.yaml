@@ -36,7 +36,7 @@ on:
         description: Git reference from where to pull the workflows_repo
         default: v2
     secrets:
-      FIRESTARTR_GITHUB_APP_PEM_FILE:
+      FS_CHECKS_PEM_FILE:
         required: true
       DOCKER_REGISTRY_SNAPSHOTS_CREDS:
         required: false
@@ -68,8 +68,8 @@ jobs:
         id: get-gh-app-token
         uses: actions/create-github-app-token@v1
         with:
-          app-id: ${{ vars.FIRESTARTER_GITHUB_APP_ID }}
-          private-key: ${{ secrets.FIRESTARTR_GITHUB_APP_PEM_FILE }}
+          app-id: ${{ vars.FS_CHECKS_APP_ID }}
+          private-key: ${{ secrets.FS_CHECKS_PEM_FILE }}
           owner: ${{ github.repository_owner }}
 
       - name: Init Check Run Summary
