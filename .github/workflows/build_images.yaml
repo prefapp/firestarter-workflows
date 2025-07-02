@@ -66,7 +66,7 @@ jobs:
 
       - name: Get Token from Github App
         id: get-gh-app-token
-        uses: actions/create-github-app-token@v1
+        uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ vars.FS_CHECKS_APP_ID }}
           private-key: ${{ secrets.FS_CHECKS_PEM_FILE }}
@@ -83,7 +83,7 @@ jobs:
           op: 'init-check-run'
 
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         if: ${{ vars.AWS_OIDC_ECR_ROLE }}
         with:
           aws-region: ${{ vars.AWS_REGION }}
