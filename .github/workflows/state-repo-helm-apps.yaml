@@ -331,7 +331,6 @@ jobs:
 
       - name: Helm apply
         if:  ${{ inputs.operation == 'apply' }}
-
         run: |
 
           apps='${{ inputs.updated_apps }}'
@@ -344,7 +343,6 @@ jobs:
 
       - name: Helm apply
         if:  ${{ inputs.operation == 'delete' }}
-
         run: |
 
           apps='${{ inputs.updated_apps }}'
@@ -352,5 +350,5 @@ jobs:
 
           echo "$apps" | jq -r '.[]' | while read app; do
             cd ${{ github.workspace }}/$app
-            helmfile --environment ${{ inputs.environment }} uninstall
+            helmfile --environment ${{ inputs.environment }} destroy
           done
