@@ -342,7 +342,7 @@ jobs:
           done
 
       - name: Helm apply
-        if:  ${{ inputs.operation == 'delete' }}
+        if:  ${{ inputs.operation == 'destroy' }}
         run: |
 
           apps='${{ inputs.updated_apps }}'
