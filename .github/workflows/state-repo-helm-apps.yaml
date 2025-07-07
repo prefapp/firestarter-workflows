@@ -341,7 +341,7 @@ jobs:
             helmfile --environment ${{ inputs.environment }} apply
           done
 
-      - name: Helm apply
+      - name: Helm destroy
         if:  ${{ inputs.operation == 'destroy' }}
         run: |
 
@@ -350,5 +350,17 @@ jobs:
 
           echo "$apps" | jq -r '.[]' | while read app; do
             cd ${{ github.workspace }}/$app
+
+            namespaces=$(helmfile --log-level error --environment ${{ inputs.environment }} list --output json | jq '.[].namespace')
             helmfile --environment ${{ inputs.environment }} destroy
+
+            echo $namespaces | while read ns; do
+              manifests=$(kubectl get all --namespace "$ns"  -o name)
+                if [ -n "$manifests" ]; then
+                  kubectl delete -n "$ns"
+                else
+                  echo "::warning::Could not delete namespace $ns, there are still resources in it."
+                fi;
+            done
+
           done
