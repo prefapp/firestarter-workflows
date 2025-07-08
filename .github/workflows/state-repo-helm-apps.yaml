@@ -352,14 +352,14 @@ jobs:
             cd ${{ github.workspace }}/$app
 
             namespaces=$(helmfile --log-level error --environment ${{ inputs.environment }} list --output json | jq '.[].namespace')
-            helmfile --environment ${{ inputs.environment }} destroy
+            helmfile --environment ${{ inputs.environment }} destroy --deleteWait 
 
             echo $namespaces | while read ns; do
               manifests=$(kubectl get all --namespace "$ns"  -o name)
                 if [ -n "$manifests" ]; then
                   kubectl delete -n "$ns"
                 else
-                  echo "::warning::Could not delete namespace $ns, there are still resources in it."
+                  echo "::warning::Could not delete namespace $ns, there are still resources in it.\n${manifests}"
                 fi;
             done
 
