@@ -352,7 +352,7 @@ jobs:
             cd ${{ github.workspace }}/$app
 
             namespaces=$(helmfile --log-level error --environment ${{ inputs.environment }} list --output json | jq -r '.[].namespace')
-            helmfile --environment ${{ inputs.environment }} destroy --deleteWait 
+            helmfile --environment ${{ inputs.environment }} destroy --deleteWait --cascade foreground
 
             echo $namespaces | while read ns; do
               echo "Processing namespace ${ns}..."
