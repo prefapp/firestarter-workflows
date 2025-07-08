@@ -359,7 +359,7 @@ jobs:
               manifests=$(kubectl get all --namespace "$ns"  -o name | xargs)
                 # Remove whitespace from manifests to avoid issues with empty lines
                 if [[ $(echo "$manifests" | awk '{print NF}') -eq 0 ]]; then
-                  kubectl delete -n "$ns"
+                  kubectl delete ns "$ns"
                 else
                   echo "::warning::Could not delete namespace $ns, there are still resources in it."
                   echo -n ${manifests} | xargs -I {} echo "::warning::  - {}"
