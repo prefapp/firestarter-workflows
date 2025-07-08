@@ -355,8 +355,8 @@ jobs:
             helmfile --environment ${{ inputs.environment }} destroy --deleteWait 
 
             echo $namespaces | while read ns; do
-              manifests=$(kubectl get all --namespace "$ns"  -o name)
-                if [ -n "$manifests" ]; then
+              manifests=$(kubectl get all --namespace "$ns"  -o name | xargs)
+                if [ -n "${manifests}" ]; then
                   kubectl delete -n "$ns"
                 else
                   echo "Found manifests: ${manifests}"
