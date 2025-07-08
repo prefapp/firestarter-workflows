@@ -360,9 +360,8 @@ jobs:
                   kubectl delete -n "$ns"
                 else
                   echo "Found manifests: ${manifests}"
-                  echo "::warning::Could not delete namespace $ns, there are still resources in it.
-                  ${manifests}
-                  "
+                  echo "::warning::Could not delete namespace $ns, there are still resources in it."
+                  echo -n ${manifests} | xargs -I {} echo "::warning::  - {}"
                 fi;
             done
 
