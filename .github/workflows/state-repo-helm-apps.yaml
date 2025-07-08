@@ -351,7 +351,7 @@ jobs:
           echo "$apps" | jq -r '.[]' | while read app; do
             cd ${{ github.workspace }}/$app
 
-            namespaces=$(helmfile --log-level error --environment ${{ inputs.environment }} list --output json | jq '.[].namespace')
+            namespaces=$(helmfile --log-level error --environment ${{ inputs.environment }} list --output json | jq -r '.[].namespace')
             helmfile --environment ${{ inputs.environment }} destroy --deleteWait 
 
             echo $namespaces | while read ns; do
