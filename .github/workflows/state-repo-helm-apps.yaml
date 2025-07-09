@@ -361,7 +361,10 @@ jobs:
                 if [[ $(echo "$manifests" | awk '{print NF}') -eq 0 ]]; then
                   kubectl delete ns $ns
                 else
-                  echo -n ${manifests} | xargs -I {} echo "::warning:: Found object in ${ns}:  {}"
+                  # Replace newlines with %0A to avoid issues with multiline output
+                  manifests=$(echo "$manifests" | sed ':a;N;$!ba;s/\n/%0A/g')
+                  # Print the warning message with the namespace and manifests
+                  echo "::warning file=destroy-helm-apps, line=1::Found objects in namespace ${ns}: %0A${manifests}"
                 fi;
             done
 
