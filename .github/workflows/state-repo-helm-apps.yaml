@@ -361,8 +361,7 @@ jobs:
                 if [[ $(echo "$manifests" | awk '{print NF}') -eq 0 ]]; then
                   kubectl delete ns $ns
                 else
-                  echo "::warning::Could not delete namespace $ns, there are still resources in it."
-                  echo -n ${manifests} | xargs -I {} echo "::warning::  - {}"
+                  echo -n ${manifests} | xargs -I {} echo "::warning:: Found object in ${ns}:  {}"
                 fi;
             done
 
