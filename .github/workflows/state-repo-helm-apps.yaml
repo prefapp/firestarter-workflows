@@ -352,7 +352,7 @@ jobs:
             cd ${{ github.workspace }}/$app
 
             namespaces=$(helmfile --log-level error --environment ${{ inputs.environment }} list --output json | jq -r '.[].namespace')
-            helmfile --environment ${{ inputs.environment }} destroy --deleteWait --cascade foreground
+            helmfile --environment ${{ inputs.environment }} destroy
 
             echo $namespaces | while read ns; do
               echo "::info::Namespace ${ns} was not deleted, remember to delete it manually if needed."

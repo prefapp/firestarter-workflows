@@ -2,9 +2,9 @@ name: State repo helm
 on:
   workflow_call:
     inputs:
-      apply:
+      operation:
         required: true
-        type: boolean
+        type: string
       environment:
         required: true
         type: string
@@ -206,7 +206,7 @@ jobs:
           helm plugin install --version ${HELM_SECRETS_VERSION} https://github.com/jkroepke/helm-secrets
 
       - name: Helm diff
-        if: ${{ inputs.apply == false || inputs.apply == 'false' }}
+        if:  ${{ inputs.operation == 'diff' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -260,14 +260,14 @@ jobs:
 
       - name: Delete comments
         uses: prefapp/action-delete-pr-comments@v1
-        if: ${{ inputs.apply == false || inputs.apply == 'false' }}
+        if:  ${{ inputs.operation == 'diff' }}
         env:
           DEBUG: '*'
         with:
           filter: "Helm diff in env: ${{ inputs.environment }}"
 
       - name: Add comment
-        if: ${{ inputs.apply == false || inputs.apply == 'false' }}
+        if:  ${{ inputs.operation == 'diff' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -280,18 +280,35 @@ jobs:
           fi
 
       - name: Helm apply
-        if: ${{ inputs.apply == true || inputs.apply == 'true' }}
+        if:  ${{ inputs.operation == 'apply' }}
+        working-directory: ${{ github.workspace }}/sys_services
         run: |
 
           apps='${{ inputs.updated_apps }}'
-
-          cd ${{ github.workspace }}/sys_services
-
-          echo $apps
 
           echo "$apps" | jq -r '.[]' | while read app; do
 
             appname=$(echo $app | awk -F"/" '{print $NF}')
             helmfile --environment ${{ inputs.environment }}  --selector release=$appname apply
+
+          done
+
+      - name: Helm destroy
+        if:  ${{ inputs.operation == 'destroy' }}
+        working-directory: ${{ github.workspace }}/sys_services
+        run: |
+
+          apps='${{ inputs.updated_apps }}'
+
+          echo "$apps" | jq -r '.[]' | while read app; do
+            cd ${{ github.workspace }}/$app
+
+            namespaces=$(helmfile --environment ${{ inputs.environment }}  --selector release=$appname list --output json | jq -r '.[].namespace')
+            helmfile --environment ${{ inputs.environment }}  --selector release=$appname destroy
+            echo $namespaces | while read ns; do
+              echo "::warning::Namespace ${ns} was not deleted, remember to delete it manually if needed."
+              echo 'Run the command below to check if there are any resources left in the namespace:
+                kubectl api-resources --verbs=list --namespaced -o name  | xargs -n 1 kubectl get --ignore-not-found -n "$ns" -o name'
+            done
 
           done
