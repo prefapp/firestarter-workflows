@@ -355,7 +355,7 @@ jobs:
             helmfile --environment ${{ inputs.environment }} destroy
 
             echo $namespaces | while read ns; do
-              echo "::info::Namespace ${ns} was not deleted, remember to delete it manually if needed."
+              echo "::warning::Namespace ${ns} was not deleted, remember to delete it manually if needed."
               echo 'Run the command below to check if there are any resources left in the namespace:
                 kubectl api-resources --verbs=list --namespaced -o name  | xargs -n 1 kubectl get --ignore-not-found -n "$ns" -o name'
             done
