@@ -209,10 +209,9 @@ jobs:
         if:  ${{ inputs.operation == 'diff' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: ${{ github.workspace }}/sys_services
         run: |
           DIFF_FILE="/tmp/helmfile.md"
-
-          cd ${{ github.workspace }}/sys_services
 
           apps='${{ inputs.updated_apps }}'
 
@@ -301,7 +300,6 @@ jobs:
           apps='${{ inputs.updated_apps }}'
 
           echo "$apps" | jq -r '.[]' | while read app; do
-            cd ${{ github.workspace }}/$app
 
             namespaces=$(helmfile --environment ${{ inputs.environment }}  --selector release=$appname list --output json | jq -r '.[].namespace')
             helmfile --environment ${{ inputs.environment }}  --selector release=$appname destroy
