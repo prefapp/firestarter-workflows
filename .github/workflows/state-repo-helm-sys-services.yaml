@@ -266,7 +266,7 @@ jobs:
           filter: "Helm diff in env: ${{ inputs.environment }}"
 
       - name: Add comment
-        if:  ${{ inputs.operation == 'diff' }}
+        if: ${{ inputs.operation == 'diff' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
