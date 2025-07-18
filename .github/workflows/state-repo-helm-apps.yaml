@@ -298,7 +298,7 @@ jobs:
           <summary><h2> Helm diff in env: ${{ inputs.environment }}, app: $appname</h2></summary>
 
             \`\`\`diff
-            $(echo "$diff_output" | sed 's/^/  /')
+            ${diff_output//#/\  }
             \`\`\`
           </details>
           EOF
@@ -353,7 +353,7 @@ jobs:
             namespaces=$(helmfile --log-level error --environment "${{ inputs.environment }}" list --output json | jq -r '.[].namespace')
             helmfile --environment "${{ inputs.environment }}" destroy
 
-            echo $namespaces | while read -r ns; do
+            echo "$namespaces" | while read -r ns; do
               echo "::warning::Namespace ${ns} was not deleted, remember to delete it manually if needed."
               echo -e "Run the command below to check if there are any resources left in the namespace: \nkubectl api-resources --verbs=list --namespaced -o name  | xargs -n 1 kubectl get --ignore-not-found -n \"$ns\" -o name"
             done
