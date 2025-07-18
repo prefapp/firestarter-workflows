@@ -279,7 +279,7 @@ jobs:
           fi
 
       - name: Helm apply
-        if:  ${{ inputs.operation == 'apply' }}
+        if: ${{ inputs.operation == 'apply' }}
         working-directory: ${{ github.workspace }}/sys_services
         run: |
 
