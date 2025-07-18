@@ -344,7 +344,6 @@ jobs:
       - name: Helm destroy
         if:  ${{ inputs.operation == 'destroy' }}
         run: |
-
           apps='${{ inputs.updated_apps }}'
           echo "$apps"
 
