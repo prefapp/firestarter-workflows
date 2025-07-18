@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/prefapp/firestarter-workflows/compare/v2.8.0...v3.0.0) (2025-07-18)
+
+
+### ⚠ BREAKING CHANGES
+
+* [`state-repo-helm-apps`] Refactor state-repo workflows to allow a new `operation` input ([#193](https://github.com/prefapp/firestarter-workflows/issues/193))
+
+### Features
+
+* [`state-repo-helm-apps`] Refactor state-repo workflows to allow a new `operation` input ([#193](https://github.com/prefapp/firestarter-workflows/issues/193)) ([b69d104](https://github.com/prefapp/firestarter-workflows/commit/b69d10482ae7a47c545fdc4ec8945aed0189552b))
+
 ## [2.8.0](https://github.com/prefapp/firestarter-workflows/compare/v2.7.0...v2.8.0) (2025-07-02)
 
 
