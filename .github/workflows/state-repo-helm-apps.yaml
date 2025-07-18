@@ -261,7 +261,7 @@ jobs:
                 yaml.dump(dict_file, yamlfile, default_style = '|')
 
       - name: Helm diff
-        if:  ${{ inputs.operation == 'diff' }}
+        if: ${{ inputs.operation == 'diff' }}
         run: |
           DIFF_FILE="/tmp/helmfile.md"
 
