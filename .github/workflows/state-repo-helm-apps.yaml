@@ -330,7 +330,7 @@ jobs:
           fi
 
       - name: Helm apply
-        if:  ${{ inputs.operation == 'apply' }}
+        if: ${{ inputs.operation == 'apply' }}
         run: |
 
           apps='${{ inputs.updated_apps }}'
