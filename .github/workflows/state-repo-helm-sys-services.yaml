@@ -240,12 +240,14 @@ jobs:
                 diff_output="⚠️ Warning: Diff exceeds maximum allowed characters, review locally";
               fi
 
+              # shellcheck disable=SC2001
+              diff_output_formatted=$(echo "$diff_output" | sed 's/^/  /')
               cat <<EOF >> $DIFF_FILE
           <details>
           <summary><h2> Helm diff in env: ${{ inputs.environment }}, app: $appname </h2></summary>
 
             \`\`\`diff
-            ${diff_output//#/\  }
+            ${diff_output_formatted}
             \`\`\`
           </details>
 
