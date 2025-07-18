@@ -2,9 +2,9 @@ name: State repo helm
 on:
   workflow_call:
     inputs:
-      apply:
+      operation:
         required: true
-        type: boolean
+        type: string
       environment:
         required: true
         type: string
@@ -69,10 +69,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: '20.x'
 
       - run: npm install js-yaml
 
@@ -157,7 +153,7 @@ jobs:
         run: |
             registries='${{ toJSON(fromJSON(steps.parse_config.outputs.result).helm_registries) }}'
 
-            echo "$registries" | jq -r '.[]' | while read registry; do
+            echo "$registries" | jq -r '.[]' | while read -r registry; do
               echo "Login in $registry"
               aws ecr get-login-password --region ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).region }} | helm registry login --username AWS --password-stdin "$registry"
             done
@@ -191,10 +187,10 @@ jobs:
         run: |
           registries='${{ toJSON(fromJSON(steps.parse_config.outputs.result).helm_registries) }}'
 
-          echo "$registries" | jq -r '.[]' | while read registry; do
+          echo "$registries" | jq -r '.[]' | while read -r registry; do
             echo "Login in $registry"
-            token=$(az acr login --name $registry --expose-token --output tsv --query accessToken) && \
-            echo $token | helm registry login $registry -u 00000000-0000-0000-0000-000000000000 --password-stdin
+            token=$(az acr login --name "$registry" --expose-token --output tsv --query accessToken) && \
+            echo "$token" | helm registry login "$registry" -u 00000000-0000-0000-0000-000000000000 --password-stdin
           done
 
       # Helm logic
@@ -212,7 +208,7 @@ jobs:
           sudo mv "sops-$SOPS_VERSION.linux.amd64" /usr/bin/sops
           sudo chmod +x /usr/bin/sops
 
-          helm plugin install --version ${HELM_SECRETS_VERSION} https://github.com/jkroepke/helm-secrets
+          helm plugin install --version "${HELM_SECRETS_VERSION}" https://github.com/jkroepke/helm-secrets
 
       - uses: actions/setup-python@v5
         with:
@@ -265,17 +261,17 @@ jobs:
                 yaml.dump(dict_file, yamlfile, default_style = '|')
 
       - name: Helm diff
-        if:  ${{ inputs.apply == false || inputs.apply == 'false' }}
+        if: ${{ inputs.operation == 'diff' }}
         run: |
           DIFF_FILE="/tmp/helmfile.md"
 
           apps='${{ inputs.updated_apps }}'
 
-          echo $apps
+          echo "$apps"
 
-          echo "$apps" | jq -r '.[]' | while read app; do
+          echo "$apps" | jq -r '.[]' | while read -r app; do
 
-            cd ${{ github.workspace }}/$app
+            cd "${{ github.workspace }}/$app"
 
             helmfile --environment ${{ inputs.environment }} template > /tmp/manifests.yml
 
@@ -287,22 +283,24 @@ jobs:
             fi
 
             # Verify the app exists or if it is the first time it's been applied
-            appname=$(echo $app | awk -F"/" '{print $NF}')
+            appname=$(echo "$app" | awk -F"/" '{print $NF}')
 
-            releases_found=`helmfile --environment ${{ inputs.environment }} list | awk '$4 == "true"' | wc -l`
-            if [ $releases_found -gt 0 ]; then
-              diff_output=`helmfile --environment ${{ inputs.environment }} diff --context 5 | grep --color=never "\S"`
+            releases_found=$(helmfile --environment ${{ inputs.environment }} list | awk '$4 == "true"' | wc -l)
+            if [ "$releases_found" -gt 0 ]; then
+              diff_output=$(helmfile --environment ${{ inputs.environment }} diff --context 5 | grep --color=never "\S")
 
               if [ ${#diff_output} -ge 65000 ]; then
                 diff_output="⚠️ Warning: Diff exceeds maximum allowed characters, review locally";
               fi
-
+              
+              # shellcheck disable=SC2001
+              diff_output_formatted=$(echo "$diff_output" | sed 's/^/  /')
               cat <<EOF >> $DIFF_FILE
           <details>
           <summary><h2> Helm diff in env: ${{ inputs.environment }}, app: $appname</h2></summary>
 
             \`\`\`diff
-            $(echo "$diff_output" | sed 's/^/  /')
+            ${diff_output_formatted}
             \`\`\`
           </details>
           EOF
@@ -314,14 +312,14 @@ jobs:
 
       - name: Delete comments
         uses: prefapp/action-delete-pr-comments@v1
-        if: ${{ inputs.apply == false || inputs.apply == 'false' }}
+        if: ${{ inputs.operation == 'diff' }}
         env:
           DEBUG: '*'
         with:
           filter: "Helm diff in env: ${{ inputs.environment }}"
 
       - name: Add comment
-        if: ${{ inputs.apply == false || inputs.apply == 'false' }}
+        if: ${{ inputs.operation == 'diff' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -334,13 +332,32 @@ jobs:
           fi
 
       - name: Helm apply
-        if: ${{ inputs.apply == true || inputs.apply == 'true' }}
+        if: ${{ inputs.operation == 'apply' }}
         run: |
 
           apps='${{ inputs.updated_apps }}'
-          echo $apps
+          echo "$apps"
 
-          echo "$apps" | jq -r '.[]' | while read app; do
-            cd ${{ github.workspace }}/$app
+          echo "$apps" | jq -r '.[]' | while read -r app; do
+            cd "${{ github.workspace }}/$app"
             helmfile --environment ${{ inputs.environment }} apply
+          done
+
+      - name: Helm destroy
+        if:  ${{ inputs.operation == 'destroy' }}
+        run: |
+          apps='${{ inputs.updated_apps }}'
+          echo "$apps"
+
+          echo "$apps" | jq -r '.[]' | while read -r app; do
+            cd "${{ github.workspace }}/$app"
+
+            namespaces=$(helmfile --log-level error --environment "${{ inputs.environment }}" list --output json | jq -r '.[].namespace')
+            helmfile --environment "${{ inputs.environment }}" destroy
+
+            echo "$namespaces" | while read -r ns; do
+              echo "::warning::Namespace ${ns} was not deleted, remember to delete it manually if needed."
+              echo -e "Run the command below to check if there are any resources left in the namespace: \nkubectl api-resources --verbs=list --namespaced -o name  | xargs -n 1 kubectl get --ignore-not-found -n \"$ns\" -o name"
+            done
+
           done
