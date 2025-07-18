@@ -310,7 +310,7 @@ jobs:
 
       - name: Delete comments
         uses: prefapp/action-delete-pr-comments@v1
-        if:  ${{ inputs.operation == 'diff' }}
+        if: ${{ inputs.operation == 'diff' }}
         env:
           DEBUG: '*'
         with:
