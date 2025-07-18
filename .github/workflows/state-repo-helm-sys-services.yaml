@@ -296,7 +296,6 @@ jobs:
         if:  ${{ inputs.operation == 'destroy' }}
         working-directory: ${{ github.workspace }}/sys_services
         run: |
-
           apps='${{ inputs.updated_apps }}'
 
           echo "$apps" | jq -r '.[]' | while read -r app; do
