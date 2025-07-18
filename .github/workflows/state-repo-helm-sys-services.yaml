@@ -206,7 +206,7 @@ jobs:
           helm plugin install --version "${HELM_SECRETS_VERSION}" https://github.com/jkroepke/helm-secrets
 
       - name: Helm diff
-        if:  ${{ inputs.operation == 'diff' }}
+        if: ${{ inputs.operation == 'diff' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         working-directory: ${{ github.workspace }}/sys_services
