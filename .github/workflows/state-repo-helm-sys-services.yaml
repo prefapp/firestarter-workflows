@@ -217,8 +217,6 @@ jobs:
 
           echo "$apps"
 
-          ls
-
           echo "$apps" | jq -r '.[]' | while read -r app; do
 
             cd $app
