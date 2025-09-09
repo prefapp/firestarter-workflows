@@ -209,7 +209,7 @@ jobs:
         if: ${{ inputs.operation == 'diff' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        working-directory: ${{ github.workspace }}/sys_services
+        working-directory: ${{ github.workspace }}
         run: |
           DIFF_FILE="/tmp/helmfile.md"
 
@@ -286,7 +286,7 @@ jobs:
 
       - name: Helm apply
         if: ${{ inputs.operation == 'apply' }}
-        working-directory: ${{ github.workspace }}/sys_services
+        working-directory: ${{ github.workspace }}
         run: |
 
           apps='${{ inputs.updated_apps }}'
@@ -304,7 +304,7 @@ jobs:
 
       - name: Helm destroy
         if:  ${{ inputs.operation == 'destroy' }}
-        working-directory: ${{ github.workspace }}/sys_services
+        working-directory: ${{ github.workspace }}
         run: |
           apps='${{ inputs.updated_apps }}'
 
@@ -314,8 +314,8 @@ jobs:
 
             appname=$(echo "$app" | awk -F"/" '{print $NF}')
 
-            namespaces=$(helmfile --environment "${{ inputs.environment }}"  --selector release="$appname" list --output json | jq -r '.[].namespace')
-            helmfile --environment "${{ inputs.environment }}"  --selector release="$appname" destroy
+            namespaces=$(helmfile --environment "${{ inputs.environment }}" list --output json | jq -r '.[].namespace')
+            helmfile --environment "${{ inputs.environment }}" destroy
             echo "$namespaces" | while read -r ns; do
               echo "::warning::Namespace ${ns} was not deleted, remember to delete it manually if needed."
               echo -e "Run the command below to check if there are any resources left in the namespace:\nkubectl api-resources --verbs=list --namespaced -o name  | xargs -n 1 kubectl get --ignore-not-found -n \"$ns\" -o name"
