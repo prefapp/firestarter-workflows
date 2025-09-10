@@ -218,9 +218,7 @@ jobs:
           echo "$apps"
 
           echo "$apps" | jq -r '.[]' | while read -r app; do
-
-            ls
-
+          
             cd $app
 
             helmfile --environment "${{ inputs.environment }}" template > /tmp/manifests.yml
