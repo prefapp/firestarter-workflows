@@ -219,6 +219,8 @@ jobs:
 
           echo "$apps" | jq -r '.[]' | while read -r app; do
 
+            ls
+
             cd $app
 
             helmfile --environment "${{ inputs.environment }}" template > /tmp/manifests.yml
@@ -298,7 +300,7 @@ jobs:
             appname=$(echo "$app" | awk -F"/" '{print $NF}')
             helmfile --environment "${{ inputs.environment }}" apply
 
-            cd app
+            cd ..
 
           done
 
