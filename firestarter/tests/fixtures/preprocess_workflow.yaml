@@ -1,6 +1,0 @@
-a:
-  value: ${{ secrets.SECRET1}}
-b:
-  - name: ${{env.SHELL }}
-    value: ${{vars.VALUE}}
-
