@@ -231,7 +231,7 @@ jobs:
             releases_found=$(helm list -A -o json | jq "map(select(.name == \"$appname\" )) | length")
 
             if [ "$releases_found" -gt 0 ]; then
-              diff_output=$(helmfile --environment "${{ inputs.environment }}" diff --detailed-exitcode --context 5 | grep --color=never "\S")
+              diff_output=$(helmfile --file "$app" --environment "${{ inputs.environment }}" diff --detailed-exitcode --context 5 | grep --color=never "\S")
 
               if [ ${#diff_output} -ge 65000 ]; then
                 diff_output="⚠️ Warning: Diff exceeds maximum allowed characters, review locally";
