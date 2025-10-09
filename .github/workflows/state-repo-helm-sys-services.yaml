@@ -215,13 +215,9 @@ jobs:
 
           apps='${{ inputs.updated_apps }}'
 
-          echo "$apps"
-
           echo "$apps" | jq -r '.[]' | while read -r app; do
-          
-            cd $app
 
-            helmfile --environment "${{ inputs.environment }}" template > /tmp/manifests.yml
+            helmfile --file $app --environment "${{ inputs.environment }}" template > /tmp/manifests.yml
 
             if [ -z /tmp/manifests.yml ]; then
               kubectl apply -f /tmp/manifests.yml --dry-run=server
@@ -259,8 +255,6 @@ jobs:
               echo 'Installing for the first time'
             fi
 
-            cd -
-
           done
 
       - name: Delete comments
@@ -292,13 +286,9 @@ jobs:
           apps='${{ inputs.updated_apps }}'
 
           echo "$apps" | jq -r '.[]' | while read -r app; do
-
-            cd $app
-
+          
             appname=$(echo "$app" | awk -F"/" '{print $NF}')
-            helmfile --environment "${{ inputs.environment }}" apply
-
-            cd -
+            helmfile --file $app --environment "${{ inputs.environment }}" apply
 
           done
 
@@ -310,17 +300,13 @@ jobs:
 
           echo "$apps" | jq -r '.[]' | while read -r app; do
 
-            cd $app
-
             appname=$(echo "$app" | awk -F"/" '{print $NF}')
 
             namespaces=$(helmfile --environment "${{ inputs.environment }}" list --output json | jq -r '.[].namespace')
-            helmfile --environment "${{ inputs.environment }}" destroy
+            helmfile --file $app --environment "${{ inputs.environment }}" destroy
             echo "$namespaces" | while read -r ns; do
               echo "::warning::Namespace ${ns} was not deleted, remember to delete it manually if needed."
               echo -e "Run the command below to check if there are any resources left in the namespace:\nkubectl api-resources --verbs=list --namespaced -o name  | xargs -n 1 kubectl get --ignore-not-found -n \"$ns\" -o name"
             done
-
-            cd -
 
           done
