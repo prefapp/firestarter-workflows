@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.1.0](https://github.com/prefapp/firestarter-workflows/compare/v3.0.0...v3.1.0) (2025-10-17)
+
+
+### Features
+
+* Adapt workflow to split helmfile ([#196](https://github.com/prefapp/firestarter-workflows/issues/196)) ([a080300](https://github.com/prefapp/firestarter-workflows/commit/a0803008730f145575704895c13cc33b787836f3))
+
+
+### Bug Fixes
+
+* release-please workflow ([3ea6c6d](https://github.com/prefapp/firestarter-workflows/commit/3ea6c6dd8642c8c0c019a4518d0f06db50f943bf))
+
 ## [3.0.0](https://github.com/prefapp/firestarter-workflows/compare/v2.8.0...v3.0.0) (2025-07-18)
 
 
