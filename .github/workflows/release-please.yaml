@@ -7,13 +7,12 @@ on:
 jobs:
   release-please:
     name: Release Please Manifest
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-      - uses: google-github-actions/release-please-action@v4
+      - uses: googleapis/release-please-action@v4
         id: release
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          target-branch: main
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
           release-type: python
