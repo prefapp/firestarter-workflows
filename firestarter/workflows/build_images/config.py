@@ -22,6 +22,7 @@ class Image:
     build_args: dict = field(default_factory=dict)
     secrets: dict = field(default_factory=dict)
     dockerfile: str = field(default="Dockerfile")
+    extra_tags: list = field(default_factory=list)
 
     @classmethod
     def from_dict(cls: t.Type["Image"], obj: dict):
@@ -31,6 +32,7 @@ class Image:
             registry=obj.get("registry"),
             extra_registries=obj.get("extra_registries"),
             build_args=obj.get("build_args"),
+            extra_tags=obj.get("extra_tags", []),
             secrets=obj.get("secrets"),
             dockerfile=obj.get("dockerfile"),
         )
@@ -42,6 +44,7 @@ class Image:
             "registry": self.registry,
             "extra_registries": self.extra_registries,
             "build_args": self.build_args,
+            "extra_tags": self.extra_tags,
             "secrets": self.secrets,
             "dockerfile": self.dockerfile,
         }

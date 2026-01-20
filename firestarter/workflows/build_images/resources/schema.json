@@ -10,7 +10,7 @@
           "properties": {
             "dockerfile": {
               "type": "string",
-              "pattern": ".+" 
+              "pattern": ".+"
             },
             "auto": {
               "type": "boolean"
@@ -20,11 +20,11 @@
             },
             "build_args": {
               "type": "object",
-              "additionalProperties": true 
+              "additionalProperties": true
             },
             "secrets": {
               "type": "object",
-              "additionalProperties": true 
+              "additionalProperties": true
             },
             "registry": {
               "type": "object",
@@ -66,15 +66,22 @@
                   }
                 },
                 "required": ["name", "repository", "auth_strategy"],
-                "additionalProperties": false 
+                "additionalProperties": false
+              }
+            },
+            "extra_tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": ".+"
               }
             }
           },
-          "required": ["dockerfile"], 
-          "additionalProperties": false 
+          "required": ["dockerfile"],
+          "additionalProperties": false
         }
       },
-      "minProperties": 1 
+      "minProperties": 1
     },
     "releases": {
       "type": "object",
@@ -84,7 +91,7 @@
           "properties": {
             "dockerfile": {
               "type": "string",
-              "pattern": ".+" 
+              "pattern": ".+"
             },
             "auto": {
               "type": "boolean"
@@ -94,11 +101,11 @@
             },
             "build_args": {
               "type": "object",
-              "additionalProperties": true 
+              "additionalProperties": true
             },
             "secrets": {
               "type": "object",
-              "additionalProperties": true 
+              "additionalProperties": true
             },
             "registry": {
               "type": "object",
@@ -113,7 +120,7 @@
                 },
                 "auth_strategy": {
                   "type": "string",
-                  "enum": ["azure_oidc"] 
+                  "enum": ["azure_oidc"]
                 }
               },
               "additionalProperties": false,
@@ -139,24 +146,24 @@
                   },
                   "auth_strategy": {
                     "type": "string",
-                    "enum": ["azure_oidc", "aws_oidc"] 
+                    "enum": ["azure_oidc", "aws_oidc"]
                   }
                 },
                 "required": ["name", "repository", "auth_strategy"],
-                "additionalProperties": false 
+                "additionalProperties": false
               }
             }
           },
-          "required": ["dockerfile"],  
-          "additionalProperties": false  
+          "required": ["dockerfile"],
+          "additionalProperties": false
         }
       },
-      "minProperties": 1  
+      "minProperties": 1
     }
   },
   "anyOf": [
     {"required": ["snapshots"]},
     {"required": ["releases"]}
   ],
-  "additionalProperties": false  
+  "additionalProperties": false
 }

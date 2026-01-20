@@ -352,7 +352,7 @@ class BuildImages(FirestarterWorkflow):
 
             for flavor in self.flavors:
                 registry, full_repo_name, build_args,\
-                        dockerfile, extra_registries = self.get_flavor_data(flavor)
+                        dockerfile, extra_registries, extra_tags = self.get_flavor_data(flavor)
 
                 # Set the build arguments for the current flavor
                 build_args_list = [
@@ -391,6 +391,14 @@ class BuildImages(FirestarterWorkflow):
                 # Create a list of addresses for all registries
                 registry_list = [full_registry_address]
 
+                # Add extra tags
+                for extra_tag in extra_tags:
+                    extra_full_registry_address = (
+                        f"{registry_address}:"
+                        f"{normalize_image_tag(extra_tag)}"
+                    )
+                    registry_list.append(extra_full_registry_address)
+
                 for extra_registry in extra_registries:
                     extra_registry_address = (
                         f"{extra_registry['name']}/"
@@ -401,6 +409,14 @@ class BuildImages(FirestarterWorkflow):
                         f"{normalize_image_tag(self.from_version + '_' + flavor)}"
                     )
                     registry_list.append(extra_full_registry_address)
+
+                    # Add extra tags
+                    for extra_tag in extra_tags:
+                        extra_full_registry_address = (
+                            f"{extra_registry_address}:"
+                            f"{normalize_image_tag(extra_tag)}"
+                        )
+                        registry_list.append(extra_full_registry_address)
 
                 for image in registry_list:
                     await self.compile_image_and_publish(
@@ -441,13 +457,15 @@ class BuildImages(FirestarterWorkflow):
         build_args = flavor_data.build_args or {}
         dockerfile = flavor_data.dockerfile or ""
         extra_registries = flavor_data.extra_registries or []
+        extra_tags = flavor_data.extra_tags or []
 
         return (
             flavor_registry_data["name"],
             flavor_registry_data["full_repo_name"],
             build_args,
             dockerfile,
-            extra_registries
+            extra_registries,
+            extra_tags
         )
 
     def get_flavor_registry_data(self, flavor_data):
