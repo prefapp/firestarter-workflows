@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from jsonschema import ValidationError, SchemaError
 from firestarter.common.validations import validate_config
-from firestarter.common.validations import validate_extra_tags
+from firestarter.common.validations import validate_config_extra_tags
 import logging
 
 logger = logging.getLogger(__name__)
