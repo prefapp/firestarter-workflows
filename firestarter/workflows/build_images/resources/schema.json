@@ -75,9 +75,17 @@
                 "type": "string",
                 "pattern": ".+"
               }
+            },
+            "platforms": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^(linux/)?(amd64|arm64)$"
+              },
+              "minItems": 1
             }
           },
-          "required": ["dockerfile"],
+          "required": ["dockerfile", "platforms"],
           "additionalProperties": false
         }
       },
@@ -159,9 +167,17 @@
                 "type": "string",
                 "pattern": ".+"
               }
+            },
+            "platforms": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^(linux/)?(amd64|arm64)$"
+              },
+              "minItems": 1
             }
           },
-          "required": ["dockerfile"],
+          "required": ["dockerfile", "platforms"],
           "additionalProperties": false
         }
       },

@@ -304,7 +304,7 @@ class BuildImages(FirestarterWorkflow):
 
     # Define a coroutine function to compile an image using Docker
     async def compile_image_and_publish(
-        self, ctx, build_args, secrets, dockerfile, image
+        self, ctx, build_args, secrets, dockerfile, image, platform
     ):
         # Set a current working directory
         src = ctx.host().directory(".")
@@ -312,7 +312,7 @@ class BuildImages(FirestarterWorkflow):
         logger.info(f"Using secrets: {secrets}")
 
         ctx = (
-            ctx.container()
+            ctx.container(platform=platform)
                 .build(
                     context=src,
                     dockerfile=dockerfile,
@@ -352,7 +352,8 @@ class BuildImages(FirestarterWorkflow):
 
             for flavor in self.flavors:
                 registry, full_repo_name, build_args,\
-                        dockerfile, extra_registries, extra_tags = self.get_flavor_data(flavor)
+                        dockerfile, extra_registries,\
+                        extra_tags, platforms = self.get_flavor_data(flavor)
 
                 # Set the build arguments for the current flavor
                 build_args_list = [
@@ -418,31 +419,33 @@ class BuildImages(FirestarterWorkflow):
                         )
                         registry_list.append(extra_full_registry_address)
 
-                for image in registry_list:
-                    await self.compile_image_and_publish(
-                        client,
-                        build_args_list,
-                        secrets,
-                        dockerfile,
-                        image
-                    )
+                for platform in platforms:
+                    for image in registry_list:
+                        await self.compile_image_and_publish(
+                            client,
+                            build_args_list,
+                            secrets,
+                            dockerfile,
+                            image,
+                            platform
+                        )
 
-                    image_tag = image.split(":")[1]
-                    registry = image.split(":")[0].split("/")[0]
-                    repository = "/".join(image.split(":")[0].split("/")[1:])
+                        image_tag = image.split(":")[1]
+                        registry = image.split(":")[0].split("/")[0]
+                        repository = "/".join(image.split(":")[0].split("/")[1:])
 
-                    results_list.append({
-                        "flavor": flavor,
-                        "image_type": self.type,
-                        "version": self.from_version,
-                        "image_repo": self.repo_name,
-                        "image_tag": image_tag,
-                        "repository": repository,
-                        "registry": registry,
-                        "build_args": build_args,
-                        "workflow_run_id": self.workflow_run_id,
-                        "workflow_run_url": self.workflow_run_url
-                    })
+                        results_list.append({
+                            "flavor": flavor,
+                            "image_type": self.type,
+                            "version": self.from_version,
+                            "image_repo": self.repo_name,
+                            "image_tag": image_tag,
+                            "repository": repository,
+                            "registry": registry,
+                            "build_args": build_args,
+                            "workflow_run_id": self.workflow_run_id,
+                            "workflow_run_url": self.workflow_run_url
+                        })
 
         yaml.default_flow_style = False
         with open(os.path.join("/tmp", self.output_results), "w") as f:
@@ -458,6 +461,7 @@ class BuildImages(FirestarterWorkflow):
         dockerfile = flavor_data.dockerfile or ""
         extra_registries = flavor_data.extra_registries or []
         extra_tags = flavor_data.extra_tags or []
+        platforms = flavor_data.platforms or []
 
         return (
             flavor_registry_data["name"],
@@ -465,7 +469,8 @@ class BuildImages(FirestarterWorkflow):
             build_args,
             dockerfile,
             extra_registries,
-            extra_tags
+            extra_tags,
+            platforms
         )
 
     def get_flavor_registry_data(self, flavor_data):
