@@ -416,7 +416,7 @@ def test_get_flavor_data() -> None:
     flavor_list = ["flavor1", "flavor3"]
 
     for flavor in flavor_list:
-        registry, full_repo_name, build_args, dockerfile, extra_registries =\
+        registry, full_repo_name, build_args, dockerfile, extra_registries, extra_tags =\
                 builder.get_flavor_data(flavor)
 
         assert registry == config_data["snapshots"][flavor]["registry"]["name"]

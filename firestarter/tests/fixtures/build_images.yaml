@@ -1,9 +1,9 @@
 snapshots:
   flavor1:
     dockerfile: "firestarter/tests/fixtures/Dockerfile"
-    auto: false 
+    auto: false
     build_args:
-      ARG1: value1 
+      ARG1: value1
       ARG2: value2
     secrets:
       SECRET1: secret_value1
@@ -12,42 +12,48 @@ snapshots:
       name: xxxx.azurecr.io
       repository: xxx/yyy
       auth_strategy: azure_oidc
-    extra_registries: 
-      - name: registry1 
-        repository: repo1 
-        auth_strategy: azure_oidc 
+    extra_registries:
+      - name: registry1
+        repository: repo1
+        auth_strategy: azure_oidc
+    extra_tags:
+      - flavor1-custom-tag
 
   flavor3:
     dockerfile: "firestarter/tests/fixtures/Dockerfile"
-    auto: true 
+    auto: true
     registry:
       name: test-registry
       repository: repository3
     build_args:
-      ARG4: value4 
+      ARG4: value4
       ARG5: value5
     secrets:
       SECRET4: secret_value4
       SECRET5: secret_value5
-    extra_registries: 
-      - name: registry3 
+    extra_registries:
+      - name: registry3
         repository: repo3
-        auth_strategy: azure_oidc 
+        auth_strategy: azure_oidc
+    extra_tags:
+      - flavor3-custom-tag
 
 releases:
   flavor2:
     dockerfile: "firestarter/tests/fixtures/Dockerfile"
     auto: false
     build_args:
-      ARG3: value3 
+      ARG3: value3
     secrets:
-      SECRET3: secret_value3 
+      SECRET3: secret_value3
     registry:
       name: xxxx.azurecr.io
       repository: xxx/yyy
       auth_strategy: azure_oidc
     extra_registries:
-      - name: registry2 
-        repository: repo2 
-        auth_strategy: aws_oidc 
+      - name: registry2
+        repository: repo2
+        auth_strategy: aws_oidc
+    extra_tags:
+      - flavor2-custom-tag
 

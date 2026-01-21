@@ -50,8 +50,6 @@ def validate_config(config_path: str, schema_path: str, context = None) -> dict:
             schema=helper_get_config_schema(schema_path),
         )
 
-        validate_config_extra_tags(config_data)
-
         return config_data
 
 def validate_config_extra_tags(config_data: dict) -> None:

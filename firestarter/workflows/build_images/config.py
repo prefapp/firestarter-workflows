@@ -71,6 +71,7 @@ class Config:
     def from_yaml(cls: t.Type["Config"], config_file: str, type: str, secrets: dict, schema_file='schema.json'):
         try:
             raw_config = validate_config(config_file, schema_file)
+            validate_config_extra_tags(raw_config)
             logger.info(f"The config file '{config_file}' is valid")
             config = cls.from_dict(raw_config[type])
         except FileNotFoundError as fnf_error:
