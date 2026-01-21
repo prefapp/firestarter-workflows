@@ -152,6 +152,13 @@
                 "required": ["name", "repository", "auth_strategy"],
                 "additionalProperties": false
               }
+            },
+            "extra_tags": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": ".+"
+              }
             }
           },
           "required": ["dockerfile"],
