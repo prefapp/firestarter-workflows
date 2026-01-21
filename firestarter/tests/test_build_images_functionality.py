@@ -399,15 +399,31 @@ async def test_compile_images_for_all_flavors(mocker) -> None:
 
     result = await builder.compile_images_for_all_flavors()
 
-    assert len(result) == 4
+    assert len(result) == 8
     assert result[0]["flavor"] == "flavor1"
     assert result[0]["repository"] == "xxx/yyy"
+    assert result[0]["image_tag"] == "aaaaaaa_flavor1"
     assert result[1]["flavor"] == "flavor1"
-    assert result[1]["repository"] == "repo1"
-    assert result[2]["flavor"] == "flavor3"
-    assert result[2]["repository"] == "repository3"
-    assert result[3]["flavor"] == "flavor3"
-    assert result[3]["repository"] == "repo3"
+    assert result[1]["repository"] == "xxx/yyy"
+    assert result[1]["image_tag"] == "flavor1-custom-tag"
+    assert result[2]["flavor"] == "flavor1"
+    assert result[2]["repository"] == "repo1"
+    assert result[2]["image_tag"] == "aaaaaaa_flavor1"
+    assert result[3]["flavor"] == "flavor1"
+    assert result[3]["repository"] == "repo1"
+    assert result[3]["image_tag"] == "flavor1-custom-tag"
+    assert result[4]["flavor"] == "flavor3"
+    assert result[4]["repository"] == "repository3"
+    assert result[4]["image_tag"] == "aaaaaaa_flavor3"
+    assert result[5]["flavor"] == "flavor3"
+    assert result[5]["repository"] == "repository3"
+    assert result[5]["image_tag"] == "flavor3-custom-tag"
+    assert result[6]["flavor"] == "flavor3"
+    assert result[6]["repository"] == "repo3"
+    assert result[6]["image_tag"] == "aaaaaaa_flavor3"
+    assert result[7]["flavor"] == "flavor3"
+    assert result[7]["repository"] == "repo3"
+    assert result[7]["image_tag"] == "flavor3-custom-tag"
 
 
 # The object correctly returns the flavor data of a chosen flavor,
