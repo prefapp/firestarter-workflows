@@ -24,7 +24,7 @@ class Image:
     secrets: dict = field(default_factory=dict)
     dockerfile: str = field(default="Dockerfile")
     extra_tags: list = field(default_factory=list)
-    platforms: list = field(default_factory=list)
+    platforms: list = field(default_factory=lambda: ["linux/amd64"])
 
     @classmethod
     def from_dict(cls: t.Type["Image"], obj: dict):

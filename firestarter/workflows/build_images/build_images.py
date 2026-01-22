@@ -304,34 +304,36 @@ class BuildImages(FirestarterWorkflow):
 
     # Define a coroutine function to compile an image using Docker
     async def compile_image_and_publish(
-        self, ctx, build_args, secrets, dockerfile, image, platform
+        self, ctx, build_args, secrets, dockerfile, image, platforms
     ):
         # Set a current working directory
         src = ctx.host().directory(".")
 
         logger.info(f"Using secrets: {secrets}")
 
-        ctx = (
-            ctx.container(platform=dagger.Platform(platform))
-                .build(
-                    context=src,
-                    dockerfile=dockerfile,
-                    build_args=build_args,
-                    secrets=secrets
-                )
-                .with_label("platform", platform)
-                .with_label("source.code.revision", self.from_version)
-                .with_label("repository.name", self.repo_name)
-                .with_label("build.date", datetime.datetime.now().strftime(
-                    "%Y-%m-%d_%H:%M:%S_UTC"
-                ))
-        )
+        variants = []
+        for platform in platforms:
+            ctx = (
+                ctx.container(platform=dagger.Platform(platform))
+                    .build(
+                        context=src,
+                        dockerfile=dockerfile,
+                        build_args=build_args,
+                        secrets=secrets
+                    )
+                    .with_label("source.code.revision", self.from_version)
+                    .with_label("repository.name", self.repo_name)
+                    .with_label("build.date", datetime.datetime.now().strftime(
+                        "%Y-%m-%d_%H:%M:%S_UTC"
+                    ))
+            )
+            variants.append(ctx)
 
         if self.container_structure_filename is not None:
             await self.test_image(ctx)
 
         if self.publish:
-            await ctx.publish(address=f"{image}")
+            await ctx.publish(image, platform_variants=variants)
 
     # Define a coroutine function to execute the compilation process
     # for all flavors
@@ -420,36 +422,32 @@ class BuildImages(FirestarterWorkflow):
                         )
                         registry_list.append(extra_full_registry_address)
 
-                for platform in platforms:
-                    for image in registry_list:
-                        # Append platform to image tag to avoid conflicts
-                        image = image + f"_{normalize_image_tag(platform)}"
+                for image in registry_list:
+                    await self.compile_image_and_publish(
+                        client,
+                        build_args_list,
+                        secrets,
+                        dockerfile,
+                        image,
+                        platforms
+                    )
 
-                        await self.compile_image_and_publish(
-                            client,
-                            build_args_list,
-                            secrets,
-                            dockerfile,
-                            image,
-                            platform
-                        )
+                    image_tag = image.split(":")[1]
+                    registry = image.split(":")[0].split("/")[0]
+                    repository = "/".join(image.split(":")[0].split("/")[1:])
 
-                        image_tag = image.split(":")[1]
-                        registry = image.split(":")[0].split("/")[0]
-                        repository = "/".join(image.split(":")[0].split("/")[1:])
-
-                        results_list.append({
-                            "flavor": flavor,
-                            "image_type": self.type,
-                            "version": self.from_version,
-                            "image_repo": self.repo_name,
-                            "image_tag": image_tag,
-                            "repository": repository,
-                            "registry": registry,
-                            "build_args": build_args,
-                            "workflow_run_id": self.workflow_run_id,
-                            "workflow_run_url": self.workflow_run_url
-                        })
+                    results_list.append({
+                        "flavor": flavor,
+                        "image_type": self.type,
+                        "version": self.from_version,
+                        "image_repo": self.repo_name,
+                        "image_tag": image_tag,
+                        "repository": repository,
+                        "registry": registry,
+                        "build_args": build_args,
+                        "workflow_run_id": self.workflow_run_id,
+                        "workflow_run_url": self.workflow_run_url
+                    })
 
         yaml.default_flow_style = False
         with open(os.path.join("/tmp", self.output_results), "w") as f:
