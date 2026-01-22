@@ -35,7 +35,7 @@ class Image:
             extra_registries=obj.get("extra_registries"),
             build_args=obj.get("build_args"),
             extra_tags=obj.get("extra_tags", []),
-            platforms=obj.get("extra_tags"),
+            platforms=obj.get("platforms"),
             secrets=obj.get("secrets"),
             dockerfile=obj.get("dockerfile"),
         )
