@@ -313,7 +313,7 @@ class BuildImages(FirestarterWorkflow):
 
         variants = []
         for platform in platforms:
-            ctx = (
+            ctr = (
                 ctx.container(platform=dagger.Platform(platform))
                     .build(
                         context=src,
@@ -327,7 +327,7 @@ class BuildImages(FirestarterWorkflow):
                         "%Y-%m-%d_%H:%M:%S_UTC"
                     ))
             )
-            variants.append(ctx)
+            variants.append(ctr)
 
         if self.container_structure_filename is not None:
             await self.test_image(ctx)
