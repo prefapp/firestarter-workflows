@@ -333,7 +333,7 @@ class BuildImages(FirestarterWorkflow):
             await self.test_image(ctx)
 
         if self.publish:
-            await ctx.publish(image, platform_variants=variants)
+            await ctx.container().publish(image, platform_variants=variants)
 
     # Define a coroutine function to execute the compilation process
     # for all flavors
