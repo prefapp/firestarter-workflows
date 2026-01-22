@@ -85,7 +85,7 @@
               "minItems": 1
             }
           },
-          "required": ["dockerfile", "platforms"],
+          "required": ["dockerfile"],
           "additionalProperties": false
         }
       },
@@ -177,7 +177,7 @@
               "minItems": 1
             }
           },
-          "required": ["dockerfile", "platforms"],
+          "required": ["dockerfile"],
           "additionalProperties": false
         }
       },
