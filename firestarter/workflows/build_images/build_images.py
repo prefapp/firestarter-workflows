@@ -312,7 +312,7 @@ class BuildImages(FirestarterWorkflow):
         logger.info(f"Using secrets: {secrets}")
 
         ctx = (
-            ctx.container(platform=platform)
+            ctx.container(platform=dagger.Platform(platform))
                 .build(
                     context=src,
                     dockerfile=dockerfile,
