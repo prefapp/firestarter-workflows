@@ -319,6 +319,7 @@ class BuildImages(FirestarterWorkflow):
                     build_args=build_args,
                     secrets=secrets
                 )
+                .with_label("platform", platform)
                 .with_label("source.code.revision", self.from_version)
                 .with_label("repository.name", self.repo_name)
                 .with_label("build.date", datetime.datetime.now().strftime(
@@ -421,6 +422,9 @@ class BuildImages(FirestarterWorkflow):
 
                 for platform in platforms:
                     for image in registry_list:
+                        # Append platform to image tag to avoid conflicts
+                        image = image + f"_{normalize_image_tag(platform)}"
+
                         await self.compile_image_and_publish(
                             client,
                             build_args_list,
