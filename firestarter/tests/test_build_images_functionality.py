@@ -341,6 +341,7 @@ async def test_compile_image_and_publish(mocker) -> None:
         secrets = { "test_secret": "b" }
         dockerfile = "/path/to/dockerfile"
         image = "image_tag"
+        platform = "linux/amd64"
 
         mocker.patch.object(ciap_builder, "test_image")
         ciap_builder_test_image_mock = ciap_builder.test_image
@@ -351,7 +352,7 @@ async def test_compile_image_and_publish(mocker) -> None:
         ctx_mock_publish_mock = ctx_mock.publish
 
         await ciap_builder.compile_image_and_publish(
-            ctx_mock, build_args, secrets, dockerfile, image
+            ctx_mock, build_args, secrets, dockerfile, image, platform
         )
 
         if publish:
@@ -402,28 +403,40 @@ async def test_compile_images_for_all_flavors(mocker) -> None:
     assert len(result) == 8
     assert result[0]["flavor"] == "flavor1"
     assert result[0]["repository"] == "xxx/yyy"
-    assert result[0]["image_tag"] == "aaaaaaa_flavor1"
+    assert result[0]["image_tag"] == "aaaaaaa_flavor1_linux-amd64"
     assert result[1]["flavor"] == "flavor1"
     assert result[1]["repository"] == "xxx/yyy"
-    assert result[1]["image_tag"] == "flavor1-custom-tag"
+    assert result[1]["image_tag"] == "flavor1-custom-tag_linux-amd64"
     assert result[2]["flavor"] == "flavor1"
     assert result[2]["repository"] == "repo1"
-    assert result[2]["image_tag"] == "aaaaaaa_flavor1"
+    assert result[2]["image_tag"] == "aaaaaaa_flavor1_linux-amd64"
     assert result[3]["flavor"] == "flavor1"
     assert result[3]["repository"] == "repo1"
-    assert result[3]["image_tag"] == "flavor1-custom-tag"
+    assert result[3]["image_tag"] == "flavor1-custom-tag_linux-amd64"
     assert result[4]["flavor"] == "flavor3"
     assert result[4]["repository"] == "repository3"
-    assert result[4]["image_tag"] == "aaaaaaa_flavor3"
+    assert result[4]["image_tag"] == "aaaaaaa_flavor3_linux-amd64"
     assert result[5]["flavor"] == "flavor3"
     assert result[5]["repository"] == "repository3"
-    assert result[5]["image_tag"] == "flavor3-custom-tag"
+    assert result[5]["image_tag"] == "flavor3-custom-tag_linux-amd64"
     assert result[6]["flavor"] == "flavor3"
-    assert result[6]["repository"] == "repo3"
-    assert result[6]["image_tag"] == "aaaaaaa_flavor3"
+    assert result[6]["repository"] == "repository3"
+    assert result[6]["image_tag"] == "aaaaaaa_flavor3_linux-arm64"
     assert result[7]["flavor"] == "flavor3"
-    assert result[7]["repository"] == "repo3"
-    assert result[7]["image_tag"] == "flavor3-custom-tag"
+    assert result[7]["repository"] == "repository3"
+    assert result[7]["image_tag"] == "flavor3-custom-tag_linux-arm64"
+    assert result[8]["flavor"] == "flavor3"
+    assert result[8]["repository"] == "repo3"
+    assert result[8]["image_tag"] == "aaaaaaa_flavor3_linux-amd64"
+    assert result[9]["flavor"] == "flavor3"
+    assert result[9]["repository"] == "repo3"
+    assert result[9]["image_tag"] == "flavor3-custom-tag_linux-amd64"
+    assert result[10]["flavor"] == "flavor3"
+    assert result[10]["repository"] == "repo3"
+    assert result[10]["image_tag"] == "aaaaaaa_flavor3_linux-arm64"
+    assert result[11]["flavor"] == "flavor3"
+    assert result[11]["repository"] == "repo3"
+    assert result[11]["image_tag"] == "flavor3-custom-tag_linux-arm64"
 
 
 # The object correctly returns the flavor data of a chosen flavor,
@@ -432,7 +445,7 @@ def test_get_flavor_data() -> None:
     flavor_list = ["flavor1", "flavor3"]
 
     for flavor in flavor_list:
-        registry, full_repo_name, build_args, dockerfile, extra_registries, extra_tags =\
+        registry, full_repo_name, build_args, dockerfile, extra_registries, extra_tags, platforms =\
                 builder.get_flavor_data(flavor)
 
         assert registry == config_data["snapshots"][flavor]["registry"]["name"]
@@ -440,6 +453,7 @@ def test_get_flavor_data() -> None:
         assert build_args == config_data["snapshots"][flavor]["build_args"]
         assert dockerfile == config_data["snapshots"][flavor]["dockerfile"]
         assert extra_registries == config_data["snapshots"][flavor]["extra_registries"]
+        assert platforms == config_data["snapshots"][flavor]["platforms"]
 
 
 # The object gets the registry data correctly

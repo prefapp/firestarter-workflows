@@ -18,6 +18,8 @@ snapshots:
         auth_strategy: azure_oidc
     extra_tags:
       - flavor1-custom-tag
+    platforms:
+      - linux/amd64
 
   flavor3:
     dockerfile: "firestarter/tests/fixtures/Dockerfile"
@@ -37,6 +39,9 @@ snapshots:
         auth_strategy: azure_oidc
     extra_tags:
       - flavor3-custom-tag
+    platforms:
+      - linux/amd64
+      - linux/arm64
 
 releases:
   flavor2:
@@ -56,4 +61,6 @@ releases:
         auth_strategy: aws_oidc
     extra_tags:
       - flavor2-custom-tag
+    platforms:
+      - linux/arm64
 
