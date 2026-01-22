@@ -12,7 +12,6 @@ class DaggerDirectoryMock():
     def __init__(self, path: str):
         self.path = path
 
-
 class DaggerContextMock():
     throw_docker_container_error = False
     throw_generic_error = False
@@ -21,12 +20,14 @@ class DaggerContextMock():
     dockerfile = ""
     build_args = None
     secrets = None
+    platform = None
 
     def __init__(
         self,
         throw_docker_container_error=False,
         throw_generic_error=False
     ):
+        self.platform = platform
         self.throw_docker_container_error = throw_docker_container_error
         self.throw_generic_error = throw_generic_error
 
@@ -47,7 +48,7 @@ class DaggerContextMock():
     async def publish(self, **kwargs) -> str:
         return "Mock publish result"
 
-    def container(self) -> Self:
+    def container(self, platform = None) -> Self:
         return self
 
     def build(self, **kwargs) -> Self:

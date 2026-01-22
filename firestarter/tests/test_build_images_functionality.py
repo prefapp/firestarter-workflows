@@ -400,7 +400,7 @@ async def test_compile_images_for_all_flavors(mocker) -> None:
 
     result = await builder.compile_images_for_all_flavors()
 
-    assert len(result) == 8
+    assert len(result) == 12
     assert result[0]["flavor"] == "flavor1"
     assert result[0]["repository"] == "xxx/yyy"
     assert result[0]["image_tag"] == "aaaaaaa_flavor1_linux-amd64"
