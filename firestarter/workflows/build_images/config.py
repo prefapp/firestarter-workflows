@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from jsonschema import ValidationError, SchemaError
 from firestarter.common.validations import validate_config
+from firestarter.common.validations import validate_config_extra_tags
 import logging
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,8 @@ class Image:
     build_args: dict = field(default_factory=dict)
     secrets: dict = field(default_factory=dict)
     dockerfile: str = field(default="Dockerfile")
+    extra_tags: list = field(default_factory=list)
+    platforms: list = field(default_factory=lambda: ["linux/amd64"])
 
     @classmethod
     def from_dict(cls: t.Type["Image"], obj: dict):
@@ -31,6 +34,8 @@ class Image:
             registry=obj.get("registry"),
             extra_registries=obj.get("extra_registries"),
             build_args=obj.get("build_args"),
+            extra_tags=obj.get("extra_tags", []),
+            platforms=obj.get("platforms", ["linux/amd64"]),
             secrets=obj.get("secrets"),
             dockerfile=obj.get("dockerfile"),
         )
@@ -42,6 +47,8 @@ class Image:
             "registry": self.registry,
             "extra_registries": self.extra_registries,
             "build_args": self.build_args,
+            "extra_tags": self.extra_tags,
+            "platforms": self.platforms,
             "secrets": self.secrets,
             "dockerfile": self.dockerfile,
         }
@@ -68,6 +75,7 @@ class Config:
     def from_yaml(cls: t.Type["Config"], config_file: str, type: str, secrets: dict, schema_file='schema.json'):
         try:
             raw_config = validate_config(config_file, schema_file)
+            validate_config_extra_tags(raw_config)
             logger.info(f"The config file '{config_file}' is valid")
             config = cls.from_dict(raw_config[type])
         except FileNotFoundError as fnf_error:

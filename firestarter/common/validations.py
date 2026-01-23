@@ -1,5 +1,6 @@
 from jsonschema import validate
 from .preprocessor import PreProcessor
+from collections import Counter
 import os
 import json
 from ruamel.yaml import YAML
@@ -50,3 +51,18 @@ def validate_config(config_path: str, schema_path: str, context = None) -> dict:
         )
 
         return config_data
+
+def validate_config_extra_tags(config_data: dict) -> None:
+    all_tags = []
+
+    for image_type in config_data.values():
+        for flavor in image_type.values():
+            if "extra_tags" in flavor:
+                all_tags.extend(flavor["extra_tags"])
+
+    counts = Counter(all_tags)
+    duplicates = [value for value, count in counts.items() if count > 1]
+
+    if duplicates:
+        raise ValueError(f"Duplicate extra_tags found: {', '.join(duplicates)}")
+

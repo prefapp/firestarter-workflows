@@ -11,6 +11,6 @@ class AwsOidcDockerRegistryAuth(RegistryProvider):
         authorization_token = base64.b64decode(
             auth['authorizationData'][0]['authorizationToken'].encode()
         )
-        
+
         username, token = authorization_token.decode().split(':')
         return RegistryAuth(username=username, token=token)

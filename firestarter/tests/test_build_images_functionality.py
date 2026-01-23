@@ -5,7 +5,7 @@ from firestarter.workflows.build_images.providers.registries.azure import AzureO
 from firestarter.workflows.build_images.providers.secrets.azure import AzureKeyVaultManager
 from firestarter.workflows.build_images.providers.secrets.aws import AwsSecretsManager
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, ANY
 from ruamel.yaml import YAML
 import subprocess
 from mock_classes import DaggerContextMock, DaggerImageMock
@@ -341,6 +341,7 @@ async def test_compile_image_and_publish(mocker) -> None:
         secrets = { "test_secret": "b" }
         dockerfile = "/path/to/dockerfile"
         image = "image_tag"
+        platforms = ["linux/amd64"]
 
         mocker.patch.object(ciap_builder, "test_image")
         ciap_builder_test_image_mock = ciap_builder.test_image
@@ -351,11 +352,11 @@ async def test_compile_image_and_publish(mocker) -> None:
         ctx_mock_publish_mock = ctx_mock.publish
 
         await ciap_builder.compile_image_and_publish(
-            ctx_mock, build_args, secrets, dockerfile, image
+            ctx_mock, build_args, secrets, dockerfile, image, platforms
         )
 
         if publish:
-            ctx_mock_publish_mock.assert_called_with(address=f"{image}")
+            ctx_mock_publish_mock.assert_called_with(image, platform_variants=ANY)
         else:
             ctx_mock_publish_mock.assert_not_called()
 
@@ -399,16 +400,31 @@ async def test_compile_images_for_all_flavors(mocker) -> None:
 
     result = await builder.compile_images_for_all_flavors()
 
-    assert len(result) == 4
+    assert len(result) == 8
     assert result[0]["flavor"] == "flavor1"
     assert result[0]["repository"] == "xxx/yyy"
+    assert result[0]["image_tag"] == "aaaaaaa_flavor1"
     assert result[1]["flavor"] == "flavor1"
-    assert result[1]["repository"] == "repo1"
-    assert result[2]["flavor"] == "flavor3"
-    assert result[2]["repository"] == "repository3"
-    assert result[3]["flavor"] == "flavor3"
-    assert result[3]["repository"] == "repo3"
-
+    assert result[1]["repository"] == "xxx/yyy"
+    assert result[1]["image_tag"] == "flavor1-custom-tag"
+    assert result[2]["flavor"] == "flavor1"
+    assert result[2]["repository"] == "repo1"
+    assert result[2]["image_tag"] == "aaaaaaa_flavor1"
+    assert result[3]["flavor"] == "flavor1"
+    assert result[3]["repository"] == "repo1"
+    assert result[3]["image_tag"] == "flavor1-custom-tag"
+    assert result[4]["flavor"] == "flavor3"
+    assert result[4]["repository"] == "repository3"
+    assert result[4]["image_tag"] == "aaaaaaa_flavor3"
+    assert result[5]["flavor"] == "flavor3"
+    assert result[5]["repository"] == "repository3"
+    assert result[5]["image_tag"] == "flavor3-custom-tag"
+    assert result[6]["flavor"] == "flavor3"
+    assert result[6]["repository"] == "repo3"
+    assert result[6]["image_tag"] == "aaaaaaa_flavor3"
+    assert result[7]["flavor"] == "flavor3"
+    assert result[7]["repository"] == "repo3"
+    assert result[7]["image_tag"] == "flavor3-custom-tag"
 
 # The object correctly returns the flavor data of a chosen flavor,
 # as written in fixtures/build_images.yaml
@@ -416,7 +432,7 @@ def test_get_flavor_data() -> None:
     flavor_list = ["flavor1", "flavor3"]
 
     for flavor in flavor_list:
-        registry, full_repo_name, build_args, dockerfile, extra_registries =\
+        registry, full_repo_name, build_args, dockerfile, extra_registries, extra_tags, platforms =\
                 builder.get_flavor_data(flavor)
 
         assert registry == config_data["snapshots"][flavor]["registry"]["name"]
@@ -424,6 +440,7 @@ def test_get_flavor_data() -> None:
         assert build_args == config_data["snapshots"][flavor]["build_args"]
         assert dockerfile == config_data["snapshots"][flavor]["dockerfile"]
         assert extra_registries == config_data["snapshots"][flavor]["extra_registries"]
+        assert platforms == config_data["snapshots"][flavor]["platforms"]
 
 
 # The object gets the registry data correctly
