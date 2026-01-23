@@ -464,7 +464,7 @@ class BuildImages(FirestarterWorkflow):
         dockerfile = flavor_data.dockerfile or ""
         extra_registries = flavor_data.extra_registries or []
         extra_tags = flavor_data.extra_tags or []
-        platforms = flavor_data.platforms or []
+        platforms = flavor_data.platforms or ["linux/amd64"]
 
         return (
             flavor_registry_data["name"],
