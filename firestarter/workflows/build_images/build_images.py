@@ -489,7 +489,7 @@ class BuildImages(FirestarterWorkflow):
 
         return flavor_registry_data
 
-    def get_extra_tags_for_registry(self, registry, extra_tags):
+    def get_extra_tags_for_registry(self, registry_address, extra_tags):
         extra_full_registry_addresses = []
 
         for extra_tag in extra_tags:
