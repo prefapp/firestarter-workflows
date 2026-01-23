@@ -341,7 +341,7 @@ async def test_compile_image_and_publish(mocker) -> None:
         secrets = { "test_secret": "b" }
         dockerfile = "/path/to/dockerfile"
         image = "image_tag"
-        platform = "linux/amd64"
+        platforms = ["linux/amd64"]
 
         mocker.patch.object(ciap_builder, "test_image")
         ciap_builder_test_image_mock = ciap_builder.test_image
@@ -352,7 +352,7 @@ async def test_compile_image_and_publish(mocker) -> None:
         ctx_mock_publish_mock = ctx_mock.publish
 
         await ciap_builder.compile_image_and_publish(
-            ctx_mock, build_args, secrets, dockerfile, image, platform
+            ctx_mock, build_args, secrets, dockerfile, image, platforms
         )
 
         if publish:
