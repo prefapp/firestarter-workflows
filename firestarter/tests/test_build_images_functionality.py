@@ -356,7 +356,7 @@ async def test_compile_image_and_publish(mocker) -> None:
         )
 
         if publish:
-            ctx_mock_publish_mock.assert_called_with(image, platform_variant=ANY)
+            ctx_mock_publish_mock.assert_called_with(image, platform_variants=ANY)
         else:
             ctx_mock_publish_mock.assert_not_called()
 
