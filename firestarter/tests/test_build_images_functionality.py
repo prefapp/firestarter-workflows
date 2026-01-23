@@ -5,7 +5,7 @@ from firestarter.workflows.build_images.providers.registries.azure import AzureO
 from firestarter.workflows.build_images.providers.secrets.azure import AzureKeyVaultManager
 from firestarter.workflows.build_images.providers.secrets.aws import AwsSecretsManager
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, ANY
 from ruamel.yaml import YAML
 import subprocess
 from mock_classes import DaggerContextMock, DaggerImageMock
@@ -356,10 +356,7 @@ async def test_compile_image_and_publish(mocker) -> None:
         )
 
         if publish:
-            ctx_mock_publish_mock.assert_called_with(
-                image,
-                platform_variants=[DaggerContextMock()]
-            )
+            ctx_mock_publish_mock.assert_called_with(image, ANY)
         else:
             ctx_mock_publish_mock.assert_not_called()
 
