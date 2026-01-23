@@ -75,6 +75,14 @@
                 "type": "string",
                 "pattern": "^[a-zA-Z0-9_][a-zA-Z0-9._-]{0,127}$"
               }
+            },
+            "platforms": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^(linux/)?(amd64|arm64)$"
+              },
+              "minItems": 1
             }
           },
           "required": ["dockerfile"],
@@ -159,6 +167,14 @@
                 "type": "string",
                 "pattern": "^[a-zA-Z0-9_][a-zA-Z0-9._-]{0,127}$"
               }
+            },
+            "platforms": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "pattern": "^(linux/)?(amd64|arm64)$"
+              },
+              "minItems": 1
             }
           },
           "required": ["dockerfile"],

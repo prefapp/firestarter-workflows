@@ -304,33 +304,37 @@ class BuildImages(FirestarterWorkflow):
 
     # Define a coroutine function to compile an image using Docker
     async def compile_image_and_publish(
-        self, ctx, build_args, secrets, dockerfile, image
+        self, ctx, build_args, secrets, dockerfile, image, platforms
     ):
         # Set a current working directory
         src = ctx.host().directory(".")
 
         logger.info(f"Using secrets: {secrets}")
 
-        ctx = (
-            ctx.container()
-                .build(
-                    context=src,
-                    dockerfile=dockerfile,
-                    build_args=build_args,
-                    secrets=secrets
-                )
-                .with_label("source.code.revision", self.from_version)
-                .with_label("repository.name", self.repo_name)
-                .with_label("build.date", datetime.datetime.now().strftime(
-                    "%Y-%m-%d_%H:%M:%S_UTC"
-                ))
-        )
+        variants = []
+        for platform in platforms:
+            ctr = (
+                ctx.container(platform=dagger.Platform(platform))
+                    .build(
+                        context=src,
+                        dockerfile=dockerfile,
+                        build_args=build_args,
+                        secrets=secrets
+                    )
+                    .with_label("source.code.revision", self.from_version)
+                    .with_label("repository.name", self.repo_name)
+                    .with_label("build.date", datetime.datetime.now().strftime(
+                        "%Y-%m-%d_%H:%M:%S_UTC"
+                    ))
+            )
+            variants.append(ctr)
 
         if self.container_structure_filename is not None:
-            await self.test_image(ctx)
+            for variant in variants:
+                await self.test_image(variant)
 
         if self.publish:
-            await ctx.publish(address=f"{image}")
+            await ctx.container().publish(image, platform_variants=variants)
 
     # Define a coroutine function to execute the compilation process
     # for all flavors
@@ -352,7 +356,8 @@ class BuildImages(FirestarterWorkflow):
 
             for flavor in self.flavors:
                 registry, full_repo_name, build_args,\
-                        dockerfile, extra_registries, extra_tags = self.get_flavor_data(flavor)
+                        dockerfile, extra_registries,\
+                        extra_tags, platforms = self.get_flavor_data(flavor)
 
                 # Set the build arguments for the current flavor
                 build_args_list = [
@@ -418,7 +423,8 @@ class BuildImages(FirestarterWorkflow):
                         build_args_list,
                         secrets,
                         dockerfile,
-                        image
+                        image,
+                        platforms
                     )
 
                     image_tag = image.split(":")[1]
@@ -452,6 +458,7 @@ class BuildImages(FirestarterWorkflow):
         dockerfile = flavor_data.dockerfile or ""
         extra_registries = flavor_data.extra_registries or []
         extra_tags = flavor_data.extra_tags or []
+        platforms = flavor_data.platforms or ["linux/amd64"]
 
         return (
             flavor_registry_data["name"],
@@ -459,7 +466,8 @@ class BuildImages(FirestarterWorkflow):
             build_args,
             dockerfile,
             extra_registries,
-            extra_tags
+            extra_tags,
+            platforms
         )
 
     def get_flavor_registry_data(self, flavor_data):
