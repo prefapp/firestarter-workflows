@@ -392,12 +392,9 @@ class BuildImages(FirestarterWorkflow):
                 registry_list = [full_registry_address]
 
                 # Add extra tags
-                for extra_tag in extra_tags:
-                    extra_full_registry_address = (
-                        f"{registry_address}:"
-                        f"{normalize_image_tag(extra_tag)}"
-                    )
-                    registry_list.append(extra_full_registry_address)
+                registry_list += self.get_extra_tags_for_registry(
+                    registry_address, extra_tags
+                )
 
                 for extra_registry in extra_registries:
                     extra_registry_address = (
@@ -411,12 +408,9 @@ class BuildImages(FirestarterWorkflow):
                     registry_list.append(extra_full_registry_address)
 
                     # Add extra tags
-                    for extra_tag in extra_tags:
-                        extra_full_registry_address = (
-                            f"{extra_registry_address}:"
-                            f"{normalize_image_tag(extra_tag)}"
-                        )
-                        registry_list.append(extra_full_registry_address)
+                    registry_list += self.get_extra_tags_for_registry(
+                        extra_registry_address, extra_tags
+                    )
 
                 for image in registry_list:
                     await self.compile_image_and_publish(
@@ -494,6 +488,18 @@ class BuildImages(FirestarterWorkflow):
         }
 
         return flavor_registry_data
+
+    def get_extra_tags_for_registry(self, registry, extra_tags):
+        extra_full_registry_addresses = []
+
+        for extra_tag in extra_tags:
+            extra_full_registry_address = (
+                f"{registry_address}:"
+                f"{normalize_image_tag(extra_tag)}"
+            )
+            extra_full_registry_addresses.append(extra_full_registry_address)
+
+        return extra_full_registry_addresses
 
 
     def is_auto_build(self):
