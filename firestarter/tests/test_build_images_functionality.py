@@ -356,7 +356,10 @@ async def test_compile_image_and_publish(mocker) -> None:
         )
 
         if publish:
-            ctx_mock_publish_mock.assert_called_with(image)
+            ctx_mock_publish_mock.assert_called_with(
+                image,
+                platform_variants=[DaggerContextMock()]
+            )
         else:
             ctx_mock_publish_mock.assert_not_called()
 
@@ -400,44 +403,31 @@ async def test_compile_images_for_all_flavors(mocker) -> None:
 
     result = await builder.compile_images_for_all_flavors()
 
-    assert len(result) == 12
+    assert len(result) == 8
     assert result[0]["flavor"] == "flavor1"
     assert result[0]["repository"] == "xxx/yyy"
-    assert result[0]["image_tag"] == "aaaaaaa_flavor1_linux-amd64"
+    assert result[0]["image_tag"] == "aaaaaaa_flavor1"
     assert result[1]["flavor"] == "flavor1"
     assert result[1]["repository"] == "xxx/yyy"
-    assert result[1]["image_tag"] == "flavor1-custom-tag_linux-amd64"
+    assert result[1]["image_tag"] == "flavor1-custom-tag"
     assert result[2]["flavor"] == "flavor1"
     assert result[2]["repository"] == "repo1"
-    assert result[2]["image_tag"] == "aaaaaaa_flavor1_linux-amd64"
+    assert result[2]["image_tag"] == "aaaaaaa_flavor1"
     assert result[3]["flavor"] == "flavor1"
     assert result[3]["repository"] == "repo1"
-    assert result[3]["image_tag"] == "flavor1-custom-tag_linux-amd64"
+    assert result[3]["image_tag"] == "flavor1-custom-tag"
     assert result[4]["flavor"] == "flavor3"
     assert result[4]["repository"] == "repository3"
-    assert result[4]["image_tag"] == "aaaaaaa_flavor3_linux-amd64"
+    assert result[4]["image_tag"] == "aaaaaaa_flavor3"
     assert result[5]["flavor"] == "flavor3"
     assert result[5]["repository"] == "repository3"
-    assert result[5]["image_tag"] == "flavor3-custom-tag_linux-amd64"
+    assert result[5]["image_tag"] == "flavor3-custom-tag"
     assert result[6]["flavor"] == "flavor3"
     assert result[6]["repository"] == "repo3"
-    assert result[6]["image_tag"] == "aaaaaaa_flavor3_linux-amd64"
+    assert result[6]["image_tag"] == "aaaaaaa_flavor3"
     assert result[7]["flavor"] == "flavor3"
     assert result[7]["repository"] == "repo3"
-    assert result[7]["image_tag"] == "flavor3-custom-tag_linux-amd64"
-    assert result[8]["flavor"] == "flavor3"
-    assert result[8]["repository"] == "repository3"
-    assert result[8]["image_tag"] == "aaaaaaa_flavor3_linux-arm64"
-    assert result[9]["flavor"] == "flavor3"
-    assert result[9]["repository"] == "repository3"
-    assert result[9]["image_tag"] == "flavor3-custom-tag_linux-arm64"
-    assert result[10]["flavor"] == "flavor3"
-    assert result[10]["repository"] == "repo3"
-    assert result[10]["image_tag"] == "aaaaaaa_flavor3_linux-arm64"
-    assert result[11]["flavor"] == "flavor3"
-    assert result[11]["repository"] == "repo3"
-    assert result[11]["image_tag"] == "flavor3-custom-tag_linux-arm64"
-
+    assert result[7]["image_tag"] == "flavor3-custom-tag"
 
 # The object correctly returns the flavor data of a chosen flavor,
 # as written in fixtures/build_images.yaml
