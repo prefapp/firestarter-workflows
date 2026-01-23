@@ -330,7 +330,8 @@ class BuildImages(FirestarterWorkflow):
             variants.append(ctr)
 
         if self.container_structure_filename is not None:
-            await self.test_image(ctx)
+            for variant in variants:
+                await self.test_image(variant)
 
         if self.publish:
             await ctx.container().publish(image, platform_variants=variants)
