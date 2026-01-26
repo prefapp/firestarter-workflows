@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.2.0](https://github.com/prefapp/firestarter-workflows/compare/v3.1.0...v3.2.0) (2026-01-26)
+
+
+### Features
+
+* Support for extra_tags section ([#200](https://github.com/prefapp/firestarter-workflows/issues/200)) ([3f7147e](https://github.com/prefapp/firestarter-workflows/commit/3f7147ec67fb488430ba289d952529e63ac390ba))
+
+
+### Bug Fixes
+
+* Correctly configure `git` ([#204](https://github.com/prefapp/firestarter-workflows/issues/204)) ([3515ee3](https://github.com/prefapp/firestarter-workflows/commit/3515ee3b52519f403939b9211af7ca4e450ac146))
+
 ## [3.1.0](https://github.com/prefapp/firestarter-workflows/compare/v3.0.0...v3.1.0) (2025-10-17)
 
 
