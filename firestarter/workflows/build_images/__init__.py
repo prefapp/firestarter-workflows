@@ -1,4 +1,5 @@
 import sys
+import logging
 from .build_images import BuildImages
 
 def run(*, vars: dict, secrets: dict, config_file:str):
@@ -6,7 +7,8 @@ def run(*, vars: dict, secrets: dict, config_file:str):
         wf = BuildImages(vars=vars, secrets=secrets, config_file=config_file)
         return wf.execute()
     except Exception as e:
-        print(f"::error title=Dagger Pipeline Failed::{e}")
+        logging.exception("Fatal error encountered during Dagger pipeline execution.")
+        print(f"::error title=Dagger Faliure::{e}")
         sys.exit(1)
 
 __all__ = [run]
