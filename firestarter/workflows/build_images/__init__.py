@@ -1,7 +1,16 @@
+import sys
+import logging
 from .build_images import BuildImages
 
+logger = logging.getLogger(__name__)
+
 def run(*, vars: dict, secrets: dict, config_file:str):
-    wf = BuildImages(vars=vars, secrets=secrets, config_file=config_file)
-    return wf.execute()
+    try:
+        wf = BuildImages(vars=vars, secrets=secrets, config_file=config_file)
+        return wf.execute()
+    except Exception as e:
+        logger.exception("Fatal error encountered during BuildImages execution.")
+        print(f"::error title=BuildImages Failure::{e}")
+        sys.exit(1)
 
 __all__ = [run]
