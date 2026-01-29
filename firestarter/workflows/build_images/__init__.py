@@ -8,7 +8,7 @@ def run(*, vars: dict, secrets: dict, config_file:str):
         return wf.execute()
     except Exception as e:
         logging.exception("Fatal error encountered during Dagger pipeline execution.")
-        print(f"::error title=Dagger Failure::{e}")
+        print(f"::error title=BuildImages Failure::{e}")
         sys.exit(1)
 
 __all__ = [run]
