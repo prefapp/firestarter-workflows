@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.1](https://github.com/prefapp/firestarter-workflows/compare/v3.2.0...v3.2.1) (2026-01-29)
+
+
+### Bug Fixes
+
+* Return error command ([#205](https://github.com/prefapp/firestarter-workflows/issues/205)) ([60de48d](https://github.com/prefapp/firestarter-workflows/commit/60de48d8106b43dc3ac3156ca5f7c9175caa9d09))
+
 ## [3.2.0](https://github.com/prefapp/firestarter-workflows/compare/v3.1.0...v3.2.0) (2026-01-26)
 
 
