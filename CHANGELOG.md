@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.3.0](https://github.com/prefapp/firestarter-workflows/compare/v3.2.1...v3.3.0) (2026-02-12)
+
+
+### Features
+
+* add support for large runners ([#207](https://github.com/prefapp/firestarter-workflows/issues/207)) ([43131c8](https://github.com/prefapp/firestarter-workflows/commit/43131c8fb233d2d96d01bd54007c7cf1406dde7a))
+
 ## [3.2.1](https://github.com/prefapp/firestarter-workflows/compare/v3.2.0...v3.2.1) (2026-01-29)
 
 
