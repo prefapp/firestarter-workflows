@@ -18,6 +18,10 @@ on:
         type: string
         description: Flavor name/s | one (alone), several (separated by commas)
         default: "*"
+      platforms:
+        type: string
+        description: Platforms to build for, formatted as os/arch (e.g. linux/amd64). Can be a single platform, a comma-separated list, or * for all
+        default: "*"
       secrets:
         type: string
         description: Secrets to pass to the image
@@ -115,6 +119,7 @@ jobs:
           vars: |
             repo_name="${{ github.repository }}"
             flavors="${{ inputs.flavors }}"
+            platforms="${{ inputs.platforms }}"
             auth_strategy="${{ inputs.auth_strategy }}"
             snapshots_registry="${{ vars.DOCKER_REGISTRY_SNAPSHOTS }}"
             releases_registry="${{ vars.DOCKER_REGISTRY_RELEASES }}"

@@ -52,6 +52,7 @@ class BuildImages(FirestarterWorkflow):
         self._workflow_run_url = self.vars.get('workflow_run_url', None)
         self._service_path = self.vars.get('service_path', '')
         self._flavors = self.vars.get('flavors', 'default')
+        self._platforms = self.vars.get('platforms', '')
         self._container_structure_filename = self.vars.get(
             'container_structure_filename', None
         )
@@ -122,6 +123,10 @@ class BuildImages(FirestarterWorkflow):
     @property
     def flavors(self):
         return self._flavors
+
+    @property
+    def platforms(self):
+        return self._platforms
 
     @property
     def service_path(self):
@@ -251,7 +256,6 @@ class BuildImages(FirestarterWorkflow):
 
         self._flavors = final_flavors_list
 
-
     def filter_auto_build(self):
         logger.info(
             'Publishing all flavors with auto build enabled:',
@@ -359,6 +363,22 @@ class BuildImages(FirestarterWorkflow):
                         dockerfile, extra_registries,\
                         extra_tags, platforms = self.get_flavor_data(flavor)
 
+                platforms_to_build = []
+                if self.check_if_build_all_platforms():
+                    platforms_to_build = platforms
+                else:
+                    allowed_platforms = self.platforms.replace(' ', '').split(',')
+
+                    # Get the platforms to build for this flavor by checking the intersection
+                    platforms_to_build = list(set(platforms) & set(allowed_platforms))
+
+                if len(platforms_to_build) == 0:
+                    logger.warning(
+                        f"No matching platforms to build for flavor {flavor}. "
+                        f"Skipping..."
+                    )
+                    continue
+
                 # Set the build arguments for the current flavor
                 build_args_list = [
                     dagger.BuildArg(name=key, value=value)
@@ -424,7 +444,7 @@ class BuildImages(FirestarterWorkflow):
                         secrets,
                         dockerfile,
                         image,
-                        platforms
+                        platforms_to_build
                     )
 
                     image_tag = image.split(":")[1]
@@ -449,6 +469,9 @@ class BuildImages(FirestarterWorkflow):
             yaml.dump(results_list, f)
 
         return results_list
+
+    def check_if_build_all_platforms(self):
+        return self.platforms == '*'
 
     def get_flavor_data(self, flavor):
         flavor_data = self.config.images[flavor]
