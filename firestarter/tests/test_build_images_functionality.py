@@ -25,6 +25,7 @@ vars = {
     "releases_registry": "xxxx.azurecr.io",
     "snapshots_registry_creds": "test_snapshots_creds",
     "releases_registry_creds": "test_releases_creds",
+    "platforms": "linux/amd64,linux/arm64",
 }
 secrets = {}
 config_file_path = f"{os.path.dirname(os.path.realpath(__file__))}/fixtures/build_images.yaml"
