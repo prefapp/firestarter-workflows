@@ -372,6 +372,10 @@ class BuildImages(FirestarterWorkflow):
                     # Get the platforms to build for this flavor by checking the intersection
                     platforms_to_build = list(set(platforms) & set(allowed_platforms))
 
+                logger.info(
+                    f"Building flavor {flavor} for platforms: {platforms_to_build}"
+                )
+
                 if len(platforms_to_build) == 0:
                     logger.warning(
                         f"No matching platforms to build for flavor {flavor}. "
