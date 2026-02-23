@@ -373,7 +373,7 @@ class BuildImages(FirestarterWorkflow):
                     platforms_to_build = list(set(platforms) & set(allowed_platforms))
 
                 logger.info(
-                    f">>>>>>>>>>>>>>><Building flavor {flavor} for platforms: {platforms_to_build}"
+                    f"Building flavor {flavor} for platforms: {platforms_to_build}"
                 )
 
                 if len(platforms_to_build) == 0:
@@ -411,7 +411,7 @@ class BuildImages(FirestarterWorkflow):
                 # Set the address for the default registry
                 registry_address = f"{registry}/{full_repo_name}"
 
-                logger.info(f"TEST Registry address 🍄: {registry_address}")
+                logger.info(f"Registry address 🍄: {registry_address}")
                 full_registry_address = (
                     f"{registry_address}:"
                     f"{normalize_image_tag(self.from_version + '_' + flavor)}"
