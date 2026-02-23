@@ -52,7 +52,7 @@ class BuildImages(FirestarterWorkflow):
         self._workflow_run_url = self.vars.get('workflow_run_url', None)
         self._service_path = self.vars.get('service_path', '')
         self._flavors = self.vars.get('flavors', 'default')
-        self._platforms = self.vars.get('platforms', '')
+        self._platforms = self.vars.get('platforms', '*')
         self._container_structure_filename = self.vars.get(
             'container_structure_filename', None
         )
