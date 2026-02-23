@@ -368,9 +368,15 @@ class BuildImages(FirestarterWorkflow):
                     platforms_to_build = platforms
                 else:
                     allowed_platforms = self.platforms.replace(' ', '').split(',')
+                    unique_normalized_allowed_platforms = {
+                        p.replace('linux/', '') for p in allowed_platforms
+                    }
 
                     # Get the platforms to build for this flavor by checking the intersection
-                    platforms_to_build = list(set(platforms) & set(allowed_platforms))
+                    platforms_to_build = [
+                        platform for platform in platforms
+                        if platform.replace('linux/', '') in unique_normalized_allowed_platforms
+                    ]
 
                 logger.info(
                     f"Building flavor {flavor} for platforms: {platforms_to_build}"
