@@ -427,6 +427,53 @@ async def test_compile_images_for_all_flavors(mocker) -> None:
     assert result[7]["repository"] == "repo3"
     assert result[7]["image_tag"] == "flavor3-custom-tag"
 
+@pytest.mark.asyncio
+async def test_compile_images_filtering_by_platform(mocker) -> None:
+    mocker.patch("dagger.Config")
+    mocker.patch("dagger.Connection")
+    mocker.patch.object(builder, "compile_image_and_publish")
+
+    dagger_config_mock = dagger.Config
+    dagger_connection_mock = dagger.Connection
+
+    builder._flavors = "flavor1, flavor3"
+    builder._platforms = "linux/amd64"
+    builder.filter_flavors()
+
+    result = await builder.compile_images_for_all_flavors()
+
+    assert len(result) == 4
+    assert result[0]["flavor"] == "flavor1"
+    assert result[0]["repository"] == "xxx/yyy"
+    assert result[0]["image_tag"] == "aaaaaaa_flavor1"
+    assert result[1]["flavor"] == "flavor1"
+    assert result[1]["repository"] == "xxx/yyy"
+    assert result[1]["image_tag"] == "flavor1-custom-tag"
+    assert result[2]["flavor"] == "flavor1"
+    assert result[2]["repository"] == "repo1"
+    assert result[2]["image_tag"] == "aaaaaaa_flavor1"
+    assert result[3]["flavor"] == "flavor1"
+    assert result[3]["repository"] == "repo1"
+    assert result[3]["image_tag"] == "flavor1-custom-tag"
+
+    builder._platforms = "arm64"
+
+    result = await builder.compile_images_for_all_flavors()
+
+    assert len(result) == 4
+    assert result[0]["flavor"] == "flavor3"
+    assert result[0]["repository"] == "repository3"
+    assert result[0]["image_tag"] == "aaaaaaa_flavor3"
+    assert result[1]["flavor"] == "flavor3"
+    assert result[1]["repository"] == "repository3"
+    assert result[1]["image_tag"] == "flavor3-custom-tag"
+    assert result[2]["flavor"] == "flavor3"
+    assert result[2]["repository"] == "repo3"
+    assert result[2]["image_tag"] == "aaaaaaa_flavor3"
+    assert result[3]["flavor"] == "flavor3"
+    assert result[3]["repository"] == "repo3"
+    assert result[3]["image_tag"] == "flavor3-custom-tag"
+
 # The object correctly returns the flavor data of a chosen flavor,
 # as written in fixtures/build_images.yaml
 def test_get_flavor_data() -> None:
