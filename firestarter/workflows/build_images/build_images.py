@@ -506,7 +506,7 @@ class BuildImages(FirestarterWorkflow):
 
         if invalid_platforms:
             raise ValueError(
-                f"Invalid platform(s): {invalid_platforms.join(', ')}. "
+                f"Invalid platform(s): {', '.join(invalid_platforms)}. "
                 "Valid platforms are: linux/amd64, linux/arm64, amd64, arm64, "
                 "or '*'. Whitespace around comma-separated entries is ignored."
             )
