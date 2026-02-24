@@ -474,6 +474,11 @@ class BuildImages(FirestarterWorkflow):
                         "workflow_run_url": self.workflow_run_url
                     })
 
+        if len(results_list) == 0:
+            raise Exception(
+                "No images were built. Please check the flavor and platform filters."
+            )
+
         yaml.default_flow_style = False
         with open(os.path.join("/tmp", self.output_results), "w") as f:
             yaml.dump(results_list, f)
