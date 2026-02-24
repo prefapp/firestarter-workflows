@@ -502,8 +502,8 @@ class BuildImages(FirestarterWorkflow):
             if not re.match(r'^(linux/)?(amd64|arm64)$', platform):
                 raise ValueError(
                     f"Invalid platform: {platform}. "
-                    f"Valid platforms follow the regex: '^(linux/)?(amd64|arm64)$'. "
-                    f"You can also use '*' to build for all platforms."
+                    "Valid platforms are: linux/amd64, linux/arm64, amd64, arm64, "
+                    "or '*'. Whitespace around comma-separated entries is ignored."
                 )
 
         return platforms
