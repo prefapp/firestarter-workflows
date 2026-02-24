@@ -481,7 +481,7 @@ class BuildImages(FirestarterWorkflow):
         return results_list
 
     def check_if_build_all_platforms(self):
-        return self.platforms == '*'
+        return self.platforms.replace(' ', '') == '*'
 
     def get_flavor_data(self, flavor):
         flavor_data = self.config.images[flavor]
