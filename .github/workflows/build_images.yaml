@@ -38,6 +38,10 @@ on:
         type: string
         description: Git reference from where to pull the workflows_repo
         default: v2
+      runs_on:
+        type: string
+        description: Runner image name to run the job on
+        default: ''
     secrets:
       FS_CHECKS_PEM_FILE:
         required: false
@@ -59,7 +63,7 @@ jobs:
   build-images:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_DOCKER_REGISTRY_CREDS || github.token }}
-    runs-on: ${{ fromJSON(vars.BUILD_DOCKER_IMAGES_RUNS_ON || '["ubuntu-24.04"]') }}
+    runs-on: ${{ fromJSON(inputs.runs_on || '["ubuntu-24.04"]') }}
     steps:
       - name: Configure Azure Credentials
         uses: azure/login@v2
