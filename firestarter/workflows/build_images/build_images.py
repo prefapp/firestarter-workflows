@@ -475,9 +475,11 @@ class BuildImages(FirestarterWorkflow):
                     })
 
         if len(results_list) == 0:
-            raise Exception(
-                "No images were built. Please check the flavor and platform filters."
+            error_message = (
+                f"No images were built. "
+                f"Please check the workflow filters are correct."
             )
+            raise Exception(error_message)
 
         yaml.default_flow_style = False
         with open(os.path.join("/tmp", self.output_results), "w") as f:
