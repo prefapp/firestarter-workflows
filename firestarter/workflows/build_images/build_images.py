@@ -52,7 +52,9 @@ class BuildImages(FirestarterWorkflow):
         self._workflow_run_url = self.vars.get('workflow_run_url', None)
         self._service_path = self.vars.get('service_path', '')
         self._flavors = self.vars.get('flavors', 'default')
-        self._platforms = self.vars.get('platforms', '*')
+        self._platforms = self.validate_platforms(
+            self.vars.get('platforms', '*')
+        )
         self._container_structure_filename = self.vars.get(
             'container_structure_filename', None
         )
@@ -489,6 +491,22 @@ class BuildImages(FirestarterWorkflow):
 
     def check_if_build_all_platforms(self):
         return self.platforms.replace(' ', '') == '*'
+
+    def validate_platforms(self, platforms):
+        if platforms.replace(' ', '') == '*':
+            return platforms
+
+        platform_list = platforms.replace(' ', '').split(',')
+
+        for platform in platform_list:
+            if not re.match(r'^(linux/)?(amd64|arm64)$', platform):
+                raise ValueError(
+                    f"Invalid platform: {platform}. "
+                    f"Valid platforms follow the regex: '^(linux/)?(amd64|arm64)$'. "
+                    f"You can also use '*' to build for all platforms."
+                )
+
+        return platforms
 
     def get_flavor_data(self, flavor):
         flavor_data = self.config.images[flavor]
