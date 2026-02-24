@@ -493,10 +493,11 @@ class BuildImages(FirestarterWorkflow):
         return self.platforms.replace(' ', '') == '*'
 
     def validate_platforms(self, platforms):
-        if platforms.replace(' ', '') == '*':
+        trimmed_platforms = platforms.replace(' ', '')
+        if trimmed_platforms == '*':
             return platforms
 
-        platform_list = platforms.replace(' ', '').split(',')
+        platform_list = trimmed_platforms.split(',')
 
         for platform in platform_list:
             if not re.match(r'^(linux/)?(amd64|arm64)$', platform):
@@ -506,7 +507,7 @@ class BuildImages(FirestarterWorkflow):
                     "or '*'. Whitespace around comma-separated entries is ignored."
                 )
 
-        return platforms
+        return trimmed_platforms
 
     def get_flavor_data(self, flavor):
         flavor_data = self.config.images[flavor]
