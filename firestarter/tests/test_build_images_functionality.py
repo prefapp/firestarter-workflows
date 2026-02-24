@@ -437,24 +437,41 @@ async def test_compile_images_filtering_by_platform(mocker) -> None:
     dagger_connection_mock = dagger.Connection
 
     builder._flavors = "flavor1, flavor3"
-    builder._platforms = "linux/amd64"
+    builder._platforms = builder.validate_platforms("linux/amd64")
     builder.filter_flavors()
 
     result = await builder.compile_images_for_all_flavors()
     built_flavors = set([image["flavor"] for image in result])
     assert built_flavors == {"flavor1", "flavor3"}
 
-    builder._platforms = "arm64"
+    builder._platforms = builder.validate_platforms("arm64")
 
     result = await builder.compile_images_for_all_flavors()
     built_flavors = set([image["flavor"] for image in result])
     assert built_flavors == {"flavor3"}
 
-    builder._platforms = "*"
+    builder._platforms = builder.validate_platforms("*")
 
     result = await builder.compile_images_for_all_flavors()
     built_flavors = set([image["flavor"] for image in result])
     assert built_flavors == {"flavor1", "flavor3"}
+
+def test_validate_platforms() -> None:
+    all_valid_platforms = "linux/amd64 ,   linux/arm64,arm64   , amd64"
+    returned_platforms = builder.validate_platforms(all_valid_platforms)
+    assert returned_platforms == all_valid_platforms.replace(" ", "")
+
+    some_valid_platforms = "       linux/amd64, arm64     "
+    returned_platforms = builder.validate_platforms(some_valid_platforms)
+    assert returned_platforms == some_valid_platforms.replace(" ", "")
+
+    invalid_platforms = "platform_doesnt_exist, test"
+    with pytest.raises(ValueError, match="Invalid platform(s): platform_doesnt_exist, test."):
+        builder.validate_platforms(invalid_platforms)
+
+    no_platforms = ",,,,"
+    with pytest.raises(ValueError, match="Invalid platform(s):"):
+        builder.validate_platforms(no_platforms)
 
 # The object correctly returns the flavor data of a chosen flavor,
 # as written in fixtures/build_images.yaml

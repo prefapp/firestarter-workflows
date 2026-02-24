@@ -499,13 +499,17 @@ class BuildImages(FirestarterWorkflow):
 
         platform_list = trimmed_platforms.split(',')
 
+        invalid_platforms = []
         for platform in platform_list:
             if not re.match(r'^(linux/)?(amd64|arm64)$', platform):
-                raise ValueError(
-                    f"Invalid platform: {platform}. "
-                    "Valid platforms are: linux/amd64, linux/arm64, amd64, arm64, "
-                    "or '*'. Whitespace around comma-separated entries is ignored."
-                )
+                invalid_platforms.append(platform)
+
+        if invalid_platforms:
+            raise ValueError(
+                f"Invalid platform(s): {invalid_platforms.join(', ')}. "
+                "Valid platforms are: linux/amd64, linux/arm64, amd64, arm64, "
+                "or '*'. Whitespace around comma-separated entries is ignored."
+            )
 
         return trimmed_platforms
 
