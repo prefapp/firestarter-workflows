@@ -10,6 +10,7 @@ from ruamel.yaml import YAML
 import subprocess
 from mock_classes import DaggerContextMock, DaggerImageMock
 import os
+import re
 import docker
 import json
 import requests
@@ -466,11 +467,11 @@ def test_validate_platforms() -> None:
     assert returned_platforms == some_valid_platforms.replace(" ", "")
 
     invalid_platforms = "platform_doesnt_exist, test"
-    with pytest.raises(ValueError, match="Invalid platform(s): platform_doesnt_exist, test."):
+    with pytest.raises(ValueError, match=re.escape("Invalid platform(s): platform_doesnt_exist, test.")):
         builder.validate_platforms(invalid_platforms)
 
     no_platforms = ",,,,"
-    with pytest.raises(ValueError, match="Invalid platform(s):"):
+    with pytest.raises(ValueError, match=re.escape("Invalid platform(s):")):
         builder.validate_platforms(no_platforms)
 
 # The object correctly returns the flavor data of a chosen flavor,
