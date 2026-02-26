@@ -138,19 +138,19 @@ jobs:
             releases_registry_creds="${{ secrets.DOCKER_REGISTRY_RELEASES_CREDS }}"
           secrets: ${{ inputs.secrets }}
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: build-images-results
-          path: /tmp/build_images_results.yaml
+      # - uses: actions/upload-artifact@v4
+      #   with:
+      #     name: build-images-results
+      #     path: /tmp/build_images_results.yaml
 
-      - name: Update Check Run Summary
-        id: update-check-run-summary
-        if: always()
-        uses: prefapp/action-build-images-summary@v1
-        with:
-          conclusion: ${{ steps.build-images.outcome }}
-          token: ${{ steps.get-gh-app-token.outputs.token }}
-          summary_path: '/tmp/build_images_results.yaml'
-          check_run_name: ${{ inputs.check_run_name }}
-          ref: ${{ inputs.from }}
-          op: 'complete-check-run'
+      # - name: Update Check Run Summary
+      #   id: update-check-run-summary
+      #   if: always()
+      #   uses: prefapp/action-build-images-summary@v1
+      #   with:
+      #     conclusion: ${{ steps.build-images.outcome }}
+      #     token: ${{ steps.get-gh-app-token.outputs.token }}
+      #     summary_path: '/tmp/build_images_results.yaml'
+      #     check_run_name: ${{ inputs.check_run_name }}
+      #     ref: ${{ inputs.from }}
+      #     op: 'complete-check-run'
