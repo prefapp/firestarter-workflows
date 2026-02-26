@@ -496,7 +496,7 @@ class BuildImages(FirestarterWorkflow):
     def validate_platforms(self, platforms):
         trimmed_platforms = platforms.replace(' ', '')
         if trimmed_platforms == '*':
-            return platforms
+            return trimmed_platforms
 
         platform_list = trimmed_platforms.split(',')
 
