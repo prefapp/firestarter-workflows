@@ -20,7 +20,7 @@ on:
         default: "*"
       platforms:
         type: string
-        description: Platforms to build for, formatted as JSON list of strings in the format os/arch (e.g. ["linux/amd64"]), or the string `*` for all
+        description: Platforms to build for, formatted as JSON list of strings in the format os/arch (e.g. ["linux/amd64"]) or just arch (e.g. ["amd64"]), or the string `*` for all
         default: "*"
       secrets:
         type: string
