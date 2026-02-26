@@ -385,9 +385,10 @@ class BuildImages(FirestarterWorkflow):
                 )
 
                 if len(platforms_to_build) == 0:
-                    logger.warning(
-                        f"No matching platforms to build for flavor {flavor}. "
-                        f"Skipping..."
+                    print(
+                        f"::warning title=BuildImages Warning::"
+                        f"No images were built. "
+                        f"Please check the workflow filters are correct."
                     )
                     continue
 
@@ -482,8 +483,6 @@ class BuildImages(FirestarterWorkflow):
                 f"No images were built. "
                 f"Please check the workflow filters are correct."
             )
-            # logger.warning(
-            # )
 
         yaml.default_flow_style = False
         with open(os.path.join("/tmp", self.output_results), "w") as f:
