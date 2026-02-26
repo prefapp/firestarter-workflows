@@ -477,10 +477,13 @@ class BuildImages(FirestarterWorkflow):
                     })
 
         if len(results_list) == 0:
-            logger.warning(
+            print(
+                f"::warning title=BuildImages Warning::{e}"
                 f"No images were built. "
                 f"Please check the workflow filters are correct."
             )
+            # logger.warning(
+            # )
 
         yaml.default_flow_style = False
         with open(os.path.join("/tmp", self.output_results), "w") as f:
