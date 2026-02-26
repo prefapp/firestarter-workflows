@@ -478,7 +478,7 @@ class BuildImages(FirestarterWorkflow):
 
         if len(results_list) == 0:
             logger.warning(
-                f"No images were built. "
+                f"::warning::No images were built. "
                 f"Please check the workflow filters are correct."
             )
 
