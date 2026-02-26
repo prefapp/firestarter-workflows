@@ -474,6 +474,13 @@ def test_validate_platforms() -> None:
     with pytest.raises(ValueError, match=re.escape("Invalid platform(s):")):
         builder.validate_platforms(no_platforms)
 
+def test_check_if_build_all_platforms():
+    builder._platforms = '*'
+    assert builder.check_if_build_all_platforms() == True
+
+    builder._platforms = 'linux/amd64'
+    assert builder.check_if_build_all_platforms() == False
+
 # The object correctly returns the flavor data of a chosen flavor,
 # as written in fixtures/build_images.yaml
 def test_get_flavor_data() -> None:
