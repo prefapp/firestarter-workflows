@@ -40,7 +40,7 @@ on:
         default: v2
       runs_on:
         type: string
-        description: Runner image name to run the job on
+        description: Runner labels to run the job on, formatted as a JSON array (e.g. '["ubuntu-24.04"]' or '["self-hosted", "linux"]')
         default: ''
     secrets:
       FS_CHECKS_PEM_FILE:
