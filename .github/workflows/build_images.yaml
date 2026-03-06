@@ -18,6 +18,10 @@ on:
         type: string
         description: Flavor name/s | one (alone), several (separated by commas)
         default: "*"
+      platforms:
+        type: string
+        description: Platforms to build for, formatted as os/arch (e.g. linux/amd64). Can be a single platform, a comma-separated list, or * for all
+        default: "*"
       secrets:
         type: string
         description: Secrets to pass to the image
@@ -34,6 +38,10 @@ on:
         type: string
         description: Git reference from where to pull the workflows_repo
         default: v2
+      runs_on:
+        type: string
+        description: Runner labels to run the job on, formatted as a JSON array (e.g. '["ubuntu-24.04"]' or '["self-hosted", "linux"]')
+        default: ''
     secrets:
       FS_CHECKS_PEM_FILE:
         required: false
@@ -55,7 +63,7 @@ jobs:
   build-images:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_DOCKER_REGISTRY_CREDS || github.token }}
-    runs-on: ${{ fromJSON(vars.BUILD_DOCKER_IMAGES_RUNS_ON || '["ubuntu-24.04"]') }}
+    runs-on: ${{ fromJSON(inputs.runs_on || '["ubuntu-24.04"]') }}
     steps:
       - name: Configure Azure Credentials
         uses: azure/login@v2
@@ -115,6 +123,7 @@ jobs:
           vars: |
             repo_name="${{ github.repository }}"
             flavors="${{ inputs.flavors }}"
+            platforms="${{ inputs.platforms }}"
             auth_strategy="${{ inputs.auth_strategy }}"
             snapshots_registry="${{ vars.DOCKER_REGISTRY_SNAPSHOTS }}"
             releases_registry="${{ vars.DOCKER_REGISTRY_RELEASES }}"

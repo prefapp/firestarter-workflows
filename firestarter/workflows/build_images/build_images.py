@@ -52,6 +52,9 @@ class BuildImages(FirestarterWorkflow):
         self._workflow_run_url = self.vars.get('workflow_run_url', None)
         self._service_path = self.vars.get('service_path', '')
         self._flavors = self.vars.get('flavors', 'default')
+        self._platforms = self.validate_platforms(
+            self.vars.get('platforms', '*')
+        )
         self._container_structure_filename = self.vars.get(
             'container_structure_filename', None
         )
@@ -122,6 +125,10 @@ class BuildImages(FirestarterWorkflow):
     @property
     def flavors(self):
         return self._flavors
+
+    @property
+    def platforms(self):
+        return self._platforms
 
     @property
     def service_path(self):
@@ -251,7 +258,6 @@ class BuildImages(FirestarterWorkflow):
 
         self._flavors = final_flavors_list
 
-
     def filter_auto_build(self):
         logger.info(
             'Publishing all flavors with auto build enabled:',
@@ -359,6 +365,33 @@ class BuildImages(FirestarterWorkflow):
                         dockerfile, extra_registries,\
                         extra_tags, platforms = self.get_flavor_data(flavor)
 
+                platforms_to_build = []
+                if self.check_if_build_all_platforms():
+                    platforms_to_build = platforms
+                else:
+                    allowed_platforms = self.platforms.replace(' ', '').split(',')
+                    normalized_allowed_platforms = {
+                        p.replace('linux/', '') for p in allowed_platforms
+                    }
+
+                    # Get the platforms to build for this flavor by checking the intersection
+                    platforms_to_build = [
+                        platform for platform in platforms
+                        if platform.replace('linux/', '') in normalized_allowed_platforms
+                    ]
+
+                logger.info(
+                    f"Building flavor {flavor} for platforms: {platforms_to_build}"
+                )
+
+                if len(platforms_to_build) == 0:
+                    print(
+                        f"::warning title=BuildImages Warning::"
+                        f"No matching platforms to build for flavor {flavor}. "
+                        f"Skipping..."
+                    )
+                    continue
+
                 # Set the build arguments for the current flavor
                 build_args_list = [
                     dagger.BuildArg(name=key, value=value)
@@ -424,7 +457,7 @@ class BuildImages(FirestarterWorkflow):
                         secrets,
                         dockerfile,
                         image,
-                        platforms
+                        platforms_to_build
                     )
 
                     image_tag = image.split(":")[1]
@@ -444,11 +477,42 @@ class BuildImages(FirestarterWorkflow):
                         "workflow_run_url": self.workflow_run_url
                     })
 
+        if len(results_list) == 0:
+            print(
+                f"::warning title=BuildImages Warning::"
+                f"No images were built. "
+                f"Please check the workflow filters are correct."
+            )
+
         yaml.default_flow_style = False
         with open(os.path.join("/tmp", self.output_results), "w") as f:
             yaml.dump(results_list, f)
 
         return results_list
+
+    def check_if_build_all_platforms(self):
+        return self.platforms.replace(' ', '') == '*'
+
+    def validate_platforms(self, platforms):
+        trimmed_platforms = platforms.replace(' ', '')
+        if trimmed_platforms == '*':
+            return trimmed_platforms
+
+        platform_list = trimmed_platforms.split(',')
+
+        invalid_platforms = []
+        for platform in platform_list:
+            if not re.match(r'^(linux/)?(amd64|arm64)$', platform):
+                invalid_platforms.append(platform)
+
+        if invalid_platforms:
+            raise ValueError(
+                f"Invalid platform(s): {', '.join(invalid_platforms)}. "
+                "Valid platforms are: linux/amd64, linux/arm64, amd64, arm64, "
+                "or '*'. Whitespace around comma-separated entries is ignored."
+            )
+
+        return trimmed_platforms
 
     def get_flavor_data(self, flavor):
         flavor_data = self.config.images[flavor]

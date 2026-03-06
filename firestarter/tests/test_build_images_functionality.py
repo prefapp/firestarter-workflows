@@ -10,6 +10,7 @@ from ruamel.yaml import YAML
 import subprocess
 from mock_classes import DaggerContextMock, DaggerImageMock
 import os
+import re
 import docker
 import json
 import requests
@@ -25,6 +26,7 @@ vars = {
     "releases_registry": "xxxx.azurecr.io",
     "snapshots_registry_creds": "test_snapshots_creds",
     "releases_registry_creds": "test_releases_creds",
+    "platforms": "linux/amd64,linux/arm64",
 }
 secrets = {}
 config_file_path = f"{os.path.dirname(os.path.realpath(__file__))}/fixtures/build_images.yaml"
@@ -425,6 +427,59 @@ async def test_compile_images_for_all_flavors(mocker) -> None:
     assert result[7]["flavor"] == "flavor3"
     assert result[7]["repository"] == "repo3"
     assert result[7]["image_tag"] == "flavor3-custom-tag"
+
+@pytest.mark.asyncio
+async def test_compile_images_filtering_by_platform(mocker) -> None:
+    mocker.patch("dagger.Config")
+    mocker.patch("dagger.Connection")
+    mocker.patch.object(builder, "compile_image_and_publish")
+
+    dagger_config_mock = dagger.Config
+    dagger_connection_mock = dagger.Connection
+
+    builder._flavors = "flavor1, flavor3"
+    builder._platforms = builder.validate_platforms("linux/amd64")
+    builder.filter_flavors()
+
+    result = await builder.compile_images_for_all_flavors()
+    built_flavors = set([image["flavor"] for image in result])
+    assert built_flavors == {"flavor1", "flavor3"}
+
+    builder._platforms = builder.validate_platforms("arm64")
+
+    result = await builder.compile_images_for_all_flavors()
+    built_flavors = set([image["flavor"] for image in result])
+    assert built_flavors == {"flavor3"}
+
+    builder._platforms = builder.validate_platforms("*")
+
+    result = await builder.compile_images_for_all_flavors()
+    built_flavors = set([image["flavor"] for image in result])
+    assert built_flavors == {"flavor1", "flavor3"}
+
+def test_validate_platforms() -> None:
+    all_valid_platforms = "linux/amd64 ,   linux/arm64,arm64   , amd64"
+    returned_platforms = builder.validate_platforms(all_valid_platforms)
+    assert returned_platforms == all_valid_platforms.replace(" ", "")
+
+    some_valid_platforms = "       linux/amd64, arm64     "
+    returned_platforms = builder.validate_platforms(some_valid_platforms)
+    assert returned_platforms == some_valid_platforms.replace(" ", "")
+
+    invalid_platforms = "platform_doesnt_exist, test"
+    with pytest.raises(ValueError, match=re.escape("Invalid platform(s): platform_doesnt_exist, test.")):
+        builder.validate_platforms(invalid_platforms)
+
+    no_platforms = ",,,,"
+    with pytest.raises(ValueError, match=re.escape("Invalid platform(s):")):
+        builder.validate_platforms(no_platforms)
+
+def test_check_if_build_all_platforms():
+    builder._platforms = '*'
+    assert builder.check_if_build_all_platforms() == True
+
+    builder._platforms = 'linux/amd64'
+    assert builder.check_if_build_all_platforms() == False
 
 # The object correctly returns the flavor data of a chosen flavor,
 # as written in fixtures/build_images.yaml
