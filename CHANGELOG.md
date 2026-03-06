@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.0](https://github.com/prefapp/firestarter-workflows/compare/v3.3.0...v3.4.0) (2026-03-06)
+
+
+### Features
+
+* Allow filtering by platform on workflow call ([#209](https://github.com/prefapp/firestarter-workflows/issues/209)) ([4b63618](https://github.com/prefapp/firestarter-workflows/commit/4b63618514ff03901f5d571c8ca8a877eca33c0e))
+
 ## [3.3.0](https://github.com/prefapp/firestarter-workflows/compare/v3.2.1...v3.3.0) (2026-02-12)
 
 
