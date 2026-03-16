@@ -315,16 +315,22 @@ class BuildImages(FirestarterWorkflow):
         # If there are platforms that are not being built for this flavor, log them
         # and create container variants for them without building,
         # so that they can be included in the published multi-platform manifest list
-        other_platforms = [p for p in platforms if p not in platforms_to_build]
         variants = []
+        other_platforms = [p for p in platforms if p not in platforms_to_build]
         if len(other_platforms) > 0:
             logger.info(
-                f"Not building for these platforms as they are not in the platforms list: {other_platforms}, but including them as variants in the published multi-platform manifest list."
+                f"Not building for these platforms as they are not in the filtered list: {other_platforms}, but including them as variants in the published multi-platform manifest list."
             )
-            variants = [
-                ctx.container(platform=dagger.Platform(p)).from_(image)
-                for p in other_platforms
-            ]
+            for p in other_platforms:
+                logger.info(f"Creating container variant for platform {p} without building...")
+                v = ctx.container(platform=dagger.Platform(p)).from_(image)
+                try:
+                    await v.sync()
+                    variants.append(v)
+                except Exception as e:
+                    logger.info(
+                        f"Failed to create container variant for platform {p} using image {image}. Error: {e}. This variant will not be included in the published multi-platform manifest list."
+                    )
 
         # Set a current working directory
         src = ctx.host().directory(".")
@@ -346,7 +352,7 @@ class BuildImages(FirestarterWorkflow):
                     ))
             )
             # Insert the built container at the beginning of the variants list, to try to build it first
-            variants.insert(0, ctr)
+            variants.append(ctr)
 
         if self.container_structure_filename is not None:
             for variant in variants:
