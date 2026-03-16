@@ -486,6 +486,7 @@ class BuildImages(FirestarterWorkflow):
             )
 
         yaml.default_flow_style = False
+        yaml.representer.ignore_aliases = lambda *args: True
         with open(os.path.join("/tmp", self.output_results), "w") as f:
             yaml.dump(results_list, f)
 
