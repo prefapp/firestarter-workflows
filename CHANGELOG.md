@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.1](https://github.com/prefapp/firestarter-workflows/compare/v3.4.0...v3.4.1) (2026-03-16)
+
+
+### Bug Fixes
+
+* multi-arch build ([#212](https://github.com/prefapp/firestarter-workflows/issues/212)) ([fccd28f](https://github.com/prefapp/firestarter-workflows/commit/fccd28fd049629b9c8f8455bb088275d9e5c8893))
+
 ## [3.4.0](https://github.com/prefapp/firestarter-workflows/compare/v3.3.0...v3.4.0) (2026-03-06)
 
 
