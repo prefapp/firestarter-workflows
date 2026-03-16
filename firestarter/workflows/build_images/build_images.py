@@ -345,7 +345,8 @@ class BuildImages(FirestarterWorkflow):
                         "%Y-%m-%d_%H:%M:%S_UTC"
                     ))
             )
-            variants.append(ctr)
+            # Insert the built container at the beginning of the variants list, to try to build it first
+            variants.insert(0, ctr)
 
         if self.container_structure_filename is not None:
             for variant in variants:
