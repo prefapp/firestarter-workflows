@@ -310,15 +310,33 @@ class BuildImages(FirestarterWorkflow):
 
     # Define a coroutine function to compile an image using Docker
     async def compile_image_and_publish(
-        self, ctx, build_args, secrets, dockerfile, image, platforms
+        self, ctx, build_args, secrets, dockerfile, image, platforms_to_build, platforms
     ):
+        # If there are platforms that are not being built for this flavor, log them
+        # and create container variants for them without building,
+        # so that they can be included in the published multi-platform manifest list
+        variants = []
+        other_platforms = [p for p in platforms if p not in platforms_to_build]
+        if len(other_platforms) > 0:
+            logger.info(
+                f"Not building for these platforms as they are not in the filtered list: {other_platforms}, but including them as variants in the published multi-platform manifest list."
+            )
+            for p in other_platforms:
+                logger.info(f"Creating container variant for platform {p} without building...")
+                v = ctx.container(platform=dagger.Platform(p)).from_(image)
+                try:
+                    await v.sync()
+                    variants.append(v)
+                except Exception as e:
+                    logger.info(
+                        f"Failed to create container variant for platform {p} using image {image}. Error: {e}. This variant will not be included in the published multi-platform manifest list."
+                    )
+
         # Set a current working directory
         src = ctx.host().directory(".")
 
-        logger.info(f"Using secrets: {secrets}")
-
-        variants = []
-        for platform in platforms:
+        logger.info(f"Building for platforms: {platforms_to_build} using secrets: {secrets}")
+        for platform in platforms_to_build:
             ctr = (
                 ctx.container(platform=dagger.Platform(platform))
                     .build(
@@ -457,7 +475,8 @@ class BuildImages(FirestarterWorkflow):
                         secrets,
                         dockerfile,
                         image,
-                        platforms_to_build
+                        platforms_to_build,
+                        platforms
                     )
 
                     image_tag = image.split(":")[1]
@@ -591,4 +610,3 @@ class BuildImages(FirestarterWorkflow):
         provider.creds = creds
 
         return provider.login_registry()
-
