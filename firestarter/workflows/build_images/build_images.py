@@ -493,7 +493,8 @@ class BuildImages(FirestarterWorkflow):
                         "registry": registry,
                         "build_args": build_args,
                         "workflow_run_id": self.workflow_run_id,
-                        "workflow_run_url": self.workflow_run_url
+                        "workflow_run_url": self.workflow_run_url,
+                        "platforms": platforms_to_build
                     })
 
         if len(results_list) == 0:
@@ -504,6 +505,7 @@ class BuildImages(FirestarterWorkflow):
             )
 
         yaml.default_flow_style = False
+        yaml.representer.ignore_aliases = lambda *args: True
         with open(os.path.join("/tmp", self.output_results), "w") as f:
             yaml.dump(results_list, f)
 
