@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.4.2](https://github.com/prefapp/firestarter-workflows/compare/v3.4.1...v3.4.2) (2026-03-17)
+
+
+### Bug Fixes
+
+* Added platforms field to build images' result ([#211](https://github.com/prefapp/firestarter-workflows/issues/211)) ([9230df6](https://github.com/prefapp/firestarter-workflows/commit/9230df6219ca134267bd2f1f0e78ff16c43d7d4a))
+
 ## [3.4.1](https://github.com/prefapp/firestarter-workflows/compare/v3.4.0...v3.4.1) (2026-03-16)
 
 
