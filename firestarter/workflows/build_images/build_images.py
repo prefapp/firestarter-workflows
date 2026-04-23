@@ -172,8 +172,13 @@ class BuildImages(FirestarterWorkflow):
         if self.login_required:
             self.login(
                 self.auth_strategy,
-                default_registry,
-                default_registry_creds,
+                self.snapshots_registry,
+                self.snapshots_registry_creds,
+            )
+            self.login(
+                self.auth_strategy,
+                self.releases_registry,
+                self.releases_registry_creds,
             )
 
         for flavor in self.flavors:
