@@ -175,11 +175,12 @@ class BuildImages(FirestarterWorkflow):
                 self.snapshots_registry,
                 self.snapshots_registry_creds,
             )
-            self.login(
-                self.auth_strategy,
-                self.releases_registry,
-                self.releases_registry_creds,
-            )
+            if self.releases_registry != self.snapshots_registry:
+                self.login(
+                    self.auth_strategy,
+                    self.releases_registry,
+                    self.releases_registry_creds,
+                )
 
         for flavor in self.flavors:
             logger.info(f"Building flavor {flavor}...")
