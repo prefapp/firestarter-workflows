@@ -42,7 +42,7 @@ def main():
       logger.debug(f"Inline vars: {vars}")
     if args.secrets:
       args.secrets = f"secrets = {args.secrets}"
-      secrets.update(tomllib.loads(args.secrets))
+      secrets.update(tomllib.loads(args.secrets).get("secrets"))
       logger.debug(f"Inline secrets: {secrets}")
     if args.additional_build_args:
       additional_build_args.update(tomllib.loads(args.additional_build_args).get("additional_build_args"))
