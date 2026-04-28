@@ -378,6 +378,16 @@ class BuildImages(FirestarterWorkflow):
                 f"Using these secrets for all flavors: {self.secrets.keys()}"
             )
 
+            build_args_for_all_flavors = []
+            for key, value in self.additional_build_args.items():
+                build_args_for_all_flavors.append(
+                    dagger.BuildArg(name=key, value=value)
+                )
+
+            logger.info(
+                f"Using these build_args for all flavors: {self.additional_build_args.keys()}"
+            )
+
             for flavor in self.flavors:
                 registry, full_repo_name, build_args,\
                         dockerfile, extra_registries,\
@@ -415,6 +425,9 @@ class BuildImages(FirestarterWorkflow):
                     dagger.BuildArg(name=key, value=value)
                     for key, value in build_args.items()
                 ]
+
+                # Combine generic and custom build_args for this flavor
+                full_build_args = build_args_for_all_flavors + build_args_list
 
                 resolved_secret_refs = self.resolve_secrets(
                     self.config.images[flavor].secrets or {}
@@ -471,7 +484,7 @@ class BuildImages(FirestarterWorkflow):
                 for image in registry_list:
                     await self.compile_image_and_publish(
                         client,
-                        build_args_list,
+                        full_build_args,
                         secrets,
                         dockerfile,
                         image,
