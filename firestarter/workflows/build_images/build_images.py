@@ -427,6 +427,11 @@ class BuildImages(FirestarterWorkflow):
                 ]
 
                 # Combine generic and custom build_args for this flavor
+                # (Order matters: the args added in the second array will
+                # overwrite the ones with the same name in the first array.
+                # In this case, args defined in the flavor configuration will
+                # overwrite the same args defined as command line arguments
+                # or environment variables)
                 full_build_args = build_args_for_all_flavors + build_args_list
 
                 resolved_secret_refs = self.resolve_secrets(
@@ -446,6 +451,11 @@ class BuildImages(FirestarterWorkflow):
                     flavor_secrets.append(client.set_secret(key, value))
 
                 # Combine generic and custom secrets for this flavor
+                # (Order matters: the secrets added in the second array will
+                # overwrite the ones with the same name in the first array.
+                # In this case, secretss defined in the flavor configuration
+                # will overwrite the same secrets defined as command line
+                # arguments or environment variables)
                 secrets = secrets_for_all_flavors + flavor_secrets
 
                 # Set the address for the default registry
