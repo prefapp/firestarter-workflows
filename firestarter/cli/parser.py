@@ -20,9 +20,9 @@ def main():
     arg_parser = argparse.ArgumentParser()
 
     arg_parser.add_argument('workflow', type=str, help='Name of the workflow to run')
-    arg_parser.add_argument('--vars', type=str, help='Variables to pass to the workflow, in inline table toml format. Example: --vars=\'{ var1= "value1", var2= "value2"}\'')
-    arg_parser.add_argument('--secrets', type=str, help='Secrets to pass to the workflow, in inline table toml format. Example: --secrets=\'{ secret1= "foo", secret2= "bar"}\'')
-    arg_parser.add_argument('--additional_build_args', type=str, help='Additional build_args to pass to the workflow, in inline table toml format. Example: --additional_build_args=\'{ build_arg1= "arg1", build_arg2= "arg2"}\'')
+    arg_parser.add_argument('--vars', type=str, help='Variables to pass to the workflow, as an inline toml format dict. Example: --vars=\'{ var1= "value1", var2= "value2"}\'')
+    arg_parser.add_argument('--secrets', type=str, help='Secrets to pass to the workflow, as an inline toml format dict. Example: --secrets=\'{ secret1= "foo", secret2= "bar"}\'')
+    arg_parser.add_argument('--additional_build_args', type=str, help='Additional build_args to pass to the workflow, as an inline toml format dict. Example: --additional_build_args=\'{ build_arg1= "arg1", build_arg2= "arg2"}\'')
     arg_parser.add_argument('--config_file', type=str, help='Optional configuration file for the workflow, located in the repository')
     args = arg_parser.parse_args()
 
