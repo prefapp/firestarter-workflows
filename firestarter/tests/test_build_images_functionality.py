@@ -29,6 +29,7 @@ vars = {
     "platforms": "linux/amd64,linux/arm64",
 }
 secrets = {}
+additional_build_args = {}
 config_file_path = f"{os.path.dirname(os.path.realpath(__file__))}/fixtures/build_images.yaml"
 
 with open(config_file_path, 'r') as config_file:
@@ -57,7 +58,10 @@ def reset_builder_value() -> None:
     global builder
 
     builder = BuildImages(
-        vars=vars, secrets=secrets, config_file=config_file_path
+        vars=vars,
+        secrets=secrets,
+        additional_build_args=additional_build_args,
+        config_file=config_file_path
     )
 
 
