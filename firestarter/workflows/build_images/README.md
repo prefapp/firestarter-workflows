@@ -26,7 +26,7 @@ Beyond the configuration file which is mandatory, there are some other extra var
 Additionally there are some optional variables:
 
 * `container_structure_filename`: path of the [container-structure-test](https://github.com/GoogleContainerTools/container-structure-test) filename (if not set, no tests are checked)
-    
+
     > Highly recommended! ⚠️
 * `publish`: publish the docker image to the registry
 
@@ -43,6 +43,21 @@ RUN --mount=type=secret,id=github_token,dst=/run/secrets/github_token \
 ```
 
 > Remember to make sure the secret key name and secret id are the same
+
+
+## Additional build args
+
+In addition to those found in the configuration file, additional build args may be set using the command line argument `--additional-build-args` or via the `INPUT_ADDITIONAL_BUILD_ARGS` environment variable. These values can then be used in the Dockerfile, for example:
+
+```Dockerfile
+ARG YOUR_BUILD_ARG
+ENV YOUR_BUILD_ARG=$YOUR_BUILD_ARG
+
+RUN echo "The additional build arg is: $YOUR_BUILD_ARG"
+```
+
+> [!WARNING]
+> Secrets and build args set in the configuration file will overwrite those set via the command line or environment variables.
 
 ## Example
 
