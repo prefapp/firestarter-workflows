@@ -31,7 +31,7 @@ on:
       version_kustomize:
         type: string
         required: false
-        default: '5.4.2'
+        default: "5.4.2"
       version_helm:
         type: string
         required: false
@@ -39,23 +39,23 @@ on:
       version_helmfile:
         type: string
         required: false
-        default: 'v0.169.2'
+        default: "v0.169.2"
       version_helm_diff_plugin:
         type: string
         required: false
-        default: 'v3.9.13'
+        default: "v3.9.13"
       version_helm_s3-plugin:
         type: string
         required: false
-        default: 'v0.16.2'
+        default: "v0.16.2"
       version_secrets:
         type: string
         required: false
-        default: '4.6.2'
+        default: "4.6.2"
       version_sops:
         type: string
         required: false
-        default: 'v3.9.1'
+        default: "v3.9.1"
 
 jobs:
   helm:
@@ -74,7 +74,7 @@ jobs:
 
       - name: Parse config file
         id: parse_config
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require("fs");
@@ -123,23 +123,22 @@ jobs:
             console.log(result);
             return result;
 
-
       # Install dependencies
       ## Both kubectl and helm are already installed but we use this step also to use a specific version
       - name: Setup helmfile
-        uses: mamezou-tech/setup-helmfile@v2.1.0
+        uses: mamezou-tech/setup-helmfile@c04e83ec7650bf2ec910864bcb409479cf56d8e6
         with:
-          kubectl-version: '${{ inputs.version_kubectl }}'
-          kubectl-release-date: '${{ inputs.version_kubectl_release_date }}'
-          helmfile-version: '${{ inputs.version_helmfile }}'
-          helm-version: '${{ inputs.version_helm }}'
-          helm-diff-plugin-version: '${{ inputs.version_helm_diff_plugin}}'
-          helm-s3-plugin-version: '${{ inputs.version_helm_s3-plugin}}'
+          kubectl-version: "${{ inputs.version_kubectl }}"
+          kubectl-release-date: "${{ inputs.version_kubectl_release_date }}"
+          helmfile-version: "${{ inputs.version_helmfile }}"
+          helm-version: "${{ inputs.version_helm }}"
+          helm-diff-plugin-version: "${{ inputs.version_helm_diff_plugin}}"
+          helm-s3-plugin-version: "${{ inputs.version_helm_s3-plugin}}"
 
       # AWS setup
       - name: Configure AWS Credentials
         if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'aws' }}
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-region: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).region }}
           role-to-assume: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).role_to_assume }}
@@ -151,16 +150,16 @@ jobs:
       - name: Login to ECRs
         if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'aws' }}
         run: |
-            registries='${{ toJSON(fromJSON(steps.parse_config.outputs.result).helm_registries) }}'
+          registries='${{ toJSON(fromJSON(steps.parse_config.outputs.result).helm_registries) }}'
 
-            echo "$registries" | jq -r '.[]' | while read -r registry; do
-              echo "Login in $registry"
-              aws ecr get-login-password --region ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).region }} | helm registry login --username AWS --password-stdin "$registry"
-            done
+          echo "$registries" | jq -r '.[]' | while read -r registry; do
+            echo "Login in $registry"
+            aws ecr get-login-password --region ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).region }} | helm registry login --username AWS --password-stdin "$registry"
+          done
 
       # Azure setup
       - name: Setup / Azure Login
-        uses: Azure/login@v2
+        uses: Azure/login@v3
         if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'azure' }}
         with:
           client-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).identifier }}
@@ -169,18 +168,18 @@ jobs:
 
       - name: Set up kubelogin for non-interactive login
         if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'azure' }}
-        uses: azure/use-kubelogin@v1.2
+        uses: azure/use-kubelogin@v1.3
         with:
-          kubelogin-version: 'v0.0.24'
+          kubelogin-version: "v0.0.24"
 
       - name: Setup / AKS Context
         if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'azure' }}
-        uses: azure/aks-set-context@v4
+        uses: azure/aks-set-context@v5
         with:
           resource-group: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).resource_group_name }}
           cluster-name: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).cluster_name }}
-          admin: 'false'
-          use-kubelogin: 'true'
+          admin: "false"
+          use-kubelogin: "true"
 
       - name: Login to ACRs
         if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'azure' }}
@@ -196,12 +195,12 @@ jobs:
       # Helm logic
       - uses: imranismail/setup-kustomize@v2
         with:
-          kustomize-version: '${{ inputs.version_kustomize }}'
+          kustomize-version: "${{ inputs.version_kustomize }}"
 
       - name: Setup / SOPS
         env:
-          SOPS_VERSION: '${{ inputs.version_sops }}'
-          HELM_SECRETS_VERSION: '${{ inputs.version_secrets }}'
+          SOPS_VERSION: "${{ inputs.version_sops }}"
+          HELM_SECRETS_VERSION: "${{ inputs.version_secrets }}"
         if: ${{ inputs.sops_enabled == true || inputs.sops_enabled == 'true' }}
         run: |
           curl -O -L -C - "https://github.com/getsops/sops/releases/download/$SOPS_VERSION/sops-$SOPS_VERSION.linux.amd64"
@@ -210,9 +209,9 @@ jobs:
 
           helm plugin install --version "${HELM_SECRETS_VERSION}" https://github.com/jkroepke/helm-secrets
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
-          python-version: '3.9'
+          python-version: "3.9"
       - run: pip install pyyaml
 
       - name: Hydrate helm values
@@ -314,7 +313,7 @@ jobs:
         uses: prefapp/action-delete-pr-comments@v1
         if: ${{ inputs.operation == 'diff' }}
         env:
-          DEBUG: '*'
+          DEBUG: "*"
         with:
           filter: "Helm diff in env: ${{ inputs.environment }}"
 
@@ -344,7 +343,7 @@ jobs:
           done
 
       - name: Helm destroy
-        if:  ${{ inputs.operation == 'destroy' }}
+        if: ${{ inputs.operation == 'destroy' }}
         run: |
           apps='${{ inputs.updated_apps }}'
           echo "$apps"
