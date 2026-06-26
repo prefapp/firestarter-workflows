@@ -240,8 +240,12 @@ jobs:
 
             with open(path.join(app_dir, 'final.yaml'), 'w') as outfile:
               for fname in filtered_files:
-                  with open(fname) as infile:
-                      outfile.write(infile.read())
+                with open(fname) as infile:
+                  for line in infile:
+                    # Remove YAML document separators to avoid multi-doc parsing issues in Helm.
+                    if line.strip() == '---':
+                      continue
+                    outfile.write(line)
 
             with open(path.join(app_dir, 'final.yaml'), 'r') as file:
               print(file.read())
