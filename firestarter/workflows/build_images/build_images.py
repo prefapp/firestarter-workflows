@@ -225,11 +225,19 @@ class BuildImages(FirestarterWorkflow):
         git_output = proc.stdout.decode('utf-8').strip()
 
         if git_output:
+            if self.type == 'snapshots':
+                proc = subprocess.run(
+                    ['git', 'rev-parse', f"{git_output}^{{commit}}"],
+                    stdout=subprocess.PIPE
+                )
+                proc.check_returncode()
+                return proc.stdout.decode('utf-8')[:7]
             return git_output
 
         # if the input value is a branch, we need to get the sha of the branch
         proc = subprocess.run(
-            ['git', 'rev-parse', f"origin/{input_value}"], stdout=subprocess.PIPE
+            ['git', 'rev-parse', f"origin/{input_value}"],
+            stdout=subprocess.PIPE
         )
         proc.check_returncode()
         return proc.stdout.decode('utf-8')[:7]
