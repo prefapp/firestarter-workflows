@@ -348,6 +348,9 @@ async def test_compile_image_and_publish(mocker) -> None:
         platforms = ["linux/amd64"]
         platforms_to_build = ["linux/amd64"]
 
+        mocker.patch.object(ciap_builder, "_get_existing_platforms")
+        ciap_builder._get_existing_platforms.return_value = []
+
         mocker.patch.object(ciap_builder, "test_image")
         ciap_builder_test_image_mock = ciap_builder.test_image
         ciap_builder_test_image_mock.return_value = "Mock test image result"
