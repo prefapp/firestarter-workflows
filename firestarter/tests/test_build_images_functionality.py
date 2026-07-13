@@ -134,52 +134,50 @@ def test_dereference_from_input(mocker) -> None:
         return_value=True
     )
 
-    subprocess_mock_tag_return_value = completed_process_mock(
-        args=None, returncode=0
-    )
-    subprocess_mock_tag_return_value.stdout = TAG_INPUT.encode("windows-1252")
+    mock_tag = completed_process_mock(args=None, returncode=0)
+    mock_tag.stdout = TAG_INPUT.encode("windows-1252")
 
-    subprocess_mock_empty_return_value = completed_process_mock(
-        args=None, returncode=0
-    )
-    subprocess_mock_empty_return_value.stdout = "".encode("windows-1252")
+    mock_empty = completed_process_mock(args=None, returncode=0)
+    mock_empty.stdout = "".encode("windows-1252")
 
-    subprocess_mock_sha_return_value = completed_process_mock(
-        args=None, returncode=0
-    )
-    subprocess_mock_sha_return_value.stdout = LONG_SHA_INPUT.encode(
-        "windows-1252"
-    )
+    mock_sha = completed_process_mock(args=None, returncode=0)
+    mock_sha.stdout = LONG_SHA_INPUT.encode("windows-1252")
 
-    # Test tag input
-    subprocess_mock = subprocess
-    subprocess_mock.run = mocker.MagicMock(
+    # Test tag input with snapshots type (builder defaults to snapshots)
+    # Flow: git tag -l → mock_tag, git rev-parse tag^{commit} → mock_sha
+    subprocess.run = mocker.MagicMock(
         name="subprocess.run.mock",
-        side_effect=[
-            subprocess_mock_tag_return_value,
-            subprocess_mock_empty_return_value,
-            subprocess_mock_sha_return_value,
-        ]
+        side_effect=[mock_tag, mock_sha]
     )
+    result = builder.dereference_from_input(TAG_INPUT)
+    assert result == SHORT_SHA_INPUT
 
-    tag_input_dereference = builder.dereference_from_input(TAG_INPUT)
+    # Test long sha input — no subprocess calls
+    result = builder.dereference_from_input(LONG_SHA_INPUT)
+    assert result == SHORT_SHA_INPUT
 
-    assert tag_input_dereference == TAG_INPUT
-
-    # Test long sha input
-    long_sha_input_dereference = builder.dereference_from_input(LONG_SHA_INPUT)
-
-    assert long_sha_input_dereference == SHORT_SHA_INPUT
-
-    # Test short sha input
-    short_sha_input_dereference = builder.dereference_from_input(SHORT_SHA_INPUT)
-
-    assert short_sha_input_dereference == SHORT_SHA_INPUT
+    # Test short sha input — no subprocess calls
+    result = builder.dereference_from_input(SHORT_SHA_INPUT)
+    assert result == SHORT_SHA_INPUT
 
     # Test branch input
-    branch_input_dereference = builder.dereference_from_input(BRANCH_INPUT)
+    # Flow: git tag -l → mock_empty, git rev-parse origin/branch → mock_sha
+    subprocess.run = mocker.MagicMock(
+        name="subprocess.run.mock",
+        side_effect=[mock_empty, mock_sha]
+    )
+    result = builder.dereference_from_input(BRANCH_INPUT)
+    assert result == SHORT_SHA_INPUT
 
-    assert branch_input_dereference == SHORT_SHA_INPUT
+    # Test tag input with releases type — tag returned as-is, no rev-parse
+    # Flow: git tag -l → mock_tag only (no additional dereference)
+    builder._type = "releases"
+    subprocess.run = mocker.MagicMock(
+        name="subprocess.run.mock",
+        side_effect=[mock_tag]
+    )
+    result = builder.dereference_from_input(TAG_INPUT)
+    assert result == TAG_INPUT
 
 
 # Secrets are correctly solved, using the corresponding SecretResolver
