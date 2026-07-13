@@ -325,6 +325,13 @@ class BuildImages(FirestarterWorkflow):
         # so that they can be included in the published multi-platform manifest list
         variants = []
         other_platforms = [p for p in platforms if p not in platforms_to_build]
+
+        # Preserve any platforms that already exist in the registry manifest
+        existing_platforms = self._get_existing_platforms(image)
+        for p in existing_platforms:
+            if p not in platforms_to_build and p not in other_platforms:
+                other_platforms.append(p)
+
         if len(other_platforms) > 0:
             logger.info(
                 f"Not building for these platforms as they are not in the filtered list: {other_platforms}, but including them as variants in the published multi-platform manifest list."
@@ -625,6 +632,20 @@ class BuildImages(FirestarterWorkflow):
 
         return extra_full_registry_addresses
 
+    def _get_existing_platforms(self, image):
+        proc = subprocess.run(
+            ['docker', 'manifest', 'inspect', image],
+            capture_output=True, text=True
+        )
+        if proc.returncode != 0:
+            return []
+        manifest = json.loads(proc.stdout)
+        platforms = []
+        for m in manifest.get('manifests', []):
+            arch = m.get('platform', {}).get('architecture')
+            if arch:
+                platforms.append(f"linux/{arch}")
+        return platforms
 
     def is_auto_build(self):
         return self.flavors is None or len(self.flavors) == 0
