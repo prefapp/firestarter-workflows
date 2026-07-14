@@ -128,27 +128,18 @@ def test_dereference_from_input(mocker) -> None:
     SHORT_SHA_INPUT = "6a32377"
     BRANCH_INPUT = "test_branch"
 
-    completed_process_mock = subprocess.CompletedProcess
-    completed_process_mock.check_return_code = mocker.MagicMock(
-        name="completed_process.check_return_code.mock",
-        return_value=True
-    )
+    mock_tag = mocker.MagicMock(returncode=0)
+    mock_tag.stdout = TAG_INPUT.encode()
 
-    mock_tag = completed_process_mock(args=None, returncode=0)
-    mock_tag.stdout = TAG_INPUT.encode("windows-1252")
+    mock_empty = mocker.MagicMock(returncode=0)
+    mock_empty.stdout = b""
 
-    mock_empty = completed_process_mock(args=None, returncode=0)
-    mock_empty.stdout = "".encode("windows-1252")
-
-    mock_sha = completed_process_mock(args=None, returncode=0)
-    mock_sha.stdout = LONG_SHA_INPUT.encode("windows-1252")
+    mock_sha = mocker.MagicMock(returncode=0)
+    mock_sha.stdout = LONG_SHA_INPUT.encode()
 
     # Test tag input with snapshots type (builder defaults to snapshots)
     # Flow: git tag -l → mock_tag, git rev-parse tag^{commit} → mock_sha
-    subprocess.run = mocker.MagicMock(
-        name="subprocess.run.mock",
-        side_effect=[mock_tag, mock_sha]
-    )
+    mocker.patch('subprocess.run', side_effect=[mock_tag, mock_sha])
     result = builder.dereference_from_input(TAG_INPUT)
     assert result == SHORT_SHA_INPUT
 
@@ -162,20 +153,14 @@ def test_dereference_from_input(mocker) -> None:
 
     # Test branch input
     # Flow: git tag -l → mock_empty, git rev-parse origin/branch → mock_sha
-    subprocess.run = mocker.MagicMock(
-        name="subprocess.run.mock",
-        side_effect=[mock_empty, mock_sha]
-    )
+    mocker.patch('subprocess.run', side_effect=[mock_empty, mock_sha])
     result = builder.dereference_from_input(BRANCH_INPUT)
     assert result == SHORT_SHA_INPUT
 
     # Test tag input with releases type — tag returned as-is, no rev-parse
     # Flow: git tag -l → mock_tag only (no additional dereference)
     builder._type = "releases"
-    subprocess.run = mocker.MagicMock(
-        name="subprocess.run.mock",
-        side_effect=[mock_tag]
-    )
+    mocker.patch('subprocess.run', side_effect=[mock_tag])
     result = builder.dereference_from_input(TAG_INPUT)
     assert result == TAG_INPUT
 

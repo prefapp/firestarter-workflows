@@ -327,7 +327,9 @@ class BuildImages(FirestarterWorkflow):
         other_platforms = [p for p in platforms if p not in platforms_to_build]
 
         # Preserve any platforms that already exist in the registry manifest
-        existing_platforms = self._get_existing_platforms(image)
+        existing_platforms = await anyio.to_thread.run_sync(
+            self._get_existing_platforms, image
+        )
         for p in existing_platforms:
             if p not in platforms_to_build and p not in other_platforms:
                 other_platforms.append(p)
@@ -639,12 +641,22 @@ class BuildImages(FirestarterWorkflow):
         )
         if proc.returncode != 0:
             return []
-        manifest = json.loads(proc.stdout)
+        try:
+            manifest = json.loads(proc.stdout)
+        except json.JSONDecodeError:
+            logger.info(f"Failed to parse manifest for {image}: non-JSON output")
+            return []
         platforms = []
         for m in manifest.get('manifests', []):
-            arch = m.get('platform', {}).get('architecture')
+            p = m.get('platform', {})
+            os_val = p.get('os', 'linux')
+            arch = p.get('architecture')
+            variant = p.get('variant')
             if arch:
-                platforms.append(f"linux/{arch}")
+                platform_str = f"{os_val}/{arch}"
+                if variant:
+                    platform_str = f"{platform_str}/{variant}"
+                platforms.append(platform_str)
         return platforms
 
     def is_auto_build(self):
