@@ -644,10 +644,14 @@ class BuildImages(FirestarterWorkflow):
         try:
             proc = subprocess.run(
                 ['docker', 'manifest', 'inspect', image],
-                capture_output=True, text=True
+                capture_output=True, text=True,
+                timeout=30
             )
         except (FileNotFoundError, OSError):
             logger.info(f"Docker CLI not available, skipping registry manifest inspection for {image}")
+            return []
+        except subprocess.TimeoutExpired:
+            logger.info(f"Timeout inspecting manifest for {image}, skipping")
             return []
         if proc.returncode != 0:
             return []
