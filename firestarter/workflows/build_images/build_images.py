@@ -37,6 +37,7 @@ class BuildImages(FirestarterWorkflow):
         super().__init__(**kwargs)
 
         self._secrets = self.resolve_secrets(self.secrets)
+        self._type = self.vars.get('type', 'snapshots')
 
         # We checkout the correct sha/tag
         self._from = self.dereference_from_input(self.vars.get('from'))
@@ -47,7 +48,6 @@ class BuildImages(FirestarterWorkflow):
         self._releases_registry_creds = self.vars.get('releases_registry_creds', None)
         self._auth_strategy = self.vars.get('auth_strategy', None)
         self._output_results = self.vars.get('output_results', 'results.yaml')
-        self._type = self.vars.get('type', 'snapshots')
         self._workflow_run_id = self.vars.get('workflow_run_id', None)
         self._workflow_run_url = self.vars.get('workflow_run_url', None)
         self._service_path = self.vars.get('service_path', '')
