@@ -327,9 +327,11 @@ class BuildImages(FirestarterWorkflow):
         other_platforms = [p for p in platforms if p not in platforms_to_build]
 
         # Preserve any platforms that already exist in the registry manifest
-        existing_platforms = await anyio.to_thread.run_sync(
-            self._get_existing_platforms, image
-        )
+        existing_platforms = []
+        if self.publish:
+            existing_platforms = await anyio.to_thread.run_sync(
+                self._get_existing_platforms, image
+            )
         for p in existing_platforms:
             if p not in platforms_to_build and p not in other_platforms:
                 other_platforms.append(p)
@@ -635,10 +637,14 @@ class BuildImages(FirestarterWorkflow):
         return extra_full_registry_addresses
 
     def _get_existing_platforms(self, image):
-        proc = subprocess.run(
-            ['docker', 'manifest', 'inspect', image],
-            capture_output=True, text=True
-        )
+        try:
+            proc = subprocess.run(
+                ['docker', 'manifest', 'inspect', image],
+                capture_output=True, text=True
+            )
+        except (FileNotFoundError, OSError):
+            logger.info(f"Docker CLI not available, skipping registry manifest inspection for {image}")
+            return []
         if proc.returncode != 0:
             return []
         try:
