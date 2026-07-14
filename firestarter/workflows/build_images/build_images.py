@@ -225,6 +225,10 @@ class BuildImages(FirestarterWorkflow):
         git_output = proc.stdout.decode('utf-8').strip()
 
         if git_output:
+            # git tag -l uses glob matching; filter to exact match
+            git_output = input_value if input_value in git_output.split('\n') else None
+
+        if git_output:
             if self.type == 'snapshots':
                 proc = subprocess.run(
                     ['git', 'rev-parse', f"{git_output}^{{commit}}"],
@@ -663,6 +667,15 @@ class BuildImages(FirestarterWorkflow):
                 if variant:
                     platform_str = f"{platform_str}/{variant}"
                 platforms.append(platform_str)
+
+        if not platforms:
+            # Single-arch manifest (schema2) — architecture is in config
+            config = manifest.get('config', {})
+            arch = config.get('architecture')
+            os_val = config.get('os', 'linux')
+            if arch:
+                platforms.append(f"{os_val}/{arch}")
+
         return platforms
 
     def is_auto_build(self):
