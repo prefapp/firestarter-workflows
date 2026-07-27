@@ -384,6 +384,16 @@ class BuildImages(FirestarterWorkflow):
                 f"Using these secrets for all flavors: {self.secrets.keys()}"
             )
 
+            build_args_for_all_flavors = []
+            for key, value in self.additional_build_args.items():
+                build_args_for_all_flavors.append(
+                    dagger.BuildArg(name=key, value=value)
+                )
+
+            logger.info(
+                f"Using these build_args for all flavors: {self.additional_build_args.keys()}"
+            )
+
             for flavor in self.flavors:
                 registry, full_repo_name, build_args,\
                         dockerfile, extra_registries,\
@@ -422,6 +432,14 @@ class BuildImages(FirestarterWorkflow):
                     for key, value in build_args.items()
                 ]
 
+                # Combine generic and custom build_args for this flavor
+                # (Order matters: the args added in the second array will
+                # overwrite the ones with the same name in the first array.
+                # In this case, args defined in the flavor configuration will
+                # overwrite the same args defined as command line arguments
+                # or environment variables)
+                full_build_args = build_args_for_all_flavors + build_args_list
+
                 resolved_secret_refs = self.resolve_secrets(
                     self.config.images[flavor].secrets or {}
                 )
@@ -439,6 +457,11 @@ class BuildImages(FirestarterWorkflow):
                     flavor_secrets.append(client.set_secret(key, value))
 
                 # Combine generic and custom secrets for this flavor
+                # (Order matters: the secrets added in the second array will
+                # overwrite the ones with the same name in the first array.
+                # In this case, secretss defined in the flavor configuration
+                # will overwrite the same secrets defined as command line
+                # arguments or environment variables)
                 secrets = secrets_for_all_flavors + flavor_secrets
 
                 # Set the address for the default registry
@@ -477,7 +500,7 @@ class BuildImages(FirestarterWorkflow):
                 for image in registry_list:
                     await self.compile_image_and_publish(
                         client,
-                        build_args_list,
+                        full_build_args,
                         secrets,
                         dockerfile,
                         image,

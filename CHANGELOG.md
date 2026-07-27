@@ -1,5 +1,19 @@
 # Changelog
 
+## [3.5.1](https://github.com/prefapp/firestarter-workflows/compare/v3.5.0...v3.5.1) (2026-06-29)
+
+
+### Bug Fixes
+
+* **state-helm-repo-apps:** Avoid using muldicoment yaml value files ([#221](https://github.com/prefapp/firestarter-workflows/issues/221)) ([f657669](https://github.com/prefapp/firestarter-workflows/commit/f6576694d601a2c2a1b6363e55c6a254222d7d0e))
+
+## [3.5.0](https://github.com/prefapp/firestarter-workflows/compare/v3.4.2...v3.5.0) (2026-04-30)
+
+
+### Features
+
+* Add additional_build_args support ([#218](https://github.com/prefapp/firestarter-workflows/issues/218)) ([bb72810](https://github.com/prefapp/firestarter-workflows/commit/bb72810797508e0f10de600c386d18ff116bf2b8))
+
 ## [3.4.2](https://github.com/prefapp/firestarter-workflows/compare/v3.4.1...v3.4.2) (2026-03-17)
 
 
