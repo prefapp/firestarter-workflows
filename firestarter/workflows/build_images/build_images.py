@@ -1,5 +1,4 @@
 import datetime
-import json
 import re
 import os
 import sys
@@ -330,16 +329,6 @@ class BuildImages(FirestarterWorkflow):
         variants = []
         other_platforms = [p for p in platforms if p not in platforms_to_build]
 
-        # Preserve any platforms that already exist in the registry manifest
-        existing_platforms = []
-        if self.publish:
-            existing_platforms = await anyio.to_thread.run_sync(
-                self._get_existing_platforms, image
-            )
-        for p in existing_platforms:
-            if p not in platforms_to_build and p not in other_platforms:
-                other_platforms.append(p)
-
         if len(other_platforms) > 0:
             logger.info(
                 f"Not building for these platforms as they are not in the filtered list: {other_platforms}, but including them as variants in the published multi-platform manifest list."
@@ -381,7 +370,20 @@ class BuildImages(FirestarterWorkflow):
                 await self.test_image(variant)
 
         if self.publish:
-            await ctx.container().publish(image, platform_variants=variants)
+            published_ref = await ctx.container().publish(image, platform_variants=variants)
+            digest = published_ref.split("@")[-1]
+            new_ref = f"{image}@{digest}"
+            try:
+                subprocess.run(
+                    ["docker", "buildx", "imagetools", "create", "--append", new_ref, image],
+                    capture_output=True, text=True, check=True, timeout=60
+                )
+            except subprocess.CalledProcessError as e:
+                logger.warning(
+                    f"Failed to append {new_ref} to existing manifest for {image}: "
+                    f"{e.stderr}. The image has been published but may only contain "
+                    "the platforms from this build."
+                )
 
     # Define a coroutine function to execute the compilation process
     # for all flavors
@@ -639,48 +641,6 @@ class BuildImages(FirestarterWorkflow):
             extra_full_registry_addresses.append(extra_full_registry_address)
 
         return extra_full_registry_addresses
-
-    def _get_existing_platforms(self, image):
-        try:
-            proc = subprocess.run(
-                ['docker', 'manifest', 'inspect', image],
-                capture_output=True, text=True,
-                timeout=30
-            )
-        except (FileNotFoundError, OSError):
-            logger.info(f"Docker CLI not available, skipping registry manifest inspection for {image}")
-            return []
-        except subprocess.TimeoutExpired:
-            logger.info(f"Timeout inspecting manifest for {image}, skipping")
-            return []
-        if proc.returncode != 0:
-            return []
-        try:
-            manifest = json.loads(proc.stdout)
-        except json.JSONDecodeError:
-            logger.info(f"Failed to parse manifest for {image}: non-JSON output")
-            return []
-        platforms = []
-        for m in manifest.get('manifests', []):
-            p = m.get('platform', {})
-            os_val = p.get('os', 'linux')
-            arch = p.get('architecture')
-            variant = p.get('variant')
-            if arch:
-                platform_str = f"{os_val}/{arch}"
-                if variant:
-                    platform_str = f"{platform_str}/{variant}"
-                platforms.append(platform_str)
-
-        if not platforms:
-            # Single-arch manifest (schema2) — architecture is in config
-            config = manifest.get('config', {})
-            arch = config.get('architecture')
-            os_val = config.get('os', 'linux')
-            if arch:
-                platforms.append(f"{os_val}/{arch}")
-
-        return platforms
 
     def is_auto_build(self):
         return self.flavors is None or len(self.flavors) == 0

@@ -333,9 +333,6 @@ async def test_compile_image_and_publish(mocker) -> None:
         platforms = ["linux/amd64"]
         platforms_to_build = ["linux/amd64"]
 
-        mocker.patch.object(ciap_builder, "_get_existing_platforms")
-        ciap_builder._get_existing_platforms.return_value = []
-
         mocker.patch.object(ciap_builder, "test_image")
         ciap_builder_test_image_mock = ciap_builder.test_image
         ciap_builder_test_image_mock.return_value = "Mock test image result"
@@ -344,14 +341,24 @@ async def test_compile_image_and_publish(mocker) -> None:
         mocker.patch.object(ctx_mock, "publish")
         ctx_mock_publish_mock = ctx_mock.publish
 
+        subprocess_run_mock = mocker.patch("subprocess.run")
+        subprocess_run_mock.return_value = subprocess.CompletedProcess(args=[], returncode=0)
+
         await ciap_builder.compile_image_and_publish(
             ctx_mock, build_args, secrets, dockerfile, image, platforms_to_build, platforms
         )
 
         if publish:
             ctx_mock_publish_mock.assert_called_with(image, platform_variants=ANY)
+            subprocess_run_mock.assert_called_once()
+            args, _ = subprocess_run_mock.call_args
+            assert args[0] == [
+                "docker", "buildx", "imagetools", "create",
+                "--append", f"{image}@Mock publish result", image
+            ]
         else:
             ctx_mock_publish_mock.assert_not_called()
+            subprocess_run_mock.assert_not_called()
 
         if container_structure_filename is not None:
             ciap_builder_test_image_mock.assert_called_with(ctx_mock)
