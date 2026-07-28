@@ -338,7 +338,9 @@ async def test_compile_image_and_publish(mocker) -> None:
         ciap_builder_test_image_mock.return_value = "Mock test image result"
 
         ctx_mock = DaggerContextMock()
-        ctx_mock_publish_mock = mocker.spy(ctx_mock, "publish")
+        async def _publish(*args, **kwargs):
+            return "Mock publish result"
+        ctx_mock_publish_mock = mocker.patch.object(ctx_mock, "publish", side_effect=_publish)
 
         subprocess_run_mock = mocker.patch("subprocess.run")
         subprocess_run_mock.return_value = subprocess.CompletedProcess(args=[], returncode=0)
