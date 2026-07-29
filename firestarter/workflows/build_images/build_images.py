@@ -320,9 +320,10 @@ class BuildImages(FirestarterWorkflow):
 
 
     def get_existing_platform_digests(self, image):
-        """Get a mapping of platform -> digest from the existing manifest list in the registry.
+        """Get a mapping of platform -> digest from the existing manifest in the registry.
 
-        Returns an empty dict if the image doesn't exist or is a single-platform manifest.
+        Returns {"__unknown__": digest} for single-platform manifests, or an empty dict
+        if the image doesn't exist.
         """
         try:
             result = subprocess.run(
@@ -335,6 +336,9 @@ class BuildImages(FirestarterWorkflow):
         output = result.stdout
 
         if "Manifests:" not in output:
+            digest_match = re.search(r'Digest:\s+(sha256:[a-f0-9]+)', output)
+            if digest_match:
+                return {"__unknown__": digest_match.group(1)}
             return {}
 
         existing = {}
@@ -389,7 +393,7 @@ class BuildImages(FirestarterWorkflow):
             old_refs = [
                 f"{image}@{d}"
                 for p, d in existing_platforms.items()
-                if p not in platforms_built
+                if p not in platforms_built or p == "__unknown__"
             ]
 
             published_ref = await ctx.container().publish(image, platform_variants=variants)

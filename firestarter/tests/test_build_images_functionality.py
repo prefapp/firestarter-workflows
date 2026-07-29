@@ -347,7 +347,7 @@ async def test_compile_image_and_publish(mocker) -> None:
         if publish:
             mock_existing = mocker.patch.object(
                 ciap_builder, "get_existing_platform_digests",
-                return_value={"linux/arm64": "sha256:oldarm64digest"}
+                return_value={"__unknown__": "sha256:oldsingledigest"}
             )
 
         await ciap_builder.compile_image_and_publish(
@@ -363,7 +363,7 @@ async def test_compile_image_and_publish(mocker) -> None:
                 "docker", "buildx", "imagetools", "create",
                 "--tag", image,
                 f"{image}@Mock publish result",
-                f"{image}@sha256:oldarm64digest"
+                f"{image}@sha256:oldsingledigest"
             ]
         else:
             ctx_mock_publish_mock.assert_not_called()
