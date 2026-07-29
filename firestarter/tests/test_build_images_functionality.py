@@ -337,8 +337,9 @@ async def test_compile_image_and_publish(mocker) -> None:
         ciap_builder_test_image_mock.return_value = "Mock test image result"
 
         ctx_mock = DaggerContextMock()
+        publish_digest = "sha256:mockedpublishdigest"
         async def _publish(*args, **kwargs):
-            return "Mock publish result"
+            return f"{image}@{publish_digest}"
         ctx_mock_publish_mock = mocker.patch.object(ctx_mock, "publish", side_effect=_publish)
 
         subprocess_run_mock = mocker.patch("subprocess.run")
@@ -359,7 +360,7 @@ async def test_compile_image_and_publish(mocker) -> None:
             mock_existing.assert_called_once_with(image)
             subprocess_run_mock.assert_called_once_with(
                 ["docker", "buildx", "imagetools", "create", "--tag", image,
-                 f"{image}@Mock publish result", f"{image}@sha256:oldsingledigest"],
+                 f"{image}@{publish_digest}", f"{image}@sha256:oldsingledigest"],
                 capture_output=True, text=True, check=True, timeout=60
             )
         else:
