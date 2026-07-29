@@ -338,6 +338,14 @@ class BuildImages(FirestarterWorkflow):
                 v = ctx.container(platform=dagger.Platform(p)).from_(image)
                 try:
                     await v.sync()
+                    pulled_platform = await v.platform()
+                    if pulled_platform != dagger.Platform(p):
+                        logger.info(
+                            f"Platform mismatch: requested {p} but registry image "
+                            f"resolved to {pulled_platform}. This variant will "
+                            f"not be included."
+                        )
+                        continue
                     variants.append(v)
                 except Exception as e:
                     logger.info(
