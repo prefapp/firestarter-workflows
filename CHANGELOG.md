@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.5.2](https://github.com/prefapp/firestarter-workflows/compare/v3.5.1...v3.5.2) (2026-07-29)
+
+
+### Bug Fixes
+
+* Dereference tags when building a snapshot ([#223](https://github.com/prefapp/firestarter-workflows/issues/223)) ([53ad7a2](https://github.com/prefapp/firestarter-workflows/commit/53ad7a21e3f17172d654b3275a92302b5af52d0d))
+
 ## [3.5.1](https://github.com/prefapp/firestarter-workflows/compare/v3.5.0...v3.5.1) (2026-06-29)
 
 
