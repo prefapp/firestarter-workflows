@@ -397,11 +397,15 @@ class BuildImages(FirestarterWorkflow):
             ]
 
             published_ref = await ctx.container().publish(image, platform_variants=variants)
-            digest = published_ref.split("@")[-1]
-            new_ref = f"{image}@{digest}"
 
-            if old_refs:
-                all_refs = [new_ref] + old_refs
+            if "@" not in published_ref:
+                logger.warning(
+                    f"Publish result {published_ref} did not return a digest reference; "
+                    "the image has been published but the manifest merge was skipped."
+                )
+            elif old_refs:
+                digest = published_ref.split("@")[-1]
+                all_refs = [f"{image}@{digest}"] + old_refs
                 try:
                     subprocess.run(
                         ["docker", "buildx", "imagetools", "create", "--tag", image] + all_refs,

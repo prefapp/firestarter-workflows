@@ -357,14 +357,11 @@ async def test_compile_image_and_publish(mocker) -> None:
         if publish:
             ctx_mock_publish_mock.assert_called_with(image, platform_variants=ANY)
             mock_existing.assert_called_once_with(image)
-            subprocess_run_mock.assert_called_once()
-            args, _ = subprocess_run_mock.call_args
-            assert args[0] == [
-                "docker", "buildx", "imagetools", "create",
-                "--tag", image,
-                f"{image}@Mock publish result",
-                f"{image}@sha256:oldsingledigest"
-            ]
+            subprocess_run_mock.assert_called_once_with(
+                ["docker", "buildx", "imagetools", "create", "--tag", image,
+                 f"{image}@Mock publish result", f"{image}@sha256:oldsingledigest"],
+                capture_output=True, text=True, check=True, timeout=60
+            )
         else:
             ctx_mock_publish_mock.assert_not_called()
             subprocess_run_mock.assert_not_called()
