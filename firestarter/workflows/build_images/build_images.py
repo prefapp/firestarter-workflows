@@ -1,5 +1,4 @@
 import datetime
-import json
 import re
 import os
 import sys
@@ -320,40 +319,48 @@ class BuildImages(FirestarterWorkflow):
             os.remove(file_name)
 
 
+    def get_existing_platform_digests(self, image):
+        """Get a mapping of platform -> digest from the existing manifest in the registry.
+
+        Returns {"__unknown__": digest} for single-platform manifests, or an empty dict
+        if the image doesn't exist.
+        """
+        try:
+            result = subprocess.run(
+                ["docker", "buildx", "imagetools", "inspect", image],
+                capture_output=True, text=True, check=True, timeout=30
+            )
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired, FileNotFoundError):
+            return {}
+
+        output = result.stdout
+
+        if "Manifests:" not in output:
+            digest_match = re.search(r'Digest:\s+(sha256:[a-f0-9]+)', output)
+            if digest_match:
+                return {"__unknown__": digest_match.group(1)}
+            return {}
+
+        existing = {}
+        lines = output.split('\n')
+        current_digest = None
+
+        for line in lines:
+            line = line.strip()
+            name_match = re.match(r'Name:\s+\S+@(sha256:[a-f0-9]+)', line)
+            if name_match:
+                current_digest = name_match.group(1)
+            platform_match = re.match(r'Platform:\s+(\S+)', line)
+            if platform_match and current_digest:
+                existing[platform_match.group(1)] = current_digest
+
+        return existing
+
     # Define a coroutine function to compile an image using Docker
     async def compile_image_and_publish(
-        self, ctx, build_args, secrets, dockerfile, image, platforms_to_build, platforms
+        self, ctx, build_args, secrets, dockerfile, image, platforms_to_build
     ):
-        # If there are platforms that are not being built for this flavor, log them
-        # and create container variants for them without building,
-        # so that they can be included in the published multi-platform manifest list
         variants = []
-        other_platforms = [p for p in platforms if p not in platforms_to_build]
-
-        # Preserve any platforms that already exist in the registry manifest
-        existing_platforms = []
-        if self.publish:
-            existing_platforms = await anyio.to_thread.run_sync(
-                self._get_existing_platforms, image
-            )
-        for p in existing_platforms:
-            if p not in platforms_to_build and p not in other_platforms:
-                other_platforms.append(p)
-
-        if len(other_platforms) > 0:
-            logger.info(
-                f"Not building for these platforms as they are not in the filtered list: {other_platforms}, but including them as variants in the published multi-platform manifest list."
-            )
-            for p in other_platforms:
-                logger.info(f"Creating container variant for platform {p} without building...")
-                v = ctx.container(platform=dagger.Platform(p)).from_(image)
-                try:
-                    await v.sync()
-                    variants.append(v)
-                except Exception as e:
-                    logger.info(
-                        f"Failed to create container variant for platform {p} using image {image}. Error: {e}. This variant will not be included in the published multi-platform manifest list."
-                    )
 
         # Set a current working directory
         src = ctx.host().directory(".")
@@ -381,7 +388,35 @@ class BuildImages(FirestarterWorkflow):
                 await self.test_image(variant)
 
         if self.publish:
-            await ctx.container().publish(image, platform_variants=variants)
+            existing_platforms = self.get_existing_platform_digests(image)
+            platforms_built = set(platforms_to_build)
+            old_refs = [
+                f"{image}@{d}"
+                for p, d in existing_platforms.items()
+                if p not in platforms_built or p == "__unknown__"
+            ]
+
+            published_ref = await ctx.container().publish(image, platform_variants=variants)
+
+            if "@" not in published_ref:
+                logger.warning(
+                    f"Publish result {published_ref} did not return a digest reference; "
+                    "the image has been published but the manifest merge was skipped."
+                )
+            elif old_refs:
+                digest = published_ref.split("@")[-1]
+                all_refs = [f"{image}@{digest}"] + old_refs
+                try:
+                    subprocess.run(
+                        ["docker", "buildx", "imagetools", "create", "--tag", image] + all_refs,
+                        capture_output=True, text=True, check=True, timeout=60
+                    )
+                except subprocess.CalledProcessError as e:
+                    logger.warning(
+                        f"Failed to merge existing platforms into manifest for {image}: "
+                        f"{e.stderr}. The image has been published but may only contain "
+                        "the platforms from this build."
+                    )
 
     # Define a coroutine function to execute the compilation process
     # for all flavors
@@ -521,8 +556,7 @@ class BuildImages(FirestarterWorkflow):
                         secrets,
                         dockerfile,
                         image,
-                        platforms_to_build,
-                        platforms
+                        platforms_to_build
                     )
 
                     image_tag = image.split(":")[1]
@@ -589,7 +623,7 @@ class BuildImages(FirestarterWorkflow):
         dockerfile = flavor_data.dockerfile or ""
         extra_registries = flavor_data.extra_registries or []
         extra_tags = flavor_data.extra_tags or []
-        platforms = flavor_data.platforms or ["linux/amd64"]
+        platforms = list(dict.fromkeys(flavor_data.platforms or ["linux/amd64"]))
 
         return (
             flavor_registry_data["name"],
@@ -639,48 +673,6 @@ class BuildImages(FirestarterWorkflow):
             extra_full_registry_addresses.append(extra_full_registry_address)
 
         return extra_full_registry_addresses
-
-    def _get_existing_platforms(self, image):
-        try:
-            proc = subprocess.run(
-                ['docker', 'manifest', 'inspect', image],
-                capture_output=True, text=True,
-                timeout=30
-            )
-        except (FileNotFoundError, OSError):
-            logger.info(f"Docker CLI not available, skipping registry manifest inspection for {image}")
-            return []
-        except subprocess.TimeoutExpired:
-            logger.info(f"Timeout inspecting manifest for {image}, skipping")
-            return []
-        if proc.returncode != 0:
-            return []
-        try:
-            manifest = json.loads(proc.stdout)
-        except json.JSONDecodeError:
-            logger.info(f"Failed to parse manifest for {image}: non-JSON output")
-            return []
-        platforms = []
-        for m in manifest.get('manifests', []):
-            p = m.get('platform', {})
-            os_val = p.get('os', 'linux')
-            arch = p.get('architecture')
-            variant = p.get('variant')
-            if arch:
-                platform_str = f"{os_val}/{arch}"
-                if variant:
-                    platform_str = f"{platform_str}/{variant}"
-                platforms.append(platform_str)
-
-        if not platforms:
-            # Single-arch manifest (schema2) — architecture is in config
-            config = manifest.get('config', {})
-            arch = config.get('architecture')
-            os_val = config.get('os', 'linux')
-            if arch:
-                platforms.append(f"{os_val}/{arch}")
-
-        return platforms
 
     def is_auto_build(self):
         return self.flavors is None or len(self.flavors) == 0

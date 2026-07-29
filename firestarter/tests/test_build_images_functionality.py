@@ -330,28 +330,42 @@ async def test_compile_image_and_publish(mocker) -> None:
         secrets = { "test_secret": "b" }
         dockerfile = "/path/to/dockerfile"
         image = "image_tag"
-        platforms = ["linux/amd64"]
         platforms_to_build = ["linux/amd64"]
-
-        mocker.patch.object(ciap_builder, "_get_existing_platforms")
-        ciap_builder._get_existing_platforms.return_value = []
 
         mocker.patch.object(ciap_builder, "test_image")
         ciap_builder_test_image_mock = ciap_builder.test_image
         ciap_builder_test_image_mock.return_value = "Mock test image result"
 
         ctx_mock = DaggerContextMock()
-        mocker.patch.object(ctx_mock, "publish")
-        ctx_mock_publish_mock = ctx_mock.publish
+        publish_digest = "sha256:mockedpublishdigest"
+        async def _publish(*args, **kwargs):
+            return f"{image}@{publish_digest}"
+        ctx_mock_publish_mock = mocker.patch.object(ctx_mock, "publish", side_effect=_publish)
+
+        subprocess_run_mock = mocker.patch("subprocess.run")
+        subprocess_run_mock.return_value = subprocess.CompletedProcess(args=[], returncode=0)
+
+        if publish:
+            mock_existing = mocker.patch.object(
+                ciap_builder, "get_existing_platform_digests",
+                return_value={"__unknown__": "sha256:oldsingledigest"}
+            )
 
         await ciap_builder.compile_image_and_publish(
-            ctx_mock, build_args, secrets, dockerfile, image, platforms_to_build, platforms
+            ctx_mock, build_args, secrets, dockerfile, image, platforms_to_build
         )
 
         if publish:
             ctx_mock_publish_mock.assert_called_with(image, platform_variants=ANY)
+            mock_existing.assert_called_once_with(image)
+            subprocess_run_mock.assert_called_once_with(
+                ["docker", "buildx", "imagetools", "create", "--tag", image,
+                 f"{image}@{publish_digest}", f"{image}@sha256:oldsingledigest"],
+                capture_output=True, text=True, check=True, timeout=60
+            )
         else:
             ctx_mock_publish_mock.assert_not_called()
+            subprocess_run_mock.assert_not_called()
 
         if container_structure_filename is not None:
             ciap_builder_test_image_mock.assert_called_with(ctx_mock)
