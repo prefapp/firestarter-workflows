@@ -330,7 +330,6 @@ async def test_compile_image_and_publish(mocker) -> None:
         secrets = { "test_secret": "b" }
         dockerfile = "/path/to/dockerfile"
         image = "image_tag"
-        platforms = ["linux/amd64"]
         platforms_to_build = ["linux/amd64"]
 
         mocker.patch.object(ciap_builder, "test_image")
@@ -345,17 +344,26 @@ async def test_compile_image_and_publish(mocker) -> None:
         subprocess_run_mock = mocker.patch("subprocess.run")
         subprocess_run_mock.return_value = subprocess.CompletedProcess(args=[], returncode=0)
 
+        if publish:
+            mock_existing = mocker.patch.object(
+                ciap_builder, "get_existing_platform_digests",
+                return_value={"linux/arm64": "sha256:oldarm64digest"}
+            )
+
         await ciap_builder.compile_image_and_publish(
-            ctx_mock, build_args, secrets, dockerfile, image, platforms_to_build, platforms
+            ctx_mock, build_args, secrets, dockerfile, image, platforms_to_build
         )
 
         if publish:
             ctx_mock_publish_mock.assert_called_with(image, platform_variants=ANY)
+            mock_existing.assert_called_once_with(image)
             subprocess_run_mock.assert_called_once()
             args, _ = subprocess_run_mock.call_args
             assert args[0] == [
                 "docker", "buildx", "imagetools", "create",
-                "--append", f"{image}@Mock publish result", image
+                "--tag", image,
+                f"{image}@Mock publish result",
+                f"{image}@sha256:oldarm64digest"
             ]
         else:
             ctx_mock_publish_mock.assert_not_called()
