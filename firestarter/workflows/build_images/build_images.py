@@ -39,7 +39,14 @@ class BuildImages(FirestarterWorkflow):
         self._type = self.vars.get('type', 'snapshots')
 
         # We checkout the correct sha/tag
-        self._from = self.dereference_from_input(self.vars.get('from'))
+        self._dereference_enabled = str(
+            self.vars.get('dereference_enabled', 'true')
+        ).lower() == 'true'
+        self._from = (
+            self.dereference_from_input(self.vars.get('from'))
+            if self._dereference_enabled
+            else self.vars.get('from')
+        )
         self._repo_name = self.vars.get('repo_name')
         self._snapshots_registry = self.vars.get('snapshots_registry')
         self._releases_registry = self.vars.get('releases_registry')
@@ -104,6 +111,10 @@ class BuildImages(FirestarterWorkflow):
     @property
     def from_version(self):
         return self._from
+
+    @property
+    def dereference_enabled(self):
+        return self._dereference_enabled
 
     @property
     def workflow_run_id(self):

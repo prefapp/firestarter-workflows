@@ -25,6 +25,7 @@ Beyond the configuration file which is mandatory, there are some other extra var
 
 Additionally there are some optional variables:
 
+* `dereference_enabled`: whether the `from` value is dereferenced into a short sha before building (defaults to `true`). Set it to `false` to use the raw `from` value as-is.
 * `container_structure_filename`: path of the [container-structure-test](https://github.com/GoogleContainerTools/container-structure-test) filename (if not set, no tests are checked)
 
     > Highly recommended! ⚠️
@@ -105,6 +106,7 @@ RUN echo "The additional build arg is: $YOUR_BUILD_ARG"
               from_point="${{ github.event.inputs.from }}"
               on_premises="${{ github.event.inputs.on_premises }}"
               container_structure_filename=".dagger/struct.yaml"
+              dereference_enabled="true"
               login_required=false
 
             secrets: |
