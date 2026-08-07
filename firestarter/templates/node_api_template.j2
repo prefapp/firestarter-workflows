@@ -1,0 +1,26 @@
+{% set base_build_image = fs_builder.technology.split(":")[0] ~ ":" ~ fs_builder.technology.split(":")[1] ~ "-build" %}
+{% set base_run_image = fs_builder.technology.split(":")[0] ~ ":" ~ fs_builder.technology.split(":")[1] ~ "-run" %}
+
+FROM {{ base_build_image }} AS builder
+
+{% for arg in fs_builder.build_args %}
+ARG {{ arg.split("=")[0] }}="{{ arg.split("=")[1] }}"
+{% endfor %}
+
+WORKDIR /app
+COPY . .
+
+RUN {{ fs_builder.build_commands | join(" && ") }}
+
+FROM {{ base_run_image }}
+
+{% if fs_builder.extra_packages %}
+RUN apt-get update && apt-get install -y {% for package in fs_builder.extra_packages %}{{ package }} {% endfor %}
+{% endif %}
+
+COPY --from=builder /app /app
+
+WORKDIR /app
+USER node
+EXPOSE 3000
+CMD ["npm", "start"]

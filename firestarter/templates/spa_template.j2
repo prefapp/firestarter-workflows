@@ -1,0 +1,32 @@
+{% set base_build_image = fs_builder.technology.split(":")[0] ~ ":" ~ fs_builder.technology.split(":")[1] ~ "-build" %}
+{% set base_run_image = fs_builder.technology.split(":")[0] ~ ":" ~ fs_builder.technology.split(":")[1] ~ "-run" %}
+
+FROM {{ base_build_image }} AS builder
+
+{% for arg in fs_builder.build_args %}
+ARG {{ arg.split("=")[0] }}="{{ arg.split("=")[1] }}"
+{% endfor %}
+
+WORKDIR /app
+COPY code code
+
+RUN {{ fs_builder.build_commands | join(" && ") }}
+
+FROM {{ base_run_image }}
+
+{% if fs_builder.extra_packages %}
+RUN apt-get update && apt-get install -y {% for package in fs_builder.extra_packages %}{{ package }} {% endfor %}
+{% endif %}
+
+COPY --from=builder /app/dist /app
+COPY docker/default.conf /etc/nginx/conf.d/
+
+RUN chown -R nginx:nginx /app && chmod -R 755 /app && \
+    chown -R nginx:nginx /var/cache/nginx && \
+    chown -R nginx:nginx /var/log/nginx && \
+    chown -R nginx:nginx /etc/nginx/conf.d && \
+    touch /var/run/nginx.pid && chown nginx:nginx /var/run/nginx.pid
+
+USER nginx
+EXPOSE 8080
+CMD ["nginx", "-g", "daemon off;"]
