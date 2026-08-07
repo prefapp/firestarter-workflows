@@ -25,7 +25,7 @@ Beyond the configuration file which is mandatory, there are some other extra var
 
 Additionally there are some optional variables:
 
-* `dereference_enabled`: whether the `from` value is dereferenced into a short sha before building (defaults to `true`). Set it to `false` to use the raw `from` value as-is.
+* `dereference_enabled`: whether the `from` value is dereferenced into a short sha before building (defaults to `true`). It is only applied for `snapshots` builds; for other types the raw `from` value is always used as-is.
 * `container_structure_filename`: path of the [container-structure-test](https://github.com/GoogleContainerTools/container-structure-test) filename (if not set, no tests are checked)
 
     > Highly recommended! ⚠️

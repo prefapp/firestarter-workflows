@@ -44,7 +44,7 @@ class BuildImages(FirestarterWorkflow):
         ).lower() == 'true'
         self._from = (
             self.dereference_from_input(self.vars.get('from'))
-            if self._dereference_enabled
+            if self._dereference_enabled and self.type == 'snapshots'
             else self.vars.get('from')
         )
         self._repo_name = self.vars.get('repo_name')

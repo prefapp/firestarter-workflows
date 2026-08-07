@@ -219,6 +219,27 @@ def test_dereference_enabled_false_uses_raw_from(mocker) -> None:
     subprocess_run_mock.assert_not_called()
 
 
+# The 'from' value is never dereferenced when type is not snapshots
+def test_non_snapshots_type_uses_raw_from(mocker) -> None:
+    BRANCH_INPUT = "test_branch"
+
+    vars_with_releases_type = vars.copy()
+    vars_with_releases_type["from"] = BRANCH_INPUT
+    vars_with_releases_type["type"] = "releases"
+
+    subprocess_run_mock = mocker.patch('subprocess.run')
+    releases_builder = BuildImages(
+        vars=vars_with_releases_type,
+        secrets=secrets,
+        additional_build_args=additional_build_args,
+        config_file=config_file_path
+    )
+
+    assert releases_builder.dereference_enabled is True
+    assert releases_builder.from_version == BRANCH_INPUT
+    subprocess_run_mock.assert_not_called()
+
+
 # Secrets are correctly solved, using the corresponding SecretResolver
 def test_resolve_secrets(mocker) -> None:
     mocker.patch.object(AzureKeyVaultManager, "get_secret")
