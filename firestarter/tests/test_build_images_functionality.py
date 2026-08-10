@@ -165,6 +165,81 @@ def test_dereference_from_input(mocker) -> None:
     assert result == TAG_INPUT
 
 
+# The 'from' value is dereferenced by default, but can be disabled
+def test_dereference_enabled_default(mocker) -> None:
+    mocker.patch('subprocess.run', side_effect=AssertionError("Should not be called"))
+
+    assert builder.dereference_enabled is True
+
+
+def test_dereference_enabled_true_dereferences_from(mocker) -> None:
+    BRANCH_INPUT = "test_branch"
+    SHORT_SHA_INPUT = "6a32377"
+    LONG_SHA_INPUT = "6a323778def4145d533dacafe003abb8df5bd5e0"
+
+    mock_empty = mocker.MagicMock(returncode=0)
+    mock_empty.stdout = b""
+
+    mock_sha = mocker.MagicMock(returncode=0)
+    mock_sha.stdout = LONG_SHA_INPUT.encode()
+
+    vars_with_dereference = vars.copy()
+    vars_with_dereference["from"] = BRANCH_INPUT
+    vars_with_dereference["dereference_enabled"] = "true"
+
+    mocker.patch('subprocess.run', side_effect=[mock_empty, mock_sha])
+    dereference_builder = BuildImages(
+        vars=vars_with_dereference,
+        secrets=secrets,
+        additional_build_args=additional_build_args,
+        config_file=config_file_path
+    )
+
+    assert dereference_builder.dereference_enabled is True
+    assert dereference_builder.from_version == SHORT_SHA_INPUT
+
+
+def test_dereference_enabled_false_uses_raw_from(mocker) -> None:
+    BRANCH_INPUT = "test_branch"
+
+    vars_without_dereference = vars.copy()
+    vars_without_dereference["from"] = BRANCH_INPUT
+    vars_without_dereference["dereference_enabled"] = "false"
+
+    subprocess_run_mock = mocker.patch('subprocess.run')
+    no_dereference_builder = BuildImages(
+        vars=vars_without_dereference,
+        secrets=secrets,
+        additional_build_args=additional_build_args,
+        config_file=config_file_path
+    )
+
+    assert no_dereference_builder.dereference_enabled is False
+    assert no_dereference_builder.from_version == BRANCH_INPUT
+    subprocess_run_mock.assert_not_called()
+
+
+# The 'from' value is never dereferenced when type is not snapshots
+def test_non_snapshots_type_uses_raw_from(mocker) -> None:
+    BRANCH_INPUT = "test_branch"
+
+    vars_with_releases_type = vars.copy()
+    vars_with_releases_type["from"] = BRANCH_INPUT
+    vars_with_releases_type["type"] = "releases"
+
+    subprocess_run_mock = mocker.patch('subprocess.run')
+    releases_builder = BuildImages(
+        vars=vars_with_releases_type,
+        secrets=secrets,
+        additional_build_args=additional_build_args,
+        config_file=config_file_path
+    )
+
+    assert releases_builder.dereference_enabled is True
+    assert releases_builder.from_version == BRANCH_INPUT
+    subprocess_run_mock.assert_not_called()
+
+
 # Secrets are correctly solved, using the corresponding SecretResolver
 def test_resolve_secrets(mocker) -> None:
     mocker.patch.object(AzureKeyVaultManager, "get_secret")
