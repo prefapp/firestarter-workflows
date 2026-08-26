@@ -128,58 +128,116 @@ def test_dereference_from_input(mocker) -> None:
     SHORT_SHA_INPUT = "6a32377"
     BRANCH_INPUT = "test_branch"
 
-    completed_process_mock = subprocess.CompletedProcess
-    completed_process_mock.check_return_code = mocker.MagicMock(
-        name="completed_process.check_return_code.mock",
-        return_value=True
-    )
+    mock_tag = mocker.MagicMock(returncode=0)
+    mock_tag.stdout = TAG_INPUT.encode()
 
-    subprocess_mock_tag_return_value = completed_process_mock(
-        args=None, returncode=0
-    )
-    subprocess_mock_tag_return_value.stdout = TAG_INPUT.encode("windows-1252")
+    mock_empty = mocker.MagicMock(returncode=0)
+    mock_empty.stdout = b""
 
-    subprocess_mock_empty_return_value = completed_process_mock(
-        args=None, returncode=0
-    )
-    subprocess_mock_empty_return_value.stdout = "".encode("windows-1252")
+    mock_sha = mocker.MagicMock(returncode=0)
+    mock_sha.stdout = LONG_SHA_INPUT.encode()
 
-    subprocess_mock_sha_return_value = completed_process_mock(
-        args=None, returncode=0
-    )
-    subprocess_mock_sha_return_value.stdout = LONG_SHA_INPUT.encode(
-        "windows-1252"
-    )
+    # Test tag input with snapshots type (builder defaults to snapshots)
+    # Flow: git tag -l → mock_tag, git rev-parse tag^{commit} → mock_sha
+    mocker.patch('subprocess.run', side_effect=[mock_tag, mock_sha])
+    result = builder.dereference_from_input(TAG_INPUT)
+    assert result == SHORT_SHA_INPUT
 
-    # Test tag input
-    subprocess_mock = subprocess
-    subprocess_mock.run = mocker.MagicMock(
-        name="subprocess.run.mock",
-        side_effect=[
-            subprocess_mock_tag_return_value,
-            subprocess_mock_empty_return_value,
-            subprocess_mock_sha_return_value,
-        ]
-    )
+    # Test long sha input — no subprocess calls
+    result = builder.dereference_from_input(LONG_SHA_INPUT)
+    assert result == SHORT_SHA_INPUT
 
-    tag_input_dereference = builder.dereference_from_input(TAG_INPUT)
-
-    assert tag_input_dereference == TAG_INPUT
-
-    # Test long sha input
-    long_sha_input_dereference = builder.dereference_from_input(LONG_SHA_INPUT)
-
-    assert long_sha_input_dereference == SHORT_SHA_INPUT
-
-    # Test short sha input
-    short_sha_input_dereference = builder.dereference_from_input(SHORT_SHA_INPUT)
-
-    assert short_sha_input_dereference == SHORT_SHA_INPUT
+    # Test short sha input — no subprocess calls
+    result = builder.dereference_from_input(SHORT_SHA_INPUT)
+    assert result == SHORT_SHA_INPUT
 
     # Test branch input
-    branch_input_dereference = builder.dereference_from_input(BRANCH_INPUT)
+    # Flow: git tag -l → mock_empty, git rev-parse origin/branch → mock_sha
+    mocker.patch('subprocess.run', side_effect=[mock_empty, mock_sha])
+    result = builder.dereference_from_input(BRANCH_INPUT)
+    assert result == SHORT_SHA_INPUT
 
-    assert branch_input_dereference == SHORT_SHA_INPUT
+    # Test tag input with releases type — tag returned as-is, no rev-parse
+    # Flow: git tag -l → mock_tag only (no additional dereference)
+    builder._type = "releases"
+    mocker.patch('subprocess.run', side_effect=[mock_tag])
+    result = builder.dereference_from_input(TAG_INPUT)
+    assert result == TAG_INPUT
+
+
+# The 'from' value is dereferenced by default, but can be disabled
+def test_dereference_enabled_default(mocker) -> None:
+    mocker.patch('subprocess.run', side_effect=AssertionError("Should not be called"))
+
+    assert builder.dereference_enabled is True
+
+
+def test_dereference_enabled_true_dereferences_from(mocker) -> None:
+    BRANCH_INPUT = "test_branch"
+    SHORT_SHA_INPUT = "6a32377"
+    LONG_SHA_INPUT = "6a323778def4145d533dacafe003abb8df5bd5e0"
+
+    mock_empty = mocker.MagicMock(returncode=0)
+    mock_empty.stdout = b""
+
+    mock_sha = mocker.MagicMock(returncode=0)
+    mock_sha.stdout = LONG_SHA_INPUT.encode()
+
+    vars_with_dereference = vars.copy()
+    vars_with_dereference["from"] = BRANCH_INPUT
+    vars_with_dereference["dereference_enabled"] = "true"
+
+    mocker.patch('subprocess.run', side_effect=[mock_empty, mock_sha])
+    dereference_builder = BuildImages(
+        vars=vars_with_dereference,
+        secrets=secrets,
+        additional_build_args=additional_build_args,
+        config_file=config_file_path
+    )
+
+    assert dereference_builder.dereference_enabled is True
+    assert dereference_builder.from_version == SHORT_SHA_INPUT
+
+
+def test_dereference_enabled_false_uses_raw_from(mocker) -> None:
+    BRANCH_INPUT = "test_branch"
+
+    vars_without_dereference = vars.copy()
+    vars_without_dereference["from"] = BRANCH_INPUT
+    vars_without_dereference["dereference_enabled"] = "false"
+
+    subprocess_run_mock = mocker.patch('subprocess.run')
+    no_dereference_builder = BuildImages(
+        vars=vars_without_dereference,
+        secrets=secrets,
+        additional_build_args=additional_build_args,
+        config_file=config_file_path
+    )
+
+    assert no_dereference_builder.dereference_enabled is False
+    assert no_dereference_builder.from_version == BRANCH_INPUT
+    subprocess_run_mock.assert_not_called()
+
+
+# The 'from' value is never dereferenced when type is not snapshots
+def test_non_snapshots_type_uses_raw_from(mocker) -> None:
+    BRANCH_INPUT = "test_branch"
+
+    vars_with_releases_type = vars.copy()
+    vars_with_releases_type["from"] = BRANCH_INPUT
+    vars_with_releases_type["type"] = "releases"
+
+    subprocess_run_mock = mocker.patch('subprocess.run')
+    releases_builder = BuildImages(
+        vars=vars_with_releases_type,
+        secrets=secrets,
+        additional_build_args=additional_build_args,
+        config_file=config_file_path
+    )
+
+    assert releases_builder.dereference_enabled is True
+    assert releases_builder.from_version == BRANCH_INPUT
+    subprocess_run_mock.assert_not_called()
 
 
 # Secrets are correctly solved, using the corresponding SecretResolver
@@ -347,7 +405,6 @@ async def test_compile_image_and_publish(mocker) -> None:
         secrets = { "test_secret": "b" }
         dockerfile = "/path/to/dockerfile"
         image = "image_tag"
-        platforms = ["linux/amd64"]
         platforms_to_build = ["linux/amd64"]
 
         mocker.patch.object(ciap_builder, "test_image")
@@ -355,17 +412,35 @@ async def test_compile_image_and_publish(mocker) -> None:
         ciap_builder_test_image_mock.return_value = "Mock test image result"
 
         ctx_mock = DaggerContextMock()
-        mocker.patch.object(ctx_mock, "publish")
-        ctx_mock_publish_mock = ctx_mock.publish
+        publish_digest = "sha256:mockedpublishdigest"
+        async def _publish(*args, **kwargs):
+            return f"{image}@{publish_digest}"
+        ctx_mock_publish_mock = mocker.patch.object(ctx_mock, "publish", side_effect=_publish)
+
+        subprocess_run_mock = mocker.patch("subprocess.run")
+        subprocess_run_mock.return_value = subprocess.CompletedProcess(args=[], returncode=0)
+
+        if publish:
+            mock_existing = mocker.patch.object(
+                ciap_builder, "get_existing_platform_digests",
+                return_value={"__unknown__": "sha256:oldsingledigest"}
+            )
 
         await ciap_builder.compile_image_and_publish(
-            ctx_mock, build_args, secrets, dockerfile, image, platforms_to_build, platforms
+            ctx_mock, build_args, secrets, dockerfile, image, platforms_to_build
         )
 
         if publish:
             ctx_mock_publish_mock.assert_called_with(image, platform_variants=ANY)
+            mock_existing.assert_called_once_with(image)
+            subprocess_run_mock.assert_called_once_with(
+                ["docker", "buildx", "imagetools", "create", "--tag", image,
+                 f"{image}@{publish_digest}", f"{image}@sha256:oldsingledigest"],
+                capture_output=True, text=True, check=True, timeout=60
+            )
         else:
             ctx_mock_publish_mock.assert_not_called()
+            subprocess_run_mock.assert_not_called()
 
         if container_structure_filename is not None:
             ciap_builder_test_image_mock.assert_called_with(ctx_mock)
