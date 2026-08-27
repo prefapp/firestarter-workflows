@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.6.0](https://github.com/prefapp/firestarter-workflows/compare/v3.5.3...v3.6.0) (2026-08-27)
+
+
+### Features
+
+* **build-images:** Authenticate in both org default registries ([#217](https://github.com/prefapp/firestarter-workflows/issues/217)) ([bc0bf4b](https://github.com/prefapp/firestarter-workflows/commit/bc0bf4b236ecd928cb4810295adce081257d4083))
+
 ## [3.5.3](https://github.com/prefapp/firestarter-workflows/compare/v3.5.2...v3.5.3) (2026-08-10)
 
 
