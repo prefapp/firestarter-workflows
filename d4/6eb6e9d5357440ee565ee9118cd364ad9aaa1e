@@ -1,0 +1,16 @@
+firestarter/workflows/build_images/build_images.py
+  h_7389ae929e13ef 179-181,215
+firestarter/workflows/build_images/providers/registries/dockerhub.py
+  h_7389ae929e13ef 15
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "d46eb6e9d5357440ee565ee9118cd364ad9aaa1e",
+  "prompts": {},
+  "humans": {
+    "h_7389ae929e13ef": {
+      "author": "Javier Gomez Rodriguez <javiergr@ext.zara.com>"
+    }
+  }
+}
