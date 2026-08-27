@@ -5,7 +5,7 @@ from firestarter.workflows.build_images.providers.registries.azure import AzureO
 from firestarter.workflows.build_images.providers.secrets.azure import AzureKeyVaultManager
 from firestarter.workflows.build_images.providers.secrets.aws import AwsSecretsManager
 import pytest
-from unittest.mock import patch, ANY
+from unittest.mock import patch, ANY, call
 from ruamel.yaml import YAML
 import subprocess
 from mock_classes import DaggerContextMock, DaggerImageMock
@@ -75,7 +75,20 @@ def test_build_images_constructor() -> None:
 
 # The execute method is called correctly
 def test_execute(mocker) -> None:
-    def execute_function_test(mocker, flavors, **kwargs) -> None:
+    SNAPSHOTS_REGISTRY = vars["snapshots_registry"]
+    SNAPSHOTS_CREDS = vars["snapshots_registry_creds"]
+
+    FLAVOR1_CALLS = [
+        call("azure_oidc", SNAPSHOTS_REGISTRY, SNAPSHOTS_CREDS),
+        call("azure_oidc", "registry1", SNAPSHOTS_CREDS),
+    ]
+    FLAVOR3_CALLS = [
+        call(None, "test-registry", SNAPSHOTS_CREDS),
+        call("azure_oidc", "registry3", SNAPSHOTS_CREDS),
+    ]
+    DEFAULT_LOGIN_CALL = [call(None, SNAPSHOTS_REGISTRY, SNAPSHOTS_CREDS)]
+
+    def execute_function_test(mocker, flavors, expected_login_calls) -> None:
         builder._flavors = flavors
 
         mocker.patch.object(builder, "checkout_git_repository")
@@ -89,27 +102,33 @@ def test_execute(mocker) -> None:
 
         builder.execute()
 
-        assert len(checkout_git_repository_mock.mock_calls) == kwargs["checkout_calls"]
-        assert len(login_mock.mock_calls) == kwargs["login_calls"]
-        assert len(compile_images_for_all_flavors_mock.mock_calls) == kwargs["compile_image_calls"]
+        assert len(checkout_git_repository_mock.mock_calls) == 1
+        assert login_mock.call_args_list == expected_login_calls
+        assert len(compile_images_for_all_flavors_mock.mock_calls) == 1
 
     execute_function_test(
-        mocker, "*", checkout_calls=1, login_calls=5, compile_image_calls=1
+        mocker, "*",
+        expected_login_calls=DEFAULT_LOGIN_CALL + FLAVOR1_CALLS + FLAVOR3_CALLS,
     )
     execute_function_test(
-        mocker, "flavor1, flavor3", checkout_calls=1, login_calls=5, compile_image_calls=1
+        mocker, "flavor1, flavor3",
+        expected_login_calls=DEFAULT_LOGIN_CALL + FLAVOR1_CALLS + FLAVOR3_CALLS,
     )
     execute_function_test(
-        mocker, "flavor2, flavor3", checkout_calls=1, login_calls=3, compile_image_calls=1
+        mocker, "flavor2, flavor3",
+        expected_login_calls=DEFAULT_LOGIN_CALL + FLAVOR3_CALLS,
     )
     execute_function_test(
-        mocker, "flavor0, flavor4", checkout_calls=1, login_calls=1, compile_image_calls=1
+        mocker, "flavor0, flavor4",
+        expected_login_calls=DEFAULT_LOGIN_CALL,
     )
     execute_function_test(
-        mocker, "flavor1", checkout_calls=1, login_calls=3, compile_image_calls=1
+        mocker, "flavor1",
+        expected_login_calls=DEFAULT_LOGIN_CALL + FLAVOR1_CALLS,
     )
     execute_function_test(
-        mocker, "", checkout_calls=1, login_calls=3, compile_image_calls=1
+        mocker, "",
+        expected_login_calls=DEFAULT_LOGIN_CALL + FLAVOR3_CALLS,
     )
 
 

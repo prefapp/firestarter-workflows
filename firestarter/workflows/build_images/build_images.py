@@ -176,15 +176,22 @@ class BuildImages(FirestarterWorkflow):
         else:
             self.filter_flavors()
 
-        default_registry = getattr(self, f"{self.type}_registry")
+        # We use the default registry creds for extra registries authentication.
+        # In case the extra registry has its own creds, it will be used instead.
         default_registry_creds = getattr(self, f"{self.type}_registry_creds")
 
         if self.login_required:
             self.login(
                 self.auth_strategy,
-                default_registry,
-                default_registry_creds,
+                self.snapshots_registry,
+                self.snapshots_registry_creds,
             )
+            if self.releases_registry != self.snapshots_registry:
+                self.login(
+                    self.auth_strategy,
+                    self.releases_registry,
+                    self.releases_registry_creds,
+                )
 
         for flavor in self.flavors:
             logger.info(f"Building flavor {flavor}...")
@@ -205,7 +212,7 @@ class BuildImages(FirestarterWorkflow):
                     self.login(
                         extra_registry['auth_strategy'],
                         extra_registry['name'],
-                        default_registry_creds
+                        extra_registry.get('creds', default_registry_creds)
                     )
 
         logger.info(f"Building images for {self.flavors} flavors...")
