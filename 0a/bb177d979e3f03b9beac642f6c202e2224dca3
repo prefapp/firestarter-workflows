@@ -1,0 +1,14 @@
+.github/workflows/firestarter_pr-verify.yaml
+  h_7389ae929e13ef 17,23
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "0abb177d979e3f03b9beac642f6c202e2224dca3",
+  "prompts": {},
+  "humans": {
+    "h_7389ae929e13ef": {
+      "author": "Javier Gomez Rodriguez <javiergr@ext.zara.com>"
+    }
+  }
+}
