@@ -1,0 +1,15 @@
+firestarter/workflows/build_images/providers/registries/dockerhub.py
+  7f6ab8af45934bb2 15
+firestarter/tests/test_build_images_functionality.py
+  7f6ab8af45934bb2 8,78-91,105-107,110-111,114-115,118-119,122-123,126-127,130-131
+.github/workflows/firestarter_pr-verify.yaml
+  7f6ab8af45934bb2 17,23
+firestarter/workflows/build_images/build_images.py
+  7f6ab8af45934bb2 179-180,186-187,189-194,215
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "bc0bf4b236ecd928cb4810295adce081257d4083",
+  "prompts": {}
+}
