@@ -53,12 +53,12 @@ environments:
 ```yaml
 provider:
   kind: aws
-  role-to-assume: <ROLE_TO_ASSUME_ARN>
   region: us-west-2
 helm_registries:
   - <AWS_ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com
 environments:
-    dev:
-        cluster_name: tgss-dev-eks
-        identifier: <IDENTIFIER>
+  dev:
+    cluster_name: tgss-dev-eks
+    identifier: <IDENTIFIER>
+    role-to-assume: <ROLE_TO_ASSUME_ARN>
 ```

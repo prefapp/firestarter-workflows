@@ -1,5 +1,34 @@
 # Changelog
 
+## [3.6.0](https://github.com/prefapp/firestarter-workflows/compare/v3.5.3...v3.6.0) (2026-08-27)
+
+
+### Features
+
+* **build-images:** Authenticate in both org default registries ([#217](https://github.com/prefapp/firestarter-workflows/issues/217)) ([bc0bf4b](https://github.com/prefapp/firestarter-workflows/commit/bc0bf4b236ecd928cb4810295adce081257d4083))
+
+## [3.5.3](https://github.com/prefapp/firestarter-workflows/compare/v3.5.2...v3.5.3) (2026-08-10)
+
+
+### Bug Fixes
+
+* Add new dereference_enabled input ([#230](https://github.com/prefapp/firestarter-workflows/issues/230)) ([f59d5dd](https://github.com/prefapp/firestarter-workflows/commit/f59d5ddea8f09a3ed3a1799b7ecd134a99c31edb))
+* move sys-services config assume role ([#227](https://github.com/prefapp/firestarter-workflows/issues/227)) ([699dc10](https://github.com/prefapp/firestarter-workflows/commit/699dc104fd46ccd9ed8f6f88d2b235deda8afbbe))
+
+## [3.5.2](https://github.com/prefapp/firestarter-workflows/compare/v3.5.1...v3.5.2) (2026-07-29)
+
+
+### Bug Fixes
+
+* Dereference tags when building a snapshot ([#223](https://github.com/prefapp/firestarter-workflows/issues/223)) ([53ad7a2](https://github.com/prefapp/firestarter-workflows/commit/53ad7a21e3f17172d654b3275a92302b5af52d0d))
+
+## [3.5.1](https://github.com/prefapp/firestarter-workflows/compare/v3.5.0...v3.5.1) (2026-06-29)
+
+
+### Bug Fixes
+
+* **state-helm-repo-apps:** Avoid using muldicoment yaml value files ([#221](https://github.com/prefapp/firestarter-workflows/issues/221)) ([f657669](https://github.com/prefapp/firestarter-workflows/commit/f6576694d601a2c2a1b6363e55c6a254222d7d0e))
+
 ## [3.5.0](https://github.com/prefapp/firestarter-workflows/compare/v3.4.2...v3.5.0) (2026-04-30)
 
 

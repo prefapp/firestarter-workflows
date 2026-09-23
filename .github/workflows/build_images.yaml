@@ -14,6 +14,10 @@ on:
         type: string
         description: Source short-sha, tag, branch-ref that will be used in the checkout and image tagging
         required: true
+      dereference_enabled:
+        type: boolean
+        description: Dereference the 'from' ref into a short sha before building. Defaults to true.
+        default: true
       flavors:
         type: string
         description: Flavor name/s | one (alone), several (separated by commas)
@@ -130,6 +134,7 @@ jobs:
             output_results="build_images_results.yaml"
             type="${{ inputs.type }}"
             from="${{ inputs.from }}"
+            dereference_enabled="${{ inputs.dereference_enabled }}"
             workflow_run_id=${{ github.run_id}}
             workflow_run_url="https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}"
             login_required="true"

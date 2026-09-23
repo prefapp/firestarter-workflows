@@ -14,13 +14,13 @@ jobs:
     runs-on: ubuntu-24.04
     name: Firestartr / Verify
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Install poetry
         run: pipx install poetry
 
       - name: Set up Python 3.11
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: 3.11
           cache: 'poetry'
@@ -32,4 +32,3 @@ jobs:
       - name: Run tests
         run: |
           poetry run pytest
-

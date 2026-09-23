@@ -82,7 +82,8 @@
                 "type": "string",
                 "pattern": "^(linux/)?(amd64|arm64)$"
               },
-              "minItems": 1
+              "minItems": 1,
+              "uniqueItems": true
             }
           },
           "required": ["dockerfile"],
@@ -174,7 +175,8 @@
                 "type": "string",
                 "pattern": "^(linux/)?(amd64|arm64)$"
               },
-              "minItems": 1
+              "minItems": 1,
+              "uniqueItems": true
             }
           },
           "required": ["dockerfile"],

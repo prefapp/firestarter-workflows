@@ -12,7 +12,7 @@ class DockerHubRegistryAuth(RegistryProvider):
         # split the username and password
         username, token = self.creds.split(":")
         return RegistryAuth(username=f"{username}", token=token)
-    
+
     def _base_login_registry(self):
         print("DockerHub login")
 
