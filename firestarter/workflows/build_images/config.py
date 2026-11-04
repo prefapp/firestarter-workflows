@@ -1,4 +1,5 @@
 import typing as t
+from copy import deepcopy
 from dataclasses import dataclass, field
 from ruamel.yaml import YAML
 import re
@@ -78,6 +79,7 @@ class Config:
         try:
             with open(config_file, 'r') as file:
                 raw_config = yaml.load(file)
+            original_config = deepcopy(raw_config)
             if context is not None:
                 try:
                     raw_config = interpolate_config_values(raw_config, context)
@@ -97,7 +99,7 @@ class Config:
             logger.error(f"Error in schema {s_error.message}")
             raise
         else:
-            replace_secrets(config.to_dict(), secrets)
+            replace_secrets(config.to_dict(), secrets, {'images': original_config[type]})
             logger.info("The secrets has been replaced correctly in the set up")
 
         return config
@@ -108,14 +110,15 @@ class Config:
         }
 
 
-def replace_secrets(data, secrets) -> dict:
-    # check first if dict is a dictionary
+def replace_secrets(data, secrets, original_data) -> dict:
+    """Resolve only placeholders authored in YAML, never interpolated values."""
     for key, val in data.items():
-        if isinstance(val, dict):
-            replace_secrets(val, secrets)
-        elif isinstance(val, str):
+        original_value = original_data.get(key)
+        if isinstance(val, dict) and isinstance(original_value, dict):
+            replace_secrets(val, secrets, original_value)
+        elif isinstance(original_value, str):
             m = re.search(
-                r'^\{\{\ssecrets\.([a-zA-Z][a-zA-Z0-9-_]+)\s\}\}$', val)
+                r'^\{\{\ssecrets\.([a-zA-Z][a-zA-Z0-9-_]+)\s\}\}$', original_value)
             if m:
                 data[key] = secrets[m.group(1)]
     return data

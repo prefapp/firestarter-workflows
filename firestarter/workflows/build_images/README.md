@@ -24,6 +24,9 @@ of the process running this workflow. This works for quoted or unquoted values
 and embedded expressions such as `build-${{ env.GITHUB_RUN_ID }}`. Substitution
 happens after YAML parsing and before schema validation, so values cannot inject
 YAML syntax and are not recursively evaluated. Mapping keys are not interpolated.
+Env-produced strings such as `{{ secrets.TOKEN }}` remain literal; legacy secret
+placeholders are resolved only when authored in the original YAML. Resolved
+secret values are not evaluated as env expressions or other secret placeholders.
 Expressions in all flavors and types are processed, even if not selected to build.
 
 Only `env.*` is supported: `github.*`, `vars.*`, and `secrets.*` fail with a clear
