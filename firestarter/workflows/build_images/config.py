@@ -72,9 +72,10 @@ class Config:
 
 
     @classmethod
-    def from_yaml(cls: t.Type["Config"], config_file: str, type: str, secrets: dict, schema_file='schema.json'):
+    def from_yaml(cls: t.Type["Config"], config_file: str, type: str, secrets: dict,
+                  schema_file='schema.json', context=None):
         try:
-            raw_config = validate_config(config_file, schema_file)
+            raw_config = validate_config(config_file, schema_file, context)
             validate_config_extra_tags(raw_config)
             logger.info(f"The config file '{config_file}' is valid")
             config = cls.from_dict(raw_config[type])

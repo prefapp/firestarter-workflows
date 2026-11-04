@@ -17,6 +17,34 @@ images:
 
 ## Variables
 
+### Environment interpolation
+
+String values in `build_images.yaml` support `${{ env.X }}` using the environment
+of the process running this workflow. This works for quoted or unquoted values
+and embedded expressions such as `build-${{ env.GITHUB_RUN_ID }}`. Substitution
+happens after YAML parsing and before schema validation, so values cannot inject
+YAML syntax and are not recursively evaluated. Mapping keys are not interpolated.
+Expressions in all flavors and types are processed, even if not selected to build.
+
+Only `env.*` is supported: `github.*`, `vars.*`, and `secrets.*` fail with a clear
+error. This changes configurations which previously passed expressions literally;
+migrate `${{ github.ref_name }}` to `${{ env.GITHUB_REF_NAME }}`. GitHub's default
+environment variables describe the triggering event, not necessarily the `from`
+ref checked out for the build (for example, a PR's `GITHUB_SHA` is its merge SHA).
+
+Workflow var `allow_undefined_env` defaults to `false`: missing variables fail
+with their name and config path. Set it to the TOML boolean `true` (unquoted) to
+replace missing variables with an empty string and a GitHub warning annotation.
+Existing empty variables are valid.
+Schema validation still applies after substitution.
+
+Build arguments must have matching Dockerfile `ARG` declarations. Flavor arguments
+override `additional_build_args`. Never interpolate sensitive env values into
+build arguments: they may be stored in image metadata and results artifacts.
+Use build secrets and Dockerfile secret mounts instead.
+
+### Required and optional variables
+
 Beyond the configuration file which is mandatory, there are some other extra variables that must be set.
 
 * `repo_name`: The image_name to be used.
@@ -24,6 +52,8 @@ Beyond the configuration file which is mandatory, there are some other extra var
 * `on_premises`: List of flavours to build (separated by commas). An `*` is accepted to build and publish all of them.
 
 Additionally there are some optional variables:
+
+* `allow_undefined_env`: boolean, default `false`. When `true`, undefined `${{ env.X }}` values become empty strings with a warning instead of failing.
 
 * `dereference_enabled`: whether the `from` value is dereferenced into a short sha before building (defaults to `true`). It is only applied for `snapshots` builds; for other types the raw `from` value is always used as-is.
 * `container_structure_filename`: path of the [container-structure-test](https://github.com/GoogleContainerTools/container-structure-test) filename (if not set, no tests are checked)
@@ -115,4 +145,3 @@ RUN echo "The additional build arg is: $YOUR_BUILD_ARG"
   > Note that in the example the checkout action runs twice, one to clone the repo in the `from_point`, and another to geht the configuration file from the HEAD.
 4. Create a configuration file (e.g. `.dagger/firestarter_build_images.yaml`)
 5. Manually launch de workflow
-
