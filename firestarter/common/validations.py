@@ -35,19 +35,23 @@ def helper_get_config_schema(schema_path: str) -> dict:
 def validate_config(config_path: str, schema_path: str, context = None) -> dict:
     yaml=YAML(typ='safe')
     with open(config_path, 'r') as config_file:
-        config_data: dict = yaml.load(config_file)
-        if context is not None:
-            try:
-                config_data = PreProcessor(config_data).preprocess(context)
-            except ValueError as error:
-                raise ValueError(f"{error} in config '{config_path}'") from error
+        if context:
+            preprocessor: PreProcessor = PreProcessor(config_file.read())
+            config_str: str = preprocessor.preprocess({
+                "vars": lambda v: process_context_var(context.vars, v, "VARS"),
+                "secrets": lambda s: process_context_var(context.secrets, s, "SECRETS"),
+                "env": lambda e: process_env_var(e),
+            })
+        else:
+            config_str: str = config_file.read()
 
-        validate(
-            instance=config_data,
-            schema=helper_get_config_schema(schema_path),
-        )
-
+        config_data: dict = yaml.load(config_str)
+        validate_config_data(config_data, schema_path)
         return config_data
+
+
+def validate_config_data(config_data: dict, schema_path: str) -> None:
+    validate(instance=config_data, schema=helper_get_config_schema(schema_path))
 
 def validate_config_extra_tags(config_data: dict) -> None:
     all_tags = []

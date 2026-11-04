@@ -5,7 +5,8 @@ import re
 import json
 from pathlib import Path
 from jsonschema import ValidationError, SchemaError
-from firestarter.common.validations import validate_config
+from firestarter.common.preprocessor import interpolate_config_values
+from firestarter.common.validations import validate_config_data
 from firestarter.common.validations import validate_config_extra_tags
 import logging
 
@@ -75,7 +76,14 @@ class Config:
     def from_yaml(cls: t.Type["Config"], config_file: str, type: str, secrets: dict,
                   schema_file='schema.json', context=None):
         try:
-            raw_config = validate_config(config_file, schema_file, context)
+            with open(config_file, 'r') as file:
+                raw_config = yaml.load(file)
+            if context is not None:
+                try:
+                    raw_config = interpolate_config_values(raw_config, context)
+                except ValueError as error:
+                    raise ValueError(f"{error} in config '{config_file}'") from error
+            validate_config_data(raw_config, schema_file)
             validate_config_extra_tags(raw_config)
             logger.info(f"The config file '{config_file}' is valid")
             config = cls.from_dict(raw_config[type])

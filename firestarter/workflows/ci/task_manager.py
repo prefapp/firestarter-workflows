@@ -1,4 +1,4 @@
-from firestarter.common.validations import validate_config, process_context_var, process_env_var
+from firestarter.common.validations import validate_config
 from .tasks import TaskGroup, Task
 
 
@@ -23,12 +23,7 @@ class TaskManager:
         self._context = context
 
     def load(self, path: str, schema_path: str) -> None:
-        context = {
-            'vars': lambda name: process_context_var(self.context.vars, name, 'VARS'),
-            'secrets': lambda name: process_context_var(self.context.secrets, name, 'SECRETS'),
-            'env': process_env_var,
-        }
-        config_data: dict = validate_config(path, schema_path, context)
+        config_data: dict = validate_config(path, schema_path, self.context)
 
         # init the context properly
         self.context.default_image = config_data["image"]
@@ -39,3 +34,4 @@ class TaskManager:
 
     async def run(self) -> None:
         await self.tasks.run_tasks(self.context)
+

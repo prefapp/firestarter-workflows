@@ -1,7 +1,7 @@
 import pytest
 from ruamel.yaml import YAML
 
-from firestarter.common.preprocessor import PreProcessor
+from firestarter.common.preprocessor import interpolate_config_values
 from firestarter.common.validations import process_env_var
 from firestarter.workflows.build_images.build_images import BuildImages
 from firestarter.workflows.build_images.config import Config
@@ -18,7 +18,7 @@ embedded: prefix-${{ env.BUILD_VALUE }}-${{env.BUILD_VALUE}}-suffix
 list: ["${{ env.BUILD_VALUE }}"]
 literal: true
 ''')
-    result = PreProcessor(data).preprocess({'env': process_env_var})
+    result = interpolate_config_values(data, {'env': process_env_var})
     assert result['quoted'] == result['unquoted'] == result['single_quoted'] == value
     assert result['embedded'] == f'prefix-{value}-{value}-suffix'
     assert result['list'] == [value]
@@ -29,7 +29,7 @@ literal: true
 @pytest.mark.parametrize('symbol', ['github.ref_name', 'vars.X', 'secrets.X'])
 def test_only_env_context_is_supported(allow_undefined, symbol):
     with pytest.raises(ValueError, match='Unknown context') as error:
-        PreProcessor({'arg': '${{ ' + symbol + ' }}'}).preprocess({
+        interpolate_config_values({'arg': '${{ ' + symbol + ' }}'}, {
             'env': lambda name: process_env_var(name, allow_undefined),
         })
     assert symbol in str(error.value)

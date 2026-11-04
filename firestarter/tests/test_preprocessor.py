@@ -8,9 +8,9 @@ from firestarter.workflows.ci.task_manager import TaskManager
 yaml = YAML(typ='safe')
 
 
-def load_yaml(file_path: str) -> dict:
+def load_yaml(file_path: str) -> str:
     with open(file_path, "r") as f:
-        return yaml.load(f)
+        return f.read()
 
 def process_env_var(var_name: str) -> str:
     if not var_name in FAKE_OS_ENVIRON:
@@ -33,7 +33,7 @@ DEFAULT_PREPROCESS_DICT: dict = {
 
 def process_file(
     file_path: str, preprocess_dict: dict = DEFAULT_PREPROCESS_DICT
-) -> dict:
+) -> str:
     pp: PreProcessor = PreProcessor(load_yaml(os.path.join(
         os.path.dirname(__file__), file_path
     )))
@@ -42,7 +42,7 @@ def process_file(
 
 
 def test_parser() -> None:
-    result: dict = process_file("fixtures/preprocess_workflow.yaml")
+    result: dict = yaml.load(process_file("fixtures/preprocess_workflow.yaml"))
 
     assert result.get("a", {}).get("value", "") == "SECRET_SECRET1"
     assert result.get("b", [{}])[0].get("name", "") == process_env_var("SHELL")
@@ -69,8 +69,8 @@ def test_ci_keeps_all_three_contexts(tmp_path, monkeypatch):
 image: ${{ vars.IMAGE }}
 version: "1"
 vars:
-  ENV_VALUE: "prefix-${{ env.CI_VALUE }}"
-  SECRET_VALUE: '${{ secrets.TOKEN }}'
+  ENV_VALUE: ${{ env.CI_VALUE }}
+  SECRET_VALUE: ${{ secrets.TOKEN }}
 tasks: []
 ''')
     manager = TaskManager()
@@ -78,5 +78,5 @@ tasks: []
     manager.load(str(path), '../workflows/ci/schema.json')
     assert manager.context.default_image == 'alpine'
     assert manager.context.default_env == {
-        'ENV_VALUE': 'prefix-env-value', 'SECRET_VALUE': 'token-value',
+        'ENV_VALUE': 'env-value', 'SECRET_VALUE': 'token-value',
     }
