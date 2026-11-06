@@ -4,28 +4,53 @@ on:
   push:
     branches:
       - main
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
 jobs:
   release-please:
     name: Release Please Manifest
     runs-on: ubuntu-24.04
     steps:
-      - uses: googleapis/release-please-action@v4
+      - uses: actions/create-github-app-token@v3
+        id: generate-token
+        with:
+          app-id: ${{ vars.FS_STATE_APP_ID }}
+          private-key: ${{ secrets.FS_STATE_PEM_FILE }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Release Please
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         id: release
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.generate-token.outputs.token }}
+          target-branch: main
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
-          release-type: python
 
-      - uses: actions/checkout@v4
-        if: steps.release.outputs.tag_name != ''
-        with:
-          ref: ${{ steps.release.outputs.tag_name }}
+      - uses: actions/checkout@v6
+        if: false && steps.release.outputs.releases_created == 'true'
 
       - name: Get major version num and update tag
-        if: steps.release.outputs.tag_name != ''
+        if: false && steps.release.outputs.releases_created == 'true'
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git tag -fa v${{ steps.release.outputs.major }} -m "Update major version tag"
-          git push origin v${{ steps.release.outputs.major }} --force
+          USER_ID=$(gh api "/users/${{ steps.generate-token.outputs.app-slug }}[bot]" --jq .id)
+          git config user.name "${{ steps.generate-token.outputs.app-slug }}[bot]"
+          git config user.email "${USER_ID}+${{ steps.generate-token.outputs.app-slug }}[bot]@users.noreply.github.com"
+
+          path_released='${{ steps.release.outputs.paths_released }}'
+
+          manifest=$(cat .release-please-manifest.json)
+
+          echo $path_released | jq -cr '.[]' | while read -r release; do
+            version=$(echo "$manifest" | jq -cr ".\"$release\"")
+            major=$(echo "$version" | cut -d. -f1)
+            TAG_NAME="${release/*\//}-v${major}"
+            git tag -fa "$TAG_NAME"  -m "Update major version tag"
+            git push origin "$TAG_NAME" --force
+          done
