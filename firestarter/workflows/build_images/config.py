@@ -1,11 +1,13 @@
 import typing as t
+from copy import deepcopy
 from dataclasses import dataclass, field
 from ruamel.yaml import YAML
 import re
 import json
 from pathlib import Path
 from jsonschema import ValidationError, SchemaError
-from firestarter.common.validations import validate_config
+from firestarter.common.preprocessor import interpolate_config_values
+from firestarter.common.validations import validate_config_data
 from firestarter.common.validations import validate_config_extra_tags
 import logging
 
@@ -72,9 +74,18 @@ class Config:
 
 
     @classmethod
-    def from_yaml(cls: t.Type["Config"], config_file: str, type: str, secrets: dict, schema_file='schema.json'):
+    def from_yaml(cls: t.Type["Config"], config_file: str, type: str, secrets: dict,
+                  schema_file='schema.json', context=None):
         try:
-            raw_config = validate_config(config_file, schema_file)
+            with open(config_file, 'r') as file:
+                raw_config = yaml.load(file)
+            original_config = deepcopy(raw_config)
+            if context is not None:
+                try:
+                    raw_config = interpolate_config_values(raw_config, context)
+                except ValueError as error:
+                    raise ValueError(f"{error} in config '{config_file}'") from error
+            validate_config_data(raw_config, schema_file)
             validate_config_extra_tags(raw_config)
             logger.info(f"The config file '{config_file}' is valid")
             config = cls.from_dict(raw_config[type])
@@ -88,7 +99,7 @@ class Config:
             logger.error(f"Error in schema {s_error.message}")
             raise
         else:
-            replace_secrets(config.to_dict(), secrets)
+            replace_secrets(config.to_dict(), secrets, {'images': original_config[type]})
             logger.info("The secrets has been replaced correctly in the set up")
 
         return config
@@ -99,14 +110,15 @@ class Config:
         }
 
 
-def replace_secrets(data, secrets) -> dict:
-    # check first if dict is a dictionary
+def replace_secrets(data, secrets, original_data) -> dict:
+    """Resolve only placeholders authored in YAML, never interpolated values."""
     for key, val in data.items():
-        if isinstance(val, dict):
-            replace_secrets(val, secrets)
-        elif isinstance(val, str):
+        original_value = original_data.get(key)
+        if isinstance(val, dict) and isinstance(original_value, dict):
+            replace_secrets(val, secrets, original_value)
+        elif isinstance(original_value, str):
             m = re.search(
-                r'^\{\{\ssecrets\.([a-zA-Z][a-zA-Z0-9-_]+)\s\}\}$', val)
+                r'^\{\{\ssecrets\.([a-zA-Z][a-zA-Z0-9-_]+)\s\}\}$', original_value)
             if m:
                 data[key] = secrets[m.group(1)]
     return data

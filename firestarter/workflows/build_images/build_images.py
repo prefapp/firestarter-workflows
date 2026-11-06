@@ -3,6 +3,7 @@ import re
 import os
 import sys
 from firestarter.common.firestarter_workflow import FirestarterWorkflow
+from firestarter.common.validations import process_env_var
 import anyio
 import dagger
 from .providers.registries.factory import DockerRegistryAuthFactory
@@ -68,12 +69,15 @@ class BuildImages(FirestarterWorkflow):
         self._publish = self.vars.get('publish', True)
 
         # Read the configuration file
+        allow_undefined_env = self.vars.get('allow_undefined_env', False)
+        context = {'env': lambda name: process_env_var(name, allow_undefined_env)}
         self._dagger_secrets = []
         self._config = Config.from_yaml(
             self.config_file,
             self.type,
             self.secrets,
-            schema_file = self.SCHEMA_FILE_PATH
+            schema_file = self.SCHEMA_FILE_PATH,
+            context=context,
         )
 
     def _required_vars(self):
