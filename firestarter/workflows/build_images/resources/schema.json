@@ -39,7 +39,7 @@
                 },
                 "auth_strategy": {
                   "type": "string",
-                  "enum": ["azure_oidc"]
+                  "enum": ["azure_oidc", "aws_oidc", "generic", "ghcr", "dockerhub"]
                 }
               },
               "additionalProperties":false,
@@ -62,7 +62,7 @@
                   },
                   "auth_strategy": {
                     "type": "string",
-                    "enum": ["azure_oidc", "aws_oidc"]
+                    "enum": ["azure_oidc", "aws_oidc", "generic", "ghcr", "dockerhub"]
                   }
                 },
                 "required": ["name", "repository", "auth_strategy"],
@@ -129,7 +129,7 @@
                 },
                 "auth_strategy": {
                   "type": "string",
-                  "enum": ["azure_oidc"]
+                  "enum": ["azure_oidc", "aws_oidc", "generic", "ghcr", "dockerhub"]
                 }
               },
               "additionalProperties": false,
@@ -155,7 +155,7 @@
                   },
                   "auth_strategy": {
                     "type": "string",
-                    "enum": ["azure_oidc", "aws_oidc"]
+                    "enum": ["azure_oidc", "aws_oidc", "generic", "ghcr", "dockerhub"]
                   }
                 },
                 "required": ["name", "repository", "auth_strategy"],
