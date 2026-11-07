@@ -33,10 +33,10 @@ jobs:
           release-type: python
 
       - uses: actions/checkout@v6
-        if: false && steps.release.outputs.releases_created == 'true'
+        if: steps.release.outputs.releases_created == 'true'
 
       - name: Get major version num and update tag
-        if: false && steps.release.outputs.releases_created == 'true'
+        if: steps.release.outputs.releases_created == 'true'
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
