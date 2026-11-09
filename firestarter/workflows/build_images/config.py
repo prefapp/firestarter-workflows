@@ -84,7 +84,11 @@ class Config:
                 try:
                     raw_config = interpolate_config_values(raw_config, context)
                 except ValueError as error:
-                    hint = "; only the 'env' context is supported" if str(error).startswith('Unknown context ') else ''
+                    hint = ''
+                    if str(error).startswith('Unknown context '):
+                        supported = " and ".join(f"'{name}'" for name in context)
+                        description = 'context is' if len(context) == 1 else 'contexts are'
+                        hint = f'; only the {supported} {description} supported'
                     raise ValueError(f"{error} in config '{config_file}'{hint}") from error
             validate_config_data(raw_config, schema_file)
             validate_config_extra_tags(raw_config)

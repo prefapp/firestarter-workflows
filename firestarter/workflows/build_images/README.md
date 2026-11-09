@@ -29,7 +29,7 @@ placeholders are resolved only when authored in the original YAML. Resolved
 secret values are not evaluated as env expressions or other secret placeholders.
 Expressions in all flavors and types are processed, even if not selected to build.
 
-Only `env.*` is supported: `github.*`, `vars.*`, and `secrets.*` fail with a clear
+Only `env.*` and `build_images_vars.*` are supported: `github.*`, `vars.*`, and `secrets.*` fail with a clear
 error. This changes configurations which previously passed expressions literally;
 migrate `${{ github.ref_name }}` to `${{ env.GITHUB_REF_NAME }}`. GitHub's default
 environment variables describe the triggering event, not necessarily the `from`
@@ -45,6 +45,35 @@ Build arguments must have matching Dockerfile `ARG` declarations. Flavor argumen
 override `additional_build_args`. Never interpolate sensitive env values into
 build arguments: they may be stored in image metadata and results artifacts.
 Use build secrets and Dockerfile secret mounts instead.
+
+### Workflow variable interpolation
+
+Use `${{ build_images_vars.NAME }}` to reference parsed values passed through the
+action's `with.vars` input. This is distinct from GitHub's `vars` context: GitHub
+evaluates action inputs first, and this context reads the resulting workflow inputs.
+
+```yaml
+build_args:
+  REPOSITORY: "${{ build_images_vars.REPO_NAME }}"
+```
+
+Variable names are case-insensitive (`repo_name`, `REPO_NAME`, and `Repo_Name`
+resolve identically), but the context name must be `build_images_vars`.
+If input names differ only by case, the last entry in the parsed inputs wins.
+Missing variables fail with their name and config path, regardless of
+`allow_undefined_env`. Empty strings, booleans, and numbers are defined values.
+Only explicitly supplied inputs are exposed, not workflow defaults or derived
+properties; `build_images_vars.from` is the original input, not a dereferenced SHA.
+
+The same string-only substitution rules as `env` apply to nested values and list
+elements. Values are not recursively evaluated, secret-like placeholders remain
+literal, and mapping keys are not interpolated. Substitution does not turn a
+comma-separated platform string into a list or a boolean string into a YAML boolean.
+Environment variable lookup remains case-sensitive.
+
+Workflow inputs can contain credentials. This context does not add masking or
+secret protection: use credential-bearing inputs only in credential fields, never
+in build arguments, tags, or published results.
 
 ### Required and optional variables
 

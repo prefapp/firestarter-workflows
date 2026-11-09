@@ -3,7 +3,7 @@ from ruamel.yaml import YAML
 
 from firestarter.common.preprocessor import interpolate_config_values
 from firestarter.common.validations import process_env_var
-from firestarter.workflows.build_images.build_images import BuildImages
+from firestarter.workflows.build_images.build_images import BuildImages, build_images_vars_resolver
 from firestarter.workflows.build_images.config import Config
 
 
@@ -39,6 +39,14 @@ def test_undefined_env_fails_by_default(monkeypatch):
     monkeypatch.delenv('MISSING_BUILD_VALUE', raising=False)
     with pytest.raises(ValueError, match='MISSING_BUILD_VALUE'):
         process_env_var('MISSING_BUILD_VALUE')
+
+
+@pytest.mark.parametrize('value', ['org/app', '', False, 0, '${{ env.OTHER }}', '{{ secrets.TOKEN }}'])
+def test_build_images_vars_values_are_strings_not_expressions(value):
+    context = {'build_images_vars': build_images_vars_resolver({'repo_name': value})}
+    expression = '${{ build_images_vars.repo_name }}'
+    result = interpolate_config_values({'nested': {'values': [expression]}}, context)
+    assert result == {'nested': {'values': [str(value)]}}
 
 
 def test_undefined_env_empty_warns(monkeypatch, capsys):
@@ -95,6 +103,30 @@ def test_missing_env_error_names_config_file(monkeypatch, config_file):
         Config.from_yaml(str(config_file), 'snapshots', {}, BuildImages.SCHEMA_FILE_PATH,
                          context={'env': process_env_var})
     assert str(config_file) in str(error.value)
+
+
+@pytest.mark.parametrize('allow_undefined_env', [False, True])
+@pytest.mark.parametrize('name', ['repo_name', 'MISSING_INPUT'])
+def test_builder_interpolates_workflow_vars(monkeypatch, config_file, allow_undefined_env, name):
+    monkeypatch.setenv('GITHUB_SHA', 'a' * 40)
+    monkeypatch.setenv('BUILD_REPO', 'app')
+    monkeypatch.setenv('BUILD_VERSION', 'v1.2.3')
+    config_file.write_text(config_file.read_text().replace(
+        '${{ env.GITHUB_SHA }}', '${{ env.GITHUB_SHA }} + ${{ build_images_vars.' + name + ' }}',
+    ))
+    kwargs = {
+        'vars': {'from': 'aaaaaaa', 'repo_name': 'org/app',
+                 'snapshots_registry': 'registry.test', 'releases_registry': 'registry.test',
+                 'allow_undefined_env': allow_undefined_env, 'dereference_enabled': 'false'},
+        'secrets': {}, 'additional_build_args': {}, 'config_file': str(config_file),
+    }
+    if name == 'MISSING_INPUT':
+        with pytest.raises(ValueError, match="Undefined build_images variable 'MISSING_INPUT'") as error:
+            BuildImages(**kwargs)
+        assert str(config_file) in str(error.value)
+    else:
+        builder = BuildImages(**kwargs)
+        assert builder.config.images['default'].build_args['SHA'] == 'a' * 40 + ' + org/app'
 
 
 @pytest.mark.parametrize('env_value', [

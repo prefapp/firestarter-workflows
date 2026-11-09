@@ -30,6 +30,18 @@ def normalize_image_tag(tag):
 
     return tag
 
+def build_images_vars_resolver(variables):
+    values = {name.casefold(): value for name, value in variables.items()}
+
+    def resolve(name):
+        normalized = name.casefold()
+        if normalized not in values:
+            raise ValueError(f"Undefined build_images variable '{name}'")
+        return values[normalized]
+
+    return resolve
+
+
 class BuildImages(FirestarterWorkflow):
     SCHEMA_FILE_PATH: str = os.path.join(os.path.dirname(__file__), 'resources/schema.json')
 
@@ -70,7 +82,10 @@ class BuildImages(FirestarterWorkflow):
 
         # Read the configuration file
         allow_undefined_env = self.vars.get('allow_undefined_env', False)
-        context = {'env': lambda name: process_env_var(name, allow_undefined_env)}
+        context = {
+            'env': lambda name: process_env_var(name, allow_undefined_env),
+            'build_images_vars': build_images_vars_resolver(self.vars),
+        }
         self._dagger_secrets = []
         self._config = Config.from_yaml(
             self.config_file,
