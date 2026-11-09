@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.6.1](https://github.com/prefapp/firestarter-workflows/compare/v3.6.0...v3.6.1) (2026-11-06)
+
+
+### Bug Fixes
+
+* added supported auth strategies to schema ([#235](https://github.com/prefapp/firestarter-workflows/issues/235)) ([f060615](https://github.com/prefapp/firestarter-workflows/commit/f0606156bc8b913254bfc93e32b31ffd561ce495))
+
 ## [3.6.0](https://github.com/prefapp/firestarter-workflows/compare/v3.5.3...v3.6.0) (2026-08-27)
 
 
