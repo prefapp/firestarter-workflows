@@ -66,7 +66,7 @@ build_args:
 ```
 
 Variable names are case-insensitive (`repo_name`, `REPO_NAME`, and `Repo_Name`
-resolve identically), but the context name must be set to `vars_input`.
+resolve identically).
 
 Missing variables fail with their name and config path, according to the `allow_undefined` input. 
 Empty strings, boolean, and numbers are defined values.
