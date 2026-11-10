@@ -1,5 +1,13 @@
 # How to contribute
 
+## Dagger version
+
+The Python workflows use Dagger SDK and its managed engine at version **0.21.11**.
+Install the locked dependencies with `poetry install --all-extras` and run
+`poetry run pytest`. The integration tests require a running Docker daemon and
+network access to download the engine and test images. CI tests Python 3.10 and
+3.11 using Poetry 1.8.3, matching the `run-dagger-py` action's Poetry version.
+
 ## Creating a new workflow
 
 To create a new workflow follow these steps:

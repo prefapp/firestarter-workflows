@@ -469,6 +469,8 @@ async def test_compile_image_and_publish(mocker) -> None:
         assert ctx_mock.build_args == build_args
         assert ctx_mock.secrets == secrets
         assert ctx_mock.dockerfile == dockerfile
+        assert ctx_mock.context.path == "."
+        assert ctx_mock.platform == dagger.Platform("linux/amd64")
 
         assert ctx_mock.label_list["source.code.revision"] == builder.from_version
         assert ctx_mock.label_list["repository.name"] == builder.repo_name

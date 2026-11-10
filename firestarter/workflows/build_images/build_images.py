@@ -386,9 +386,8 @@ class BuildImages(FirestarterWorkflow):
         logger.info(f"Building for platforms: {platforms_to_build} using secrets: {secrets}")
         for platform in platforms_to_build:
             ctr = (
-                ctx.container(platform=dagger.Platform(platform))
-                    .build(
-                        context=src,
+                src.docker_build(
+                        platform=dagger.Platform(platform),
                         dockerfile=dockerfile,
                         build_args=build_args,
                         secrets=secrets
