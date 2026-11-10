@@ -1,9 +1,8 @@
 import typing as t
-from copy import deepcopy
 from dataclasses import dataclass, field
 from ruamel.yaml import YAML
 import re
-import json
+import uuid
 from pathlib import Path
 from jsonschema import ValidationError, SchemaError
 from firestarter.common.preprocessor import interpolate_config_values
@@ -15,6 +14,30 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 yaml = YAML(typ='safe')
+
+
+def load_config_values(source):
+    """Protect expression tokens from YAML syntax without evaluating them."""
+    prefix = f'firestarter_{uuid.uuid4().hex}_'
+    expressions = {}
+
+    def protect(match):
+        token = f'{prefix}{len(expressions)}'
+        expressions[token] = match.group(0)
+        return token
+
+    data = yaml.load(re.sub(r'\{\{.*?\}\}', protect, source))
+
+    def restore(value):
+        if isinstance(value, dict):
+            return {restore(key): restore(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [restore(item) for item in value]
+        if isinstance(value, str):
+            return re.sub(prefix + r'\d+', lambda match: expressions[match.group(0)], value)
+        return value
+
+    return restore(data)
 
 @dataclass
 class Image:
@@ -75,14 +98,14 @@ class Config:
 
     @classmethod
     def from_yaml(cls: t.Type["Config"], config_file: str, type: str, secrets: dict,
-                  schema_file='schema.json', context=None):
+                  schema_file='schema.json', context=None, allow_undefined=False):
         try:
             with open(config_file, 'r') as file:
-                raw_config = yaml.load(file)
-            original_config = deepcopy(raw_config)
+                raw_config = load_config_values(file.read())
             if context is not None:
                 try:
-                    raw_config = interpolate_config_values(raw_config, context)
+                    raw_config = interpolate_config_values(
+                        raw_config, context, allow_undefined, path=f'{config_file}:$')
                 except ValueError as error:
                     hint = ''
                     if str(error).startswith('Unknown context '):
@@ -103,27 +126,9 @@ class Config:
         except SchemaError as s_error:
             logger.error(f"Error in schema {s_error.message}")
             raise
-        else:
-            replace_secrets(config.to_dict(), secrets, {'images': original_config[type]})
-            logger.info("The secrets has been replaced correctly in the set up")
-
         return config
 
     def to_dict(self):
         return {
             "images": {id: image.to_dict() for id, image in self.images.items()},
         }
-
-
-def replace_secrets(data, secrets, original_data) -> dict:
-    """Resolve only placeholders authored in YAML, never interpolated values."""
-    for key, val in data.items():
-        original_value = original_data.get(key)
-        if isinstance(val, dict) and isinstance(original_value, dict):
-            replace_secrets(val, secrets, original_value)
-        elif isinstance(original_value, str):
-            m = re.search(
-                r'^\{\{\ssecrets\.([a-zA-Z][a-zA-Z0-9-_]+)\s\}\}$', original_value)
-            if m:
-                data[key] = secrets[m.group(1)]
-    return data

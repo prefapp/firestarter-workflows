@@ -24,7 +24,7 @@ class PreProcessor:
         return f'"{context[var_context](var_name)}"'
 
 
-def interpolate_config_values(data, context: dict):
+def interpolate_config_values(data, context: dict, allow_undefined=False, path='$'):
     """Interpolate parsed config values, not shell commands or YAML source."""
     def resolve_symbol(match):
         symbol = match.group(1).strip()
@@ -33,12 +33,21 @@ def interpolate_config_values(data, context: dict):
             raise ValueError(f"Unknown context '{var_context}' for symbol '{symbol}'")
         if not separator or not re.fullmatch(r'[A-Za-z0-9_-]+', var_name):
             raise ValueError(f"Invalid symbol '{symbol}'")
-        return str(context[var_context](var_name))
+        try:
+            return str(context[var_context](var_name))
+        except ValueError as error:
+            message = f"{error} at '{path}'"
+            if not allow_undefined:
+                raise ValueError(message) from error
+            print(f"::warning::{message}; replacing with an empty string")
+            return ''
 
     if isinstance(data, dict):
-        return {key: interpolate_config_values(value, context) for key, value in data.items()}
+        return {key: interpolate_config_values(value, context, allow_undefined, f'{path}.{key}')
+                for key, value in data.items()}
     if isinstance(data, list):
-        return [interpolate_config_values(value, context) for value in data]
+        return [interpolate_config_values(value, context, allow_undefined, f'{path}[{index}]')
+                for index, value in enumerate(data)]
     if isinstance(data, str):
-        return re.sub(r'\$\{\{(.*?)\}\}', resolve_symbol, data)
+        return re.sub(r'\{\{(.*?)\}\}', resolve_symbol, data)
     return data

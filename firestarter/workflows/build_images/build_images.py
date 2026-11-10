@@ -16,6 +16,7 @@ import string
 import logging
 import fnmatch
 import subprocess
+from copy import deepcopy
 from ruamel.yaml import YAML
 
 logger = logging.getLogger(__name__)
@@ -30,13 +31,13 @@ def normalize_image_tag(tag):
 
     return tag
 
-def build_images_args_resolver(variables):
+def vars_input_resolver(variables):
     values = {name.casefold(): value for name, value in variables.items()}
 
     def resolve(name):
         normalized = name.casefold()
         if normalized not in values:
-            raise ValueError(f"Undefined build_images argument '{name}'")
+            raise ValueError(f"Undefined vars_input variable '{name}'")
         return values[normalized]
 
     return resolve
@@ -48,6 +49,7 @@ class BuildImages(FirestarterWorkflow):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
+        input_vars = deepcopy(self.vars)
         self._secrets = self.resolve_secrets(self.secrets)
         self._type = self.vars.get('type', 'snapshots')
 
@@ -81,10 +83,12 @@ class BuildImages(FirestarterWorkflow):
         self._publish = self.vars.get('publish', True)
 
         # Read the configuration file
-        allow_undefined_env = self.vars.get('allow_undefined_env', False)
+        allow_undefined = self.vars.get('allow_undefined', False)
+        if not isinstance(allow_undefined, bool):
+            raise ValueError('allow_undefined must be a TOML boolean')
         context = {
-            'env': lambda name: process_env_var(name, allow_undefined_env),
-            'build_images_args': build_images_args_resolver(self.vars),
+            'env': process_env_var,
+            'vars_input': vars_input_resolver(input_vars),
         }
         self._dagger_secrets = []
         self._config = Config.from_yaml(
@@ -93,6 +97,7 @@ class BuildImages(FirestarterWorkflow):
             self.secrets,
             schema_file = self.SCHEMA_FILE_PATH,
             context=context,
+            allow_undefined=allow_undefined,
         )
 
     def _required_vars(self):
