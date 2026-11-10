@@ -87,7 +87,7 @@ class BuildImages(FirestarterWorkflow):
         if not isinstance(allow_undefined, bool):
             raise ValueError('allow_undefined must be a TOML boolean')
         context = {
-            'env': process_env_var,
+            'env': lambda name: process_env_var(name, case_sensitive=False),
             'vars_input': vars_input_resolver(input_vars),
         }
         self._dagger_secrets = []

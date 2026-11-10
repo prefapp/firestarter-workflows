@@ -45,7 +45,7 @@ This works for quoted or unquoted values and embedded expressions such as `build
 > - YAML syntax and are not recursively evaluated. 
 > - Mapping keys are not interpolated.
 > - Env-produced strings such as `{{ secrets.TOKEN }}` remain literal
-> - Environment variable lookup is **case-sensitive**.
+> - Environment variable lookup is **case-insensitive**. If multiple names differ only by case, an exact-case match takes precedence.
 
 > [!IMPORTANT]
 > Build arguments must have matching Dockerfile `ARG` declarations.

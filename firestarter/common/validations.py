@@ -14,9 +14,13 @@ def process_context_var(context: dict, var_name: str, context_name: str) -> str:
 
     return context[var_name]
 
-def process_env_var(var_name: str, allow_undefined: bool = False) -> str:
+def process_env_var(var_name: str, allow_undefined: bool = False, case_sensitive: bool = True) -> str:
     if var_name in os.environ:
         return os.environ[var_name]
+    if not case_sensitive:
+        for name, value in os.environ.items():
+            if name.casefold() == var_name.casefold():
+                return value
     if allow_undefined:
         print(f"::warning::Environment variable '{var_name}' is undefined; "
               "replacing with an empty string")

@@ -79,12 +79,28 @@ def test_unsupported_contexts_fail(config_file, symbol, allow_undefined):
         builder(config_file, allow_undefined=allow_undefined)
 
 
-def test_env_lookup_is_case_sensitive(monkeypatch):
+def test_shared_env_lookup_remains_case_sensitive(monkeypatch):
     monkeypatch.setenv('BUILD_VALUE', '')
     monkeypatch.delenv('build_value', raising=False)
     assert process_env_var('BUILD_VALUE') == ''
     with pytest.raises(ValueError):
         process_env_var('build_value')
+
+
+@pytest.mark.parametrize('name', ['BUILD_VALUE', 'build_value', 'Build_Value'])
+def test_builder_env_lookup_is_case_insensitive(monkeypatch, config_file, name):
+    monkeypatch.setenv('BUILD_VALUE', 'hello')
+    monkeypatch.delenv('build_value', raising=False)
+    monkeypatch.delenv('Build_Value', raising=False)
+    config_file.write_text(config_file.read_text().replace('env.BUILD_VALUE', f'env.{name}'))
+    assert builder(config_file).config.images['default'].build_args['VALUE'] == 'hello'
+
+
+def test_case_insensitive_env_lookup_prefers_exact_match(monkeypatch):
+    monkeypatch.setenv('BUILD_VALUE', 'upper')
+    monkeypatch.setenv('build_value', 'lower')
+    assert process_env_var('BUILD_VALUE', case_sensitive=False) == 'upper'
+    assert process_env_var('build_value', case_sensitive=False) == 'lower'
 
 
 @pytest.mark.parametrize('value', ['true', 'false', 0, 1, None])
