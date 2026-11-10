@@ -3,7 +3,7 @@ from ruamel.yaml import YAML
 
 from firestarter.common.preprocessor import interpolate_config_values
 from firestarter.common.validations import process_env_var
-from firestarter.workflows.build_images.build_images import BuildImages, build_images_vars_resolver
+from firestarter.workflows.build_images.build_images import BuildImages, build_images_args_resolver
 from firestarter.workflows.build_images.config import Config
 
 
@@ -42,9 +42,9 @@ def test_undefined_env_fails_by_default(monkeypatch):
 
 
 @pytest.mark.parametrize('value', ['org/app', '', False, 0, '${{ env.OTHER }}', '{{ secrets.TOKEN }}'])
-def test_build_images_vars_values_are_strings_not_expressions(value):
-    context = {'build_images_vars': build_images_vars_resolver({'repo_name': value})}
-    expression = '${{ build_images_vars.repo_name }}'
+def test_build_images_args_values_are_strings_not_expressions(value):
+    context = {'build_images_args': build_images_args_resolver({'repo_name': value})}
+    expression = '${{ build_images_args.repo_name }}'
     result = interpolate_config_values({'nested': {'values': [expression]}}, context)
     assert result == {'nested': {'values': [str(value)]}}
 
@@ -112,7 +112,7 @@ def test_builder_interpolates_workflow_vars(monkeypatch, config_file, allow_unde
     monkeypatch.setenv('BUILD_REPO', 'app')
     monkeypatch.setenv('BUILD_VERSION', 'v1.2.3')
     config_file.write_text(config_file.read_text().replace(
-        '${{ env.GITHUB_SHA }}', '${{ env.GITHUB_SHA }} + ${{ build_images_vars.' + name + ' }}',
+        '${{ env.GITHUB_SHA }}', '${{ env.GITHUB_SHA }} + ${{ build_images_args.' + name + ' }}',
     ))
     kwargs = {
         'vars': {'from': 'aaaaaaa', 'repo_name': 'org/app',
@@ -121,7 +121,7 @@ def test_builder_interpolates_workflow_vars(monkeypatch, config_file, allow_unde
         'secrets': {}, 'additional_build_args': {}, 'config_file': str(config_file),
     }
     if name == 'MISSING_INPUT':
-        with pytest.raises(ValueError, match="Undefined build_images variable 'MISSING_INPUT'") as error:
+        with pytest.raises(ValueError, match="Undefined build_images argument 'MISSING_INPUT'") as error:
             BuildImages(**kwargs)
         assert str(config_file) in str(error.value)
     else:
