@@ -45,7 +45,7 @@ This works for quoted or unquoted values and embedded expressions such as `build
 > - YAML syntax and are not recursively evaluated. 
 > - Mapping keys are not interpolated.
 > - Env-produced strings such as `{{ secrets.TOKEN }}` remain literal
-> - Environment variable lookup is **case-insensitive**. If multiple names differ only by case, an exact-case match takes precedence.
+> - Environment variable lookup is **case-sensitive**: names must match exactly.
 
 > [!IMPORTANT]
 > Build arguments must have matching Dockerfile `ARG` declarations.
@@ -62,11 +62,11 @@ evaluates action inputs first, and this context reads the resulting workflow inp
 
 ```yaml
 build_args:
-  REPOSITORY: "{{ vars_input.REPO_NAME }}"
+  REPOSITORY: "{{ vars_input.repo_name }}"
 ```
 
-Variable names are case-insensitive (`repo_name`, `REPO_NAME`, and `Repo_Name`
-resolve identically).
+Variable names are case-sensitive: `repo_name`, `REPO_NAME`, and `Repo_Name`
+are distinct inputs and must be referenced with their exact spelling.
 
 Missing variables fail with their name and config path, according to the `allow_undefined` input. 
 Empty strings, boolean, and numbers are defined values.
@@ -74,7 +74,7 @@ Only explicitly supplied inputs are exposed, not workflow defaults or derived
 properties; `vars_input.from` is the original input, not a de-referenced SHA.
 
 > [!NOTE]
-> - Variable lookup is **case-insensitive**
+> - Variable lookup is **case-sensitive**
 > - The same string-only substitution rules as `env` apply to nested values and list elements
 > - Values are not recursively evaluated, secret-like placeholders remain literal, and mapping keys are not interpolated. 
 > - Substitution does not turn a comma-separated platform string into a list or a boolean string into a YAML boolean.

@@ -15,13 +15,13 @@ def test_values_are_strings_not_yaml_or_expressions(monkeypatch, value):
 quoted: "{{ env.BUILD_VALUE }}"
 unquoted: {{ env.BUILD_VALUE }}
 single_quoted: '{{ vars_input.VALUE }}'
-embedded: prefix-{{ env.BUILD_VALUE }}-{{vars_input.value}}-suffix
+embedded: prefix-{{ env.BUILD_VALUE }}-{{vars_input.VALUE}}-suffix
 list: [{{ env.BUILD_VALUE }}]
 literal: true
 "{{ env.KEY }}": unchanged
 ''')
     result = interpolate_config_values(data, {
-        'env': process_env_var, 'vars_input': vars_input_resolver({'Value': value}),
+        'env': process_env_var, 'vars_input': vars_input_resolver({'VALUE': value}),
     })
     assert result['quoted'] == result['unquoted'] == result['single_quoted'] == str(value)
     assert result['embedded'] == f'prefix-{value}-{value}-suffix'
@@ -37,7 +37,7 @@ def config_file(tmp_path):
     path = tmp_path / 'build_images.yaml'
     YAML().dump({'snapshots': {'default': {
         'dockerfile': str(dockerfile),
-        'build_args': {'VALUE': '{{ env.BUILD_VALUE }}', 'INPUT': '{{ vars_input.RePo_NaMe }}'},
+        'build_args': {'VALUE': '{{ env.BUILD_VALUE }}', 'INPUT': '{{ vars_input.repo_name }}'},
     }}}, path)
     return path
 
@@ -87,20 +87,40 @@ def test_shared_env_lookup_remains_case_sensitive(monkeypatch):
         process_env_var('build_value')
 
 
-@pytest.mark.parametrize('name', ['BUILD_VALUE', 'build_value', 'Build_Value'])
-def test_builder_env_lookup_is_case_insensitive(monkeypatch, config_file, name):
-    monkeypatch.setenv('BUILD_VALUE', 'hello')
-    monkeypatch.delenv('build_value', raising=False)
-    monkeypatch.delenv('Build_Value', raising=False)
-    config_file.write_text(config_file.read_text().replace('env.BUILD_VALUE', f'env.{name}'))
-    assert builder(config_file).config.images['default'].build_args['VALUE'] == 'hello'
+@pytest.mark.parametrize('context', ['env', 'vars_input'])
+@pytest.mark.parametrize('supplied', ['TEST_VALUE', 'test_value', 'Test_Value'])
+@pytest.mark.parametrize('requested', ['TEST_VALUE', 'test_value', 'Test_Value'])
+@pytest.mark.parametrize('allow_undefined', [False, True])
+def test_builder_variable_names_require_exact_case(monkeypatch, config_file, capsys,
+                                                  context, supplied, requested, allow_undefined):
+    for name in ['TEST_VALUE', 'test_value', 'Test_Value']:
+        monkeypatch.delenv(name, raising=False)
+    variables = {}
+    if context == 'env':
+        monkeypatch.setenv(supplied, 'hello')
+    else:
+        variables[supplied] = 'hello'
+    config_file.write_text(config_file.read_text().replace(
+        '{{ env.BUILD_VALUE }}', '{{ ' + context + '.' + requested + ' }}'))
+    if supplied != requested and not allow_undefined:
+        with pytest.raises(ValueError, match=requested):
+            builder(config_file, **variables)
+    else:
+        workflow = builder(config_file, allow_undefined=allow_undefined, **variables)
+        assert workflow.config.images['default'].build_args['VALUE'] == (
+            'hello' if supplied == requested else '')
+        if supplied != requested:
+            assert '::warning::' in capsys.readouterr().out
 
 
-def test_case_insensitive_env_lookup_prefers_exact_match(monkeypatch):
+def test_case_distinct_names_remain_independent(monkeypatch):
     monkeypatch.setenv('BUILD_VALUE', 'upper')
     monkeypatch.setenv('build_value', 'lower')
-    assert process_env_var('BUILD_VALUE', case_sensitive=False) == 'upper'
-    assert process_env_var('build_value', case_sensitive=False) == 'lower'
+    assert process_env_var('BUILD_VALUE') == 'upper'
+    assert process_env_var('build_value') == 'lower'
+    resolve = vars_input_resolver({'BUILD_VALUE': 'upper', 'build_value': 'lower'})
+    assert resolve('BUILD_VALUE') == 'upper'
+    assert resolve('build_value') == 'lower'
 
 
 @pytest.mark.parametrize('value', ['true', 'false', 0, 1, None])
@@ -111,7 +131,7 @@ def test_allow_undefined_requires_boolean(config_file, value):
 
 def test_only_explicit_original_inputs_are_exposed(monkeypatch, config_file):
     monkeypatch.setenv('BUILD_VALUE', 'ok')
-    config_file.write_text(config_file.read_text().replace('{{ vars_input.RePo_NaMe }}', '{{ vars_input.from }}'))
+    config_file.write_text(config_file.read_text().replace('{{ vars_input.repo_name }}', '{{ vars_input.from }}'))
     monkeypatch.setattr(BuildImages, 'dereference_from_input', lambda self, value: 'bbbbbbb')
     result = builder(config_file, dereference_enabled=True)
     assert result.from_version == 'bbbbbbb'
@@ -124,7 +144,7 @@ def test_only_explicit_original_inputs_are_exposed(monkeypatch, config_file):
 def test_credential_resolution_does_not_mutate_input_context(monkeypatch, config_file):
     monkeypatch.setenv('BUILD_VALUE', 'ok')
     config_file.write_text(config_file.read_text().replace(
-        '{{ vars_input.RePo_NaMe }}', '{{ vars_input.snapshots_registry_creds }}'))
+        '{{ vars_input.repo_name }}', '{{ vars_input.snapshots_registry_creds }}'))
 
     def resolve(self, secrets):
         self.vars['snapshots_registry_creds']['TOKEN'] = 'resolved'

@@ -32,13 +32,12 @@ def normalize_image_tag(tag):
     return tag
 
 def vars_input_resolver(variables):
-    values = {name.casefold(): value for name, value in variables.items()}
+    values = dict(variables)
 
     def resolve(name):
-        normalized = name.casefold()
-        if normalized not in values:
+        if name not in values:
             raise ValueError(f"Undefined vars_input variable '{name}'")
-        return values[normalized]
+        return values[name]
 
     return resolve
 
@@ -87,7 +86,7 @@ class BuildImages(FirestarterWorkflow):
         if not isinstance(allow_undefined, bool):
             raise ValueError('allow_undefined must be a TOML boolean')
         context = {
-            'env': lambda name: process_env_var(name, case_sensitive=False),
+            'env': process_env_var,
             'vars_input': vars_input_resolver(input_vars),
         }
         self._dagger_secrets = []
