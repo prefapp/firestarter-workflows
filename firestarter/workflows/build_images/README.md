@@ -38,7 +38,7 @@ Take into account:
 ##### env
 The variable interpolation supports environment variables defined in the environment of the process running this workflow, using the form: `{{ env.MY_VAR }}`
 
-This works for quoted or unquoted values and embedded expressions such as `build-${{ env.GITHUB_RUN_ID }}`. 
+This works for quoted or unquoted values and embedded expressions such as `build-{{ env.GITHUB_RUN_ID }}`. 
 
 > [!NOTE]
 > - Substitution happens after YAML parsing and before schema validation, so values cannot inject
