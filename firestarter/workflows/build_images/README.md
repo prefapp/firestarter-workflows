@@ -1,11 +1,13 @@
 # Build images
 
-Dagger workflow in a Python package, to be executed locally or from Github actions, with [run-dagger-py](https://github.com/prefapp/run-dagger-py). Allows users to build and publish multiple docker images, based on a configuration file.
+Dagger workflow in a Python package, to be executed locally or from GitHub actions using the with [run-dagger-py](https://github.com/prefapp/run-dagger-py) action. It allows users to build and publish Docker images from a project, based on the definitions configured in the `.github/build_images.yaml` configuration file.
 
 ## Configuration file
 
+Located by default at `.github/build_images.yaml`.
+
 The configuration file needed by this package has the following structure.
-```
+```yaml
 images:
   example:
     registry: ttl.sh # Specify where to publish images
@@ -13,69 +15,75 @@ images:
     build_args: # List of build args used in the dockerfile
       REACT_APP_API_URL: prod.local
     dockerfile: './Dockerfile'# Path to the dockerfile used in the build process
+    secrets:
+      MY_AWS_SECRET: arn:aws:ssm:xxxx:123456767:parameter/my/secret
+      MY_AZUREKV_SECRET: https://myvault.vault.azure.net/secrets\
 ```
 
-## Variables
+## Variable interpolation
+String values in `build_images.yaml` support interpolation in the form `{{ <context>.XXX }}`.
 
-### Environment interpolation
+Only `env.*` and `vars_input.*` contexts are supported. 
 
-String values in `build_images.yaml` support `${{ env.X }}` using the environment
-of the process running this workflow. This works for quoted or unquoted values
-and embedded expressions such as `build-${{ env.GITHUB_RUN_ID }}`. Substitution
-happens after YAML parsing and before schema validation, so values cannot inject
-YAML syntax and are not recursively evaluated. Mapping keys are not interpolated.
-Env-produced strings such as `{{ secrets.TOKEN }}` remain literal; legacy secret
-placeholders are resolved only when authored in the original YAML. Resolved
-secret values are not evaluated as env expressions or other secret placeholders.
-Expressions in all flavors and types are processed, even if not selected to build.
+Take into account: 
+- Action var input `allow_undefined` defaults to `false`: missing variables fail with their name and config path. Set it to the TOML boolean `true` (unquoted) to replace missing variables with an empty string and a warning annotation.
+- Existing empty variables are valid.
+- Config file schema validation applies after substitution.
 
-Only `env.*` and `build_images_args.*` are supported: `github.*`, `vars.*`, and `secrets.*` fail with a clear
-error. This changes configurations which previously passed expressions literally;
-migrate `${{ github.ref_name }}` to `${{ env.GITHUB_REF_NAME }}`. GitHub's default
-environment variables describe the triggering event, not necessarily the `from`
-ref checked out for the build (for example, a PR's `GITHUB_SHA` is its merge SHA).
+> [!IMPORTANT]
+> Those contexts refer to the **action's inputs**, and environment variables
+> Contexts like `github.*`, `vars.*` `secrets.*` fail to be interpolated
 
-Workflow var `allow_undefined_env` defaults to `false`: missing variables fail
-with their name and config path. Set it to the TOML boolean `true` (unquoted) to
-replace missing variables with an empty string and a GitHub warning annotation.
-Existing empty variables are valid.
-Schema validation still applies after substitution.
+### Available contexts
+##### env
+The variable interpolation supports environment variables defined in the environment of the process running this workflow, using the form: `{{ env.MY_VAR }}`
 
-Build arguments must have matching Dockerfile `ARG` declarations. Flavor arguments
-override `additional_build_args`. Never interpolate sensitive env values into
-build arguments: they may be stored in image metadata and results artifacts.
-Use build secrets and Dockerfile secret mounts instead.
+This works for quoted or unquoted values and embedded expressions such as `build-${{ env.GITHUB_RUN_ID }}`. 
 
-### Workflow variable interpolation
+> [!NOTE]
+> - Substitution happens after YAML parsing and before schema validation, so values cannot inject
+> - YAML syntax and are not recursively evaluated. 
+> - Mapping keys are not interpolated.
+> - Env-produced strings such as `{{ secrets.TOKEN }}` remain literal
+> - Environment variable lookup is **case-sensitive**.
 
-Use `${{ build_images_args.NAME }}` to reference parsed values passed through the
-action's `with.vars` input. This is distinct from GitHub's `vars` context: GitHub
+> [!IMPORTANT]
+> Build arguments must have matching Dockerfile `ARG` declarations.
+> Never interpolate sensitive env values into build arguments: they may be stored in image metadata and results artifacts.
+se build secrets and Dockerfile secret mounts instead.
+
+##### vars
+
+Use `{{ vars_input.NAME }}` to reference parsed values passed through the
+action's `with.vars` input. 
+
+This is distinct from GitHub's `vars` context: GitHub
 evaluates action inputs first, and this context reads the resulting workflow inputs.
 
 ```yaml
 build_args:
-  REPOSITORY: "${{ build_images_args.REPO_NAME }}"
+  REPOSITORY: "{{ vars_input.REPO_NAME }}"
 ```
 
 Variable names are case-insensitive (`repo_name`, `REPO_NAME`, and `Repo_Name`
-resolve identically), but the context name must be `build_images_args`.
-If input names differ only by case, the last entry in the parsed inputs wins.
-Missing variables fail with their name and config path, regardless of
-`allow_undefined_env`. Empty strings, booleans, and numbers are defined values.
-Only explicitly supplied inputs are exposed, not workflow defaults or derived
-properties; `build_images_args.from` is the original input, not a dereferenced SHA.
+resolve identically), but the context name must be set to `build_images_args`.
 
-The same string-only substitution rules as `env` apply to nested values and list
-elements. Values are not recursively evaluated, secret-like placeholders remain
-literal, and mapping keys are not interpolated. Substitution does not turn a
-comma-separated platform string into a list or a boolean string into a YAML boolean.
-Environment variable lookup remains case-sensitive.
+Missing variables fail with their name and config path, according to the `allow_undefined` input. 
+Empty strings, boolean, and numbers are defined values.
+Only explicitly supplied inputs are exposed, not workflow defaults or derived
+properties; `vars_input.from` is the original input, not a de-referenced SHA.
+
+> [!NOTE]
+> - Variable lookup is **case-insensitive**
+> - The same string-only substitution rules as `env` apply to nested values and list elements
+> - Values are not recursively evaluated, secret-like placeholders remain literal, and mapping keys are not interpolated. 
+> - Substitution does not turn a comma-separated platform string into a list or a boolean string into a YAML boolean.
 
 Workflow inputs can contain credentials. This context does not add masking or
 secret protection: use credential-bearing inputs only in credential fields, never
 in build arguments, tags, or published results.
 
-### Required and optional variables
+### Required and optional input vars
 
 Beyond the configuration file which is mandatory, there are some other extra variables that must be set.
 
@@ -85,9 +93,9 @@ Beyond the configuration file which is mandatory, there are some other extra var
 
 Additionally there are some optional variables:
 
-* `allow_undefined_env`: boolean, default `false`. When `true`, undefined `${{ env.X }}` values become empty strings with a warning instead of failing.
+* `allow_undefined`: boolean, default `false`. When `true`, undefined `{{ <context>.X }}` values become empty strings with a warning instead of failing.
 
-* `dereference_enabled`: whether the `from` value is dereferenced into a short sha before building (defaults to `true`). It is only applied for `snapshots` builds; for other types the raw `from` value is always used as-is.
+* `dereference_enabled`: whether the `from` value is de-referenced into a short SHA before building (defaults to `true`). It is only applied for `snapshots` builds; for other types the raw `from` value is always used as-is.
 * `container_structure_filename`: path of the [container-structure-test](https://github.com/GoogleContainerTools/container-structure-test) filename (if not set, no tests are checked)
 
     > Highly recommended! ⚠️
@@ -97,6 +105,17 @@ Additionally there are some optional variables:
 ## Secrets
 
 Secrets can be used the same way that recommends [docker documentation](https://docs.docker.com/build/ci/github-actions/secrets/).
+
+Secrets can be defined in multiples places:
+- In the `secrets` input. Available to all flavors.
+- In the config file, in the `secrets` key of the flavor where is needed.
+
+In both places the secrets can be:
+- An string
+- A AWS parameter store reference: arn:aws:ssm:xxxxx:yyyy:zzzz:parameter/my-secret"
+- A Azure Keyvault reference: https://[a-zA-Z0-9\-]{3,24}.vault.azure.net/secrets/my-secret
+
+Additionally, in the `secrets` input, the GitHub `${{ secrets.xxx}}` context is available 
 
 To do so add a secret variables similarly as you would do with any other firestarter-workflows packages. In your Dockerfile you must mount the secret following the `secrets` specification:
 
@@ -120,7 +139,7 @@ RUN echo "The additional build arg is: $YOUR_BUILD_ARG"
 ```
 
 > [!WARNING]
-> Secrets and build args set in the configuration file will overwrite those set via the command line or environment variables.
+> Secrets and build args set in the configuration file will overwrite those set via `additional-build-args`.
 
 ## Example
 
