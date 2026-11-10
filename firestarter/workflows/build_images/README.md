@@ -52,7 +52,7 @@ This works for quoted or unquoted values and embedded expressions such as `build
 > Never interpolate sensitive env values into build arguments: they may be stored in image metadata and results artifacts.
 se build secrets and Dockerfile secret mounts instead.
 
-##### vars
+##### vars_input
 
 Use `{{ vars_input.NAME }}` to reference parsed values passed through the
 action's `with.vars` input. 
