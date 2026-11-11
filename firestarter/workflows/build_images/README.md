@@ -108,7 +108,7 @@ The workflow fails with `Missing required variable: <name>` if any of these is m
 | `platforms` | `*` | Comma-separated platform filter, intersected with each flavor's `platforms`. Valid values: `linux/amd64`, `linux/arm64`, `amd64`, `arm64`, or `*` (all platforms configured for the flavor). Flavors with no matching platform are skipped with a warning. |
 | `dereference_enabled` | `true` | When `true` and `type` is `snapshots`, `from` is resolved to a 7-char short SHA (from a SHA, tag or `origin/<branch>`). For `releases` (or when `false`) `from` is used as-is. |
 | `auth_strategy` | — | Default registry login strategy: `aws_oidc`, `azure_oidc`, `generic`, `ghcr` or `dockerhub`. Can be overridden per flavor with `registry.auth_strategy`. |
-| `snapshots_registry_creds` | — | Credentials for `snapshots_registry`; also the default creds for flavor registries and `extra_registries` in `snapshots` builds. |
+| `snapshots_registry_creds` | — | Credentials for `snapshots_registry`; also the default creds for flavor registries and `extra_registries` in `snapshots` builds. Must be present when `type` is `snapshots`. |
 | `releases_registry_creds` | — | Same as above for `releases` builds. |
 | `login_required` | `true` | Log in to `snapshots_registry` and `releases_registry` before building. Set to `false` (boolean or string, case-insensitive) to skip it. Flavor-specific registries and `extra_registries` are always logged in. |
 | `service_path` | `""` | Prefix added to `repo_name` (`<service_path>/<repo_name>`) when the flavor does not set `registry.repository`. |
@@ -209,6 +209,8 @@ RUN echo "The additional build arg is: $YOUR_BUILD_ARG"
               snapshots_registry="ghcr.io"
               releases_registry="ghcr.io"
               auth_strategy="ghcr"
+              snapshots_registry_creds=""
+              releases_registry_creds=""
               container_structure_filename=".dagger/struct.yaml"
               dereference_enabled="true"
               login_required=false
