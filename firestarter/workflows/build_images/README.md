@@ -49,9 +49,9 @@ This works for quoted or unquoted values and embedded expressions such as `build
 > - Environment variable lookup is **case-sensitive**: names must match exactly.
 
 > [!IMPORTANT]
-> Build arguments must have matching Dockerfile `ARG` declarations.
-> Never interpolate sensitive env values into build arguments: they may be stored in image metadata and results artifacts.
-se build secrets and Dockerfile secret mounts instead.
+> - Build arguments must have matching Dockerfile `ARG` declarations.
+> - Never interpolate sensitive env values into build arguments: they may be stored in **image metadata** and results artifacts.
+> - Use build secrets and Dockerfile secret mounts instead.
 
 ##### vars_input
 
@@ -67,7 +67,7 @@ build_args:
 ```
 
 Variable names are case-sensitive: `repo_name`, `REPO_NAME`, and `Repo_Name`
-are distinct inputs and must be referenced with their exact spelling.
+are **distinct inputs** and must be referenced with their exact spelling.
 
 Missing variables fail with their name and config path, according to the `allow_undefined` input. 
 Empty strings, boolean, and numbers are defined values.
@@ -86,22 +86,29 @@ in build arguments, tags, or published results.
 
 ### Required and optional input vars
 
-Beyond the configuration file which is mandatory, there are some other extra variables that must be set.
-
+Beyond the configuration file which is mandatory, there are some other extra arguments that must be set.
 * `repo_name`: The image_name to be used.
-* `from_point` : The commit SHA, tag or branch used to create the image, from the user's repository. This point will define the image tag.
-* `on_premises`: List of flavours to build (separated by commas). An `*` is accepted to build and publish all of them.
-
-Additionally there are some optional variables:
+* `flavors`: 
+* `platforms`:
+* `auth_strategy`:
+* snapshots_registry
+* releases_registry
+* output_results
+* type: 
+* `from` : The commit SHA, tag or branch used to create the image, from the user's repository. This point will define the image tag.
+* `on_premises`: List of flavors to build (separated by commas). An `*` is accepted to build and publish all of them.
+* workflow_run_id
+* workflow_run_url
+* login_required
+* service_path=
+* snapshots_registry_creds
+* releases_registry_creds
+Additionally there are some optional inputs:
 
 * `allow_undefined`: boolean, default `false`. When `true`, undefined `{{ <context>.X }}` values become empty strings with a warning instead of failing.
-
 * `dereference_enabled`: whether the `from` value is de-referenced into a short SHA before building (defaults to `true`). It is only applied for `snapshots` builds; for other types the raw `from` value is always used as-is.
 * `container_structure_filename`: path of the [container-structure-test](https://github.com/GoogleContainerTools/container-structure-test) filename (if not set, no tests are checked)
-
-    > Highly recommended! ⚠️
-* `publish`: publish the docker image to the registry
-
+* `publish`: publish the docker image to the registry, by default `true`.  ⚠️ If set to `false` image will be not published to the registry.
 
 ## Secrets
 
