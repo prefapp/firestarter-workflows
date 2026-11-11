@@ -84,31 +84,42 @@ Workflow inputs can contain credentials. This context does not add masking or
 secret protection: use credential-bearing inputs only in credential fields, never
 in build arguments, tags, or published results.
 
-### Required and optional input vars
+## Input vars
 
-Beyond the configuration file which is mandatory, there are some other extra arguments that must be set.
-* `repo_name`: The image_name to be used.
-* `flavors`: 
-* `platforms`:
-* `auth_strategy`:
-* snapshots_registry
-* releases_registry
-* output_results
-* type: 
-* `from` : The commit SHA, tag or branch used to create the image, from the user's repository. This point will define the image tag.
-* `on_premises`: List of flavors to build (separated by commas). An `*` is accepted to build and publish all of them.
-* workflow_run_id
-* workflow_run_url
-* login_required
-* service_path=
-* snapshots_registry_creds
-* releases_registry_creds
-Additionally there are some optional inputs:
+Input vars are passed through the action's `vars` input (TOML `key=value` lines). Besides the configuration file, the following vars are supported.
 
-* `allow_undefined`: boolean, default `false`. When `true`, undefined `{{ <context>.X }}` values become empty strings with a warning instead of failing.
-* `dereference_enabled`: whether the `from` value is de-referenced into a short SHA before building (defaults to `true`). It is only applied for `snapshots` builds; for other types the raw `from` value is always used as-is.
-* `container_structure_filename`: path of the [container-structure-test](https://github.com/GoogleContainerTools/container-structure-test) filename (if not set, no tests are checked)
-* `publish`: publish the docker image to the registry, by default `true`.  ⚠️ If set to `false` image will be not published to the registry.
+### Required
+
+The workflow fails with `Missing required variable: <name>` if any of these is missing or empty.
+
+| Var | Description |
+|-----|-------------|
+| `from` | Commit SHA, tag or branch of the user's repository to build. It is checked out before building and is used as the image tag prefix (`<from>_<flavor>`). See `dereference_enabled`. |
+| `repo_name` | Image repository name. Used as the image repository unless the flavor sets `registry.repository` (prefixed with `service_path` when set). |
+| `snapshots_registry` | Default registry for `snapshots` builds (unless the flavor sets `registry.name`). |
+| `releases_registry` | Default registry for `releases` builds (unless the flavor sets `registry.name`). |
+
+### Optional
+
+| Var | Default | Description |
+|-----|---------|-------------|
+| `type` | `snapshots` | Build type: `snapshots` or `releases`. Selects the top-level section of the config file, the default registry and its credentials. |
+| `flavors` | `default` | Comma-separated list of flavors to build. Supports glob patterns (e.g. `dev-*`) and `*` for all flavors. If empty, only flavors with `auto: true` are built. |
+| `platforms` | `*` | Comma-separated platform filter, intersected with each flavor's `platforms`. Valid values: `linux/amd64`, `linux/arm64`, `amd64`, `arm64`, or `*` (all platforms configured for the flavor). Flavors with no matching platform are skipped with a warning. |
+| `dereference_enabled` | `true` | When `true` and `type` is `snapshots`, `from` is resolved to a 7-char short SHA (from a SHA, tag or `origin/<branch>`). For `releases` (or when `false`) `from` is used as-is. |
+| `auth_strategy` | — | Default registry login strategy: `aws_oidc`, `azure_oidc`, `generic`, `ghcr` or `dockerhub`. Can be overridden per flavor with `registry.auth_strategy`. |
+| `snapshots_registry_creds` | — | Credentials for `snapshots_registry`; also the default creds for flavor registries and `extra_registries` in `snapshots` builds. |
+| `releases_registry_creds` | — | Same as above for `releases` builds. |
+| `login_required` | `true` | Log in to `snapshots_registry` and `releases_registry` before building. Set to `false` (boolean or string, case-insensitive) to skip it. Flavor-specific registries and `extra_registries` are always logged in. |
+| `service_path` | `""` | Prefix added to `repo_name` (`<service_path>/<repo_name>`) when the flavor does not set `registry.repository`. |
+| `container_structure_filename` | — | Path to a [container-structure-test](https://github.com/GoogleContainerTools/container-structure-test) config. If not set, no tests are run. |
+| `publish` | `true` | Publish images to the registries. ⚠️ Set to `false` (boolean or string, case-insensitive) to skip publishing. |
+| `output_results` | `results.yaml` | File name (written under `/tmp`) where the list of built images is stored. |
+| `workflow_run_id` | — | Included as-is in the results file. |
+| `workflow_run_url` | — | Included as-is in the results file. |
+| `allow_undefined` | `false` | Must be a TOML boolean (unquoted), otherwise the workflow fails. When `true`, undefined `{{ <context>.X }}` values become empty strings with a warning instead of failing. |
+
+All input vars (as originally supplied, before defaults or de-referencing) are also available for interpolation via `{{ vars_input.NAME }}`.
 
 ## Secrets
 
@@ -163,9 +174,9 @@ RUN echo "The additional build arg is: $YOUR_BUILD_ARG"
           description: 'Origin commit or tag'
           required: true
           default: ''
-        on_premises:
+        flavors:
           type: string
-          description: 'On-premises name/s | one (alone), several(separated by commas) or all (*)'
+          description: 'Flavor/s to build | one (alone), several (separated by commas) or all (*)'
           required: true
           default: '*' # all
   jobs:
@@ -192,8 +203,12 @@ RUN echo "The additional build arg is: $YOUR_BUILD_ARG"
             config_file: ../config/.github/build_images.yaml
             vars: |
               repo_name="${{ github.repository }}"
-              from_point="${{ github.event.inputs.from }}"
-              on_premises="${{ github.event.inputs.on_premises }}"
+              from="${{ github.event.inputs.from }}"
+              flavors="${{ github.event.inputs.flavors }}"
+              type="snapshots"
+              snapshots_registry="ghcr.io"
+              releases_registry="ghcr.io"
+              auth_strategy="ghcr"
               container_structure_filename=".dagger/struct.yaml"
               dereference_enabled="true"
               login_required=false
@@ -201,6 +216,6 @@ RUN echo "The additional build arg is: $YOUR_BUILD_ARG"
             secrets: |
               github_token="${{ github.token }}"
   ```
-  > Note that in the example the checkout action runs twice, one to clone the repo in the `from_point`, and another to geht the configuration file from the HEAD.
+  > Note that in the example the checkout action runs twice, one to clone the repo at `from`, and another to get the configuration file from the HEAD.
 4. Create a configuration file (e.g. `.github/build_images.yaml`)
 5. Manually launch de workflow

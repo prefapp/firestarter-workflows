@@ -78,8 +78,12 @@ class BuildImages(FirestarterWorkflow):
         self._container_structure_filename = self.vars.get(
             'container_structure_filename', None
         )
-        self._login_required = self.vars.get('login_required', True)
-        self._publish = self.vars.get('publish', True)
+        self._login_required = str(
+            self.vars.get('login_required', 'true')
+        ).lower() == 'true'
+        self._publish = str(
+            self.vars.get('publish', 'true')
+        ).lower() == 'true'
 
         # Read the configuration file
         allow_undefined = self.vars.get('allow_undefined', False)
@@ -138,14 +142,6 @@ class BuildImages(FirestarterWorkflow):
     @property
     def dereference_enabled(self):
         return self._dereference_enabled
-
-    @property
-    def workflow_run_id(self):
-        return self._workflow_run_id
-
-    @property
-    def workflow_run_url(self):
-        return self._workflow_run_url
 
     @property
     def workflow_run_id(self):
