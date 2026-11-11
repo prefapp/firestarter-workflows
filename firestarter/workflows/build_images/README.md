@@ -8,13 +8,14 @@ Located by default at `.github/build_images.yaml`.
 
 The configuration file needed by this package has the following structure.
 ```yaml
-images:
+snapshots:
   example:
-    registry: ttl.sh # Specify where to publish images
-    repository: foo/bar # Used to generate the docker image name
+    registry:
+      name: ttl.sh # Specify where to publish images
+      repository: foo/bar # Used to generate the docker image name
     build_args: # List of build args used in the dockerfile
       REACT_APP_API_URL: prod.local
-    dockerfile: './Dockerfile'# Path to the dockerfile used in the build process
+    dockerfile: './Dockerfile' # Path to the dockerfile used in the build process
     secrets:
       MY_AWS_SECRET: arn:aws:ssm:xxxx:123456767:parameter/my/secret
       MY_AZUREKV_SECRET: https://myvault.vault.azure.net/secrets/my-azure-secret/
