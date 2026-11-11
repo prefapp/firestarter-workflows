@@ -30,6 +30,23 @@ literal: true
     assert result['{{ env.KEY }}'] == 'unchanged'
 
 
+@pytest.mark.parametrize('suffix', ['2', '2_', '123', '2-rc1'])
+def test_text_following_an_expression_stays_literal(suffix):
+    data = load_config_values(f'value: "{{{{ env.VERSION }}}}{suffix}"\n')
+    assert data['value'] == '{{ env.VERSION }}' + suffix
+
+
+def test_expression_followed_by_digit_does_not_collide_with_other_tokens():
+    # The expression below is the second match, so it becomes token _1. Together
+    # with the literal '2' that used to look exactly like token _12, which exists.
+    source = 'key0: "{{ env.VALUE_0 }}"\n'
+    source += 'collision: "{{ env.VALUE_1 }}2"\n'
+    source += ''.join(f'key{i}: "{{{{ env.VALUE_{i} }}}}"\n' for i in range(2, 13))
+    data = load_config_values(source)
+    assert data['collision'] == '{{ env.VALUE_1 }}2'
+    assert data['key12'] == '{{ env.VALUE_12 }}'
+
+
 @pytest.fixture
 def config_file(tmp_path):
     dockerfile = tmp_path / 'Dockerfile'

@@ -22,7 +22,7 @@ def load_config_values(source):
     expressions = {}
 
     def protect(match):
-        token = f'{prefix}{len(expressions)}'
+        token = f'{prefix}{len(expressions)}_'
         expressions[token] = match.group(0)
         return token
 
@@ -34,7 +34,10 @@ def load_config_values(source):
         if isinstance(value, list):
             return [restore(item) for item in value]
         if isinstance(value, str):
-            return re.sub(prefix + r'\d+', lambda match: expressions[match.group(0)], value)
+            value = re.sub(prefix + r'\d+_', lambda match: expressions[match.group(0)], value)
+            if prefix in value:
+                raise ValueError(f"Failed to restore expression token in '{value}'")
+            return value
         return value
 
     return restore(data)
