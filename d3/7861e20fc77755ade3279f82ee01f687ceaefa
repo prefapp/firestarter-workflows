@@ -1,0 +1,19 @@
+firestarter/workflows/build_images/build_images.py
+  s_b0f18b3c531ffe::t_374ec4228ab33a 81-86
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "d37861e20fc77755ade3279f82ee01f687ceaefa",
+  "prompts": {},
+  "sessions": {
+    "s_b0f18b3c531ffe": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_e36042c26ffe8GSOwl3liUhsrK",
+        "model": "claude-opus-5.5"
+      },
+      "human_author": "Javier Gomez Rodriguez <javiergr@ext.zara.com>"
+    }
+  }
+}
