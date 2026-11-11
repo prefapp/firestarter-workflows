@@ -17,7 +17,7 @@ images:
     dockerfile: './Dockerfile'# Path to the dockerfile used in the build process
     secrets:
       MY_AWS_SECRET: arn:aws:ssm:xxxx:123456767:parameter/my/secret
-      MY_AZUREKV_SECRET: https://myvault.vault.azure.net/secrets\
+      MY_AZUREKV_SECRET: https://myvault.vault.azure.net/secrets/my-azure-secret/
 ```
 
 ## Variable interpolation
@@ -113,7 +113,7 @@ Secrets can be defined in multiples places:
 In both places the secrets can be:
 - An string
 - A AWS parameter store reference: arn:aws:ssm:xxxxx:yyyy:zzzz:parameter/my-secret"
-- A Azure Keyvault reference: https://[a-zA-Z0-9\-]{3,24}.vault.azure.net/secrets/my-secret
+- A Azure Keyvault reference: https://[a-zA-Z0-9\-]{3,24}.vault.azure.net/secrets/my-secret/
 
 Additionally, in the `secrets` input, the GitHub `${{ secrets.xxx}}` context is available 
 
@@ -181,7 +181,7 @@ RUN echo "The additional build arg is: $YOUR_BUILD_ARG"
             working_directory: build
             pyproject_path: .dagger
             workflow: build_images
-            config_file: ../config/.dagger/firestarter_build_images.yaml
+            config_file: ../config/.github/build_images.yaml
             vars: |
               repo_name="${{ github.repository }}"
               from_point="${{ github.event.inputs.from }}"
@@ -194,5 +194,5 @@ RUN echo "The additional build arg is: $YOUR_BUILD_ARG"
               github_token="${{ github.token }}"
   ```
   > Note that in the example the checkout action runs twice, one to clone the repo in the `from_point`, and another to geht the configuration file from the HEAD.
-4. Create a configuration file (e.g. `.dagger/firestarter_build_images.yaml`)
+4. Create a configuration file (e.g. `.github/build_images.yaml`)
 5. Manually launch de workflow
