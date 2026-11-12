@@ -1,3 +1,10 @@
+---
+# FEATURE_NAME: release_please
+# FEATURE_VERSION: release_please-v2
+# FEATURE_URL: https://github.com/prefapp/features/tree/release_please-v2/packages/release_please
+# FEATURE_GIT_SHA: "74a34b61de0625058600a2cc8cbd78765d983124"
+# FEATURE_GIT_TAGS: ["release_please-v2.0.0","release_please-v2"]
+
 name: Run Release Please
 
 on:
@@ -30,13 +37,12 @@ jobs:
           target-branch: main
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
-          release-type: python
 
       - uses: actions/checkout@v6
-        if: steps.release.outputs.releases_created == 'true'
+        if: true && steps.release.outputs.releases_created == 'true'
 
       - name: Get major version num and update tag
-        if: steps.release.outputs.releases_created == 'true'
+        if: true && steps.release.outputs.releases_created == 'true'
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
         run: |
@@ -51,7 +57,7 @@ jobs:
           echo $path_released | jq -cr '.[]' | while read -r release; do
             version=$(echo "$manifest" | jq -cr ".\"$release\"")
             major=$(echo "$version" | cut -d. -f1)
-            TAG_NAME="${release/*\//}-v${major}"
+            TAG_NAME="v${major}"
             git tag -fa "$TAG_NAME"  -m "Update major version tag"
             git push origin "$TAG_NAME" --force
           done
