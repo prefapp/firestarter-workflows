@@ -380,9 +380,8 @@ async def test_test_image(mocker) -> None:
     mocker.patch("builtins.open")
     mocker.return_value = ""
 
-    uuid_mock = uuid
-    uuid_mock.uuid4 = mocker.MagicMock(
-        name="uuid.uuid4.mock",
+    mocker.patch.object(
+        uuid, "uuid4",
         side_effect=["correct_call", "container_error", "generic_error"]
     )
 
