@@ -7,16 +7,16 @@ readme = "README.md"
 packages = [{include = "firestarter"}]
 
 [tool.poetry.dependencies]
-python = "^3.10"
-anyio = { version = "3.6.2", python = ">=3.6.2" }
-dagger-io = { version = "0.12.7", python = ">=3.10,<4.0" }
-"ruamel.yaml" = { version = "0.18.5", python = ">=3.10,<4.0" }
+python = "^3.14"
+anyio = "^4.16"
+dagger-io = "0.21.11"
+"ruamel.yaml" = "0.18.5"
 
 # optional for on-premises
-docker = { version = "6.1.2", python = ">=3.6" }
-pytest = "^7.3.1"
+docker = "6.1.2"
+pytest = "^9.2"
 pytest-mock = "^3.14.0"
-pytest-asyncio = "^0.20.0"
+pytest-asyncio = "^1.5"
 jsonschema = "^4.17.3"
 boto3 = "^1.26.161"
 azure-identity = "^1.13.0"
@@ -30,6 +30,7 @@ firestarter = "firestarter.cli:main"
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
+asyncio_default_fixture_loop_scope = "function"
 
 [build-system]
 requires = ["poetry-core"]

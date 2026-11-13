@@ -1,5 +1,13 @@
 # How to contribute
 
+## Dagger version
+
+The Python workflows use Dagger SDK and its managed engine at version **0.21.11**.
+Install the locked dependencies with `poetry install --all-extras` and run
+`poetry run pytest`. The integration tests require a running Docker daemon and
+network access to download the engine and test images. CI tests Python 3.14
+using Poetry 1.8.3, matching the `run-dagger-py` action's Poetry version.
+
 ## Creating a new workflow
 
 To create a new workflow follow these steps:
@@ -31,13 +39,13 @@ This can be done in the following ways:
 * Use a git branch instead of main ([docs](https://python-poetry.org/docs/dependency-specification/#git-dependencies)):
     ```toml
     [tool.poetry.dependencies]
-    python = "^3.11"
+    python = "^3.14"
     firestarter-workflows = {git = "https://github.com/prefapp/firestarter-workflows", branch = "fix/new-bug"}
     ``` 
 * Use the local directory files ([docs](https://python-poetry.org/docs/dependency-specification/#path-dependencies)):
     ```toml
     [tool.poetry.dependencies]
-    python = "^3.11"
+    python = "^3.14"
     firestarter-workflows = {path = "../firestarter-workflows"}
     ```
 > Remember to update the dependencies when doing so (`poetry update firestarter-workflows`).

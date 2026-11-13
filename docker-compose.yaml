@@ -23,7 +23,7 @@ services:
     entrypoint: ["/entrypoint.sh", "run", "--hash-algo", "sha256"]
 
   test:
-    image: python:3.11
+    image: python:3.14
     command:
       - tail
       - -f 
