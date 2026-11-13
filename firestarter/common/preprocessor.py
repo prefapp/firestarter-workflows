@@ -1,12 +1,10 @@
+import re
 from .config_parser import Parser
 
-import os
 
 class PreProcessor:
-
     def __init__(self, data: str) -> None:
         self.data = data
-
 
     def preprocess(self, context: dict) -> str:
         parser: Parser = Parser(self.data)
@@ -17,7 +15,6 @@ class PreProcessor:
 
         return parser.data
 
-
     def resolve_symbol(self, symbol: str, context: dict) -> str:
         var_context, var_name = symbol.split(".")
 
@@ -26,3 +23,31 @@ class PreProcessor:
 
         return f'"{context[var_context](var_name)}"'
 
+
+def interpolate_config_values(data, context: dict, allow_undefined=False, path='$'):
+    """Interpolate parsed config values, not shell commands or YAML source."""
+    def resolve_symbol(match):
+        symbol = match.group(1).strip()
+        var_context, separator, var_name = symbol.partition('.')
+        if var_context not in context:
+            raise ValueError(f"Unknown context '{var_context}' for symbol '{symbol}'")
+        if not separator or not re.fullmatch(r'[A-Za-z0-9_-]+', var_name):
+            raise ValueError(f"Invalid symbol '{symbol}'")
+        try:
+            return str(context[var_context](var_name))
+        except ValueError as error:
+            message = f"{error} at '{path}'"
+            if not allow_undefined:
+                raise ValueError(message) from error
+            print(f"::warning::{message}; replacing with an empty string")
+            return ''
+
+    if isinstance(data, dict):
+        return {key: interpolate_config_values(value, context, allow_undefined, f'{path}.{key}')
+                for key, value in data.items()}
+    if isinstance(data, list):
+        return [interpolate_config_values(value, context, allow_undefined, f'{path}[{index}]')
+                for index, value in enumerate(data)]
+    if isinstance(data, str):
+        return re.sub(r'\{\{(.*?)\}\}', resolve_symbol, data)
+    return data

@@ -2,10 +2,11 @@ import typing as t
 from dataclasses import dataclass, field
 from ruamel.yaml import YAML
 import re
-import json
+import uuid
 from pathlib import Path
 from jsonschema import ValidationError, SchemaError
-from firestarter.common.validations import validate_config
+from firestarter.common.preprocessor import interpolate_config_values
+from firestarter.common.validations import validate_config_data
 from firestarter.common.validations import validate_config_extra_tags
 import logging
 
@@ -13,6 +14,33 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 yaml = YAML(typ='safe')
+
+
+def load_config_values(source):
+    """Protect expression tokens from YAML syntax without evaluating them."""
+    prefix = f'firestarter_{uuid.uuid4().hex}_'
+    expressions = {}
+
+    def protect(match):
+        token = f'{prefix}{len(expressions)}_'
+        expressions[token] = match.group(0)
+        return token
+
+    data = yaml.load(re.sub(r'\{\{.*?\}\}', protect, source))
+
+    def restore(value):
+        if isinstance(value, dict):
+            return {restore(key): restore(item) for key, item in value.items()}
+        if isinstance(value, list):
+            return [restore(item) for item in value]
+        if isinstance(value, str):
+            value = re.sub(prefix + r'\d+_', lambda match: expressions[match.group(0)], value)
+            if prefix in value:
+                raise ValueError(f"Failed to restore expression token in '{value}'")
+            return value
+        return value
+
+    return restore(data)
 
 @dataclass
 class Image:
@@ -72,9 +100,23 @@ class Config:
 
 
     @classmethod
-    def from_yaml(cls: t.Type["Config"], config_file: str, type: str, secrets: dict, schema_file='schema.json'):
+    def from_yaml(cls: t.Type["Config"], config_file: str, type: str, secrets: dict,
+                  schema_file='schema.json', context=None, allow_undefined=False):
         try:
-            raw_config = validate_config(config_file, schema_file)
+            with open(config_file, 'r') as file:
+                raw_config = load_config_values(file.read())
+            if context is not None:
+                try:
+                    raw_config = interpolate_config_values(
+                        raw_config, context, allow_undefined, path=f'{config_file}:$')
+                except ValueError as error:
+                    hint = ''
+                    if str(error).startswith('Unknown context '):
+                        supported = " and ".join(f"'{name}'" for name in context)
+                        description = 'context is' if len(context) == 1 else 'contexts are'
+                        hint = f'; only the {supported} {description} supported'
+                    raise ValueError(f"{error} in config '{config_file}'{hint}") from error
+            validate_config_data(raw_config, schema_file)
             validate_config_extra_tags(raw_config)
             logger.info(f"The config file '{config_file}' is valid")
             config = cls.from_dict(raw_config[type])
@@ -87,26 +129,9 @@ class Config:
         except SchemaError as s_error:
             logger.error(f"Error in schema {s_error.message}")
             raise
-        else:
-            replace_secrets(config.to_dict(), secrets)
-            logger.info("The secrets has been replaced correctly in the set up")
-
         return config
 
     def to_dict(self):
         return {
             "images": {id: image.to_dict() for id, image in self.images.items()},
         }
-
-
-def replace_secrets(data, secrets) -> dict:
-    # check first if dict is a dictionary
-    for key, val in data.items():
-        if isinstance(val, dict):
-            replace_secrets(val, secrets)
-        elif isinstance(val, str):
-            m = re.search(
-                r'^\{\{\ssecrets\.([a-zA-Z][a-zA-Z0-9-_]+)\s\}\}$', val)
-            if m:
-                data[key] = secrets[m.group(1)]
-    return data

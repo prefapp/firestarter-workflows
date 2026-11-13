@@ -3,6 +3,7 @@ import re
 import os
 import sys
 from firestarter.common.firestarter_workflow import FirestarterWorkflow
+from firestarter.common.validations import process_env_var
 import anyio
 import dagger
 from .providers.registries.factory import DockerRegistryAuthFactory
@@ -15,6 +16,7 @@ import string
 import logging
 import fnmatch
 import subprocess
+from copy import deepcopy
 from ruamel.yaml import YAML
 
 logger = logging.getLogger(__name__)
@@ -29,12 +31,24 @@ def normalize_image_tag(tag):
 
     return tag
 
+def vars_input_resolver(variables):
+    values = dict(variables)
+
+    def resolve(name):
+        if name not in values:
+            raise ValueError(f"Undefined vars_input variable '{name}'")
+        return values[name]
+
+    return resolve
+
+
 class BuildImages(FirestarterWorkflow):
     SCHEMA_FILE_PATH: str = os.path.join(os.path.dirname(__file__), 'resources/schema.json')
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
+        input_vars = deepcopy(self.vars)
         self._secrets = self.resolve_secrets(self.secrets)
         self._type = self.vars.get('type', 'snapshots')
 
@@ -64,16 +78,29 @@ class BuildImages(FirestarterWorkflow):
         self._container_structure_filename = self.vars.get(
             'container_structure_filename', None
         )
-        self._login_required = self.vars.get('login_required', True)
-        self._publish = self.vars.get('publish', True)
+        self._login_required = str(
+            self.vars.get('login_required', 'true')
+        ).lower() == 'true'
+        self._publish = str(
+            self.vars.get('publish', 'true')
+        ).lower() == 'true'
 
         # Read the configuration file
+        allow_undefined = self.vars.get('allow_undefined', False)
+        if not isinstance(allow_undefined, bool):
+            raise ValueError('allow_undefined must be a TOML boolean')
+        context = {
+            'env': process_env_var,
+            'vars_input': vars_input_resolver(input_vars),
+        }
         self._dagger_secrets = []
         self._config = Config.from_yaml(
             self.config_file,
             self.type,
             self.secrets,
-            schema_file = self.SCHEMA_FILE_PATH
+            schema_file = self.SCHEMA_FILE_PATH,
+            context=context,
+            allow_undefined=allow_undefined,
         )
 
     def _required_vars(self):
@@ -115,14 +142,6 @@ class BuildImages(FirestarterWorkflow):
     @property
     def dereference_enabled(self):
         return self._dereference_enabled
-
-    @property
-    def workflow_run_id(self):
-        return self._workflow_run_id
-
-    @property
-    def workflow_run_url(self):
-        return self._workflow_run_url
 
     @property
     def workflow_run_id(self):

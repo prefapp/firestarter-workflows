@@ -14,11 +14,14 @@ def process_context_var(context: dict, var_name: str, context_name: str) -> str:
 
     return context[var_name]
 
-def process_env_var(var_name: str) -> str:
-    if var_name not in os.environ.keys():
-        raise ValueError(f"{var_name} could not be found in the ENV context")
-
-    return os.environ[var_name]
+def process_env_var(var_name: str, allow_undefined: bool = False) -> str:
+    if var_name in os.environ:
+        return os.environ[var_name]
+    if allow_undefined:
+        print(f"::warning::Environment variable '{var_name}' is undefined; "
+              "replacing with an empty string")
+        return ''
+    raise ValueError(f"Environment variable '{var_name}' is undefined")
 
 def helper_get_config_schema(schema_path: str) -> dict:
     CONFIG_SCHEMA = False
@@ -36,21 +39,19 @@ def validate_config(config_path: str, schema_path: str, context = None) -> dict:
             preprocessor: PreProcessor = PreProcessor(config_file.read())
             config_str: str = preprocessor.preprocess({
                 "vars": lambda v: process_context_var(context.vars, v, "VARS"),
-                "secrets":
-                    lambda s: process_context_var(context.secrets, s, "SECRETS"),
+                "secrets": lambda s: process_context_var(context.secrets, s, "SECRETS"),
                 "env": lambda e: process_env_var(e),
             })
         else:
             config_str: str = config_file.read()
 
         config_data: dict = yaml.load(config_str)
-
-        validate(
-            instance=config_data,
-            schema=helper_get_config_schema(schema_path),
-        )
-
+        validate_config_data(config_data, schema_path)
         return config_data
+
+
+def validate_config_data(config_data: dict, schema_path: str) -> None:
+    validate(instance=config_data, schema=helper_get_config_schema(schema_path))
 
 def validate_config_extra_tags(config_data: dict) -> None:
     all_tags = []
@@ -65,4 +66,3 @@ def validate_config_extra_tags(config_data: dict) -> None:
 
     if duplicates:
         raise ValueError(f"Duplicate extra_tags found: {', '.join(duplicates)}")
-
