@@ -5,7 +5,7 @@ import re
 import uuid
 from pathlib import Path
 from jsonschema import ValidationError, SchemaError
-from firestarter.common.preprocessor import interpolate_config_values
+from firestarter.common.preprocessor import ContextPathRule, interpolate_config_values
 from firestarter.common.validations import validate_config_data
 from firestarter.common.validations import validate_config_extra_tags
 import logging
@@ -14,6 +14,23 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 yaml = YAML(typ='safe')
+
+
+def _is_flavor_secret_path(segments):
+    return (
+        len(segments) == 4
+        and segments[0] in ('snapshots', 'releases')
+        and segments[2] == 'secrets'
+        and all(isinstance(segment, str) for segment in segments)
+    )
+
+
+BUILD_IMAGES_RESTRICTED_CONTEXTS = {
+    'build_images_secrets': ContextPathRule(
+        allowed=_is_flavor_secret_path,
+        description="a flavor's 'secrets' mapping",
+    ),
+}
 
 
 def load_config_values(source):
@@ -100,7 +117,7 @@ class Config:
 
 
     @classmethod
-    def from_yaml(cls: t.Type["Config"], config_file: str, type: str, secrets: dict,
+    def from_yaml(cls: t.Type["Config"], config_file: str, type: str,
                   schema_file='schema.json', context=None, allow_undefined=False):
         try:
             with open(config_file, 'r') as file:
@@ -108,7 +125,8 @@ class Config:
             if context is not None:
                 try:
                     raw_config = interpolate_config_values(
-                        raw_config, context, allow_undefined, path=f'{config_file}:$')
+                        raw_config, context, allow_undefined, path=f'{config_file}:$',
+                        restricted_contexts=BUILD_IMAGES_RESTRICTED_CONTEXTS)
                 except ValueError as error:
                     hint = ''
                     if str(error).startswith('Unknown context '):

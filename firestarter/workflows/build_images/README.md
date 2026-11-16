@@ -24,7 +24,8 @@ snapshots:
 ## Variable interpolation
 String values in `build_images.yaml` support interpolation in the form `{{ <context>.XXX }}`.
 
-Only `env.*` and `vars_input.*` contexts are supported. 
+Only `env.*`, `build_images_vars.*`, and `build_images_secrets.*` contexts are supported.
+`build_images_secrets.*` is restricted to direct values in a flavor's `secrets` mapping.
 
 Take into account: 
 - Action var input `allow_undefined` defaults to `false`: missing variables fail with their name and config path. Set it to the TOML boolean `true` (unquoted) to replace missing variables with an empty string and a warning annotation.
@@ -53,9 +54,9 @@ This works for quoted or unquoted values and embedded expressions such as `build
 > - Never interpolate sensitive env values into build arguments: they may be stored in **image metadata** and results artifacts.
 > - Use build secrets and Dockerfile secret mounts instead.
 
-##### vars_input
+##### build_images_vars
 
-Use `{{ vars_input.NAME }}` to reference parsed values passed through the
+Use `{{ build_images_vars.NAME }}` to reference parsed values passed through the
 action's `with.vars` input. 
 
 This is distinct from GitHub's `vars` context: GitHub
@@ -63,7 +64,7 @@ evaluates action inputs first, and this context reads the resulting workflow inp
 
 ```yaml
 build_args:
-  REPOSITORY: "{{ vars_input.repo_name }}"
+  REPOSITORY: "{{ build_images_vars.repo_name }}"
 ```
 
 Variable names are case-sensitive: `repo_name`, `REPO_NAME`, and `Repo_Name`
@@ -72,7 +73,7 @@ are **distinct inputs** and must be referenced with their exact spelling.
 Missing variables fail with their name and config path, according to the `allow_undefined` input. 
 Empty strings, boolean, and numbers are defined values.
 Only explicitly supplied inputs are exposed, not workflow defaults or derived
-properties; `vars_input.from` is the original input, not a de-referenced SHA.
+properties; `build_images_vars.from` is the original input, not a de-referenced SHA.
 
 > [!NOTE]
 > - Variable lookup is **case-sensitive**
@@ -83,6 +84,36 @@ properties; `vars_input.from` is the original input, not a de-referenced SHA.
 Workflow inputs can contain credentials. This context does not add masking or
 secret protection: use credential-bearing inputs only in credential fields, never
 in build arguments, tags, or published results.
+
+##### build_images_secrets
+
+Use `{{ build_images_secrets.NAME }}` to reference the action's parsed `secrets`
+input. Names are case-sensitive. This context is only permitted in direct values
+at `snapshots.<flavor>.secrets.<name>` or `releases.<flavor>.secrets.<name>`:
+
+```yaml
+snapshots:
+  example:
+    dockerfile: Dockerfile
+    build_args:
+      CUSTOM_VAR: "{{ build_images_vars.CUSTOM_VAR }}"
+    secrets:
+      TOKEN: "{{ build_images_secrets.PAT }}"
+      DB_PASSWORD: "{{ build_images_secrets.TEST_AWS }}"
+```
+
+Using this context in build args, tags, registry fields, or nested secret
+structures fails before building, even when `allow_undefined=true`.
+Missing names in allowed locations follow the usual `allow_undefined` behavior.
+Values are not recursively interpolated, and mapping keys are not interpolated.
+
+The context exposes the original input: GitHub expressions have already been
+evaluated, but AWS SSM ARNs and Azure Key Vault URLs remain references until the
+flavor is built. Only that flavor's secrets are resolved and mounted; unreferenced
+input secrets are not fetched or mounted. Secret values are not included in the
+results artifact. Dockerfiles must still avoid printing or copying mounted
+secrets into the image. Secrets supplied through `env` or `build_images_vars`
+are not protected by this context restriction.
 
 ## Input vars
 
@@ -119,14 +150,15 @@ The workflow fails with `Missing required variable: <name>` if any of these is m
 | `workflow_run_url` | — | Included as-is in the results file. |
 | `allow_undefined` | `false` | Must be a TOML boolean (unquoted), otherwise the workflow fails. When `true`, undefined `{{ <context>.X }}` values become empty strings with a warning instead of failing. |
 
-All input vars (as originally supplied, before defaults or de-referencing) are also available for interpolation via `{{ vars_input.NAME }}`.
+All input vars (as originally supplied, before defaults or de-referencing) are also available for interpolation via `{{ build_images_vars.NAME }}`.
 
 ## Secrets
 
 Secrets can be used the same way that recommends [docker documentation](https://docs.docker.com/build/ci/github-actions/secrets/).
 
 Secrets can be defined in multiples places:
-- In the `secrets` input. Available to all flavors.
+- In the `secrets` input. Each flavor must explicitly reference the values it needs
+  using `{{ build_images_secrets.NAME }}` in its `secrets` mapping.
 - In the config file, in the `secrets` key of the flavor where is needed.
 
 In both places the secrets can be:
@@ -140,25 +172,19 @@ To do so add a secret variables similarly as you would do with any other firesta
 
 ```Dockerfile
 RUN --mount=type=secret,id=github_token,dst=/run/secrets/github_token \
-    echo "The secret token is: $(cat /run/secrets/github_token)"
+    command-that-reads-token /run/secrets/github_token
 ```
 
 > Remember to make sure the secret key name and secret id are the same
 
 
-## Additional build args
+## Migration
 
-In addition to those found in the configuration file, additional build args may be set using the command line argument `--additional-build-args` or via the `INPUT_ADDITIONAL_BUILD_ARGS` environment variable. These values can then be used in the Dockerfile, for example:
-
-```Dockerfile
-ARG YOUR_BUILD_ARG
-ENV YOUR_BUILD_ARG=$YOUR_BUILD_ARG
-
-RUN echo "The additional build arg is: $YOUR_BUILD_ARG"
-```
-
-> [!WARNING]
-> Secrets and build args set in the configuration file will overwrite those set via `additional-build-args`.
+- The `additional_build_args` input and CLI argument are removed, and
+  `INPUT_ADDITIONAL_BUILD_ARGS` is no longer read. Move custom values into `vars`
+  and explicitly reference them in each flavor's `build_args`.
+- Input secrets are no longer mounted into every flavor. Add explicit
+  `{{ build_images_secrets.NAME }}` references to each flavor's `secrets` mapping.
 
 ## Example
 
@@ -220,4 +246,12 @@ RUN echo "The additional build arg is: $YOUR_BUILD_ARG"
   ```
   > Note that in the example the checkout action runs twice, one to clone the repo at `from`, and another to get the configuration file from the HEAD.
 4. Create a configuration file (e.g. `.github/build_images.yaml`)
+   Reference the example's input token explicitly:
+   ```yaml
+   snapshots:
+     default:
+       dockerfile: Dockerfile
+       secrets:
+         github_token: "{{ build_images_secrets.github_token }}"
+   ```
 5. Manually launch de workflow

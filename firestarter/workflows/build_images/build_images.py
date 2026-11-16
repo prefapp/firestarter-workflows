@@ -31,12 +31,12 @@ def normalize_image_tag(tag):
 
     return tag
 
-def vars_input_resolver(variables):
+def input_context_resolver(context_name, variables):
     values = dict(variables)
 
     def resolve(name):
         if name not in values:
-            raise ValueError(f"Undefined vars_input variable '{name}'")
+            raise ValueError(f"Undefined {context_name} variable '{name}'")
         return values[name]
 
     return resolve
@@ -49,7 +49,7 @@ class BuildImages(FirestarterWorkflow):
         super().__init__(**kwargs)
 
         input_vars = deepcopy(self.vars)
-        self._secrets = self.resolve_secrets(self.secrets)
+        self._secrets = deepcopy(self.secrets or {})
         self._type = self.vars.get('type', 'snapshots')
 
         # We checkout the correct sha/tag
@@ -91,13 +91,13 @@ class BuildImages(FirestarterWorkflow):
             raise ValueError('allow_undefined must be a TOML boolean')
         context = {
             'env': process_env_var,
-            'vars_input': vars_input_resolver(input_vars),
+            'build_images_vars': input_context_resolver('build_images_vars', input_vars),
+            'build_images_secrets': input_context_resolver('build_images_secrets', self.secrets),
         }
         self._dagger_secrets = []
         self._config = Config.from_yaml(
             self.config_file,
             self.type,
-            self.secrets,
             schema_file = self.SCHEMA_FILE_PATH,
             context=context,
             allow_undefined=allow_undefined,
@@ -307,14 +307,11 @@ class BuildImages(FirestarterWorkflow):
         self._flavors = final_flavors_list
 
     def filter_auto_build(self):
-        logger.info(
-            'Publishing all flavors with auto build enabled:',
-            self.config.to_dict()["images"]
-        )
         self._flavors = [
             flavor for flavor in self.config.to_dict()["images"]
             if self.config.to_dict()["images"][flavor].get("auto")
         ]
+        logger.info("Publishing auto-build flavors: %s", self._flavors)
 
     async def test_image(self, ctx):
         try:
@@ -402,7 +399,7 @@ class BuildImages(FirestarterWorkflow):
         # Set a current working directory
         src = ctx.host().directory(".")
 
-        logger.info(f"Building for platforms: {platforms_to_build} using secrets: {secrets}")
+        logger.info(f"Building for platforms: {platforms_to_build} using {len(secrets)} secrets")
         for platform in platforms_to_build:
             ctr = (
                 ctx.container(platform=dagger.Platform(platform))
@@ -465,24 +462,6 @@ class BuildImages(FirestarterWorkflow):
         # Connect to Dagger
         async with dagger.Connection(config) as client:
 
-            secrets_for_all_flavors = []
-            for key, value in self.secrets.items():
-                secrets_for_all_flavors.append(client.set_secret(key, value))
-
-            logger.info(
-                f"Using these secrets for all flavors: {self.secrets.keys()}"
-            )
-
-            build_args_for_all_flavors = []
-            for key, value in self.additional_build_args.items():
-                build_args_for_all_flavors.append(
-                    dagger.BuildArg(name=key, value=value)
-                )
-
-            logger.info(
-                f"Using these build_args for all flavors: {self.additional_build_args.keys()}"
-            )
-
             for flavor in self.flavors:
                 registry, full_repo_name, build_args,\
                         dockerfile, extra_registries,\
@@ -521,16 +500,8 @@ class BuildImages(FirestarterWorkflow):
                     for key, value in build_args.items()
                 ]
 
-                # Combine generic and custom build_args for this flavor
-                # (Order matters: the args added in the second array will
-                # overwrite the ones with the same name in the first array.
-                # In this case, args defined in the flavor configuration will
-                # overwrite the same args defined as command line arguments
-                # or environment variables)
-                full_build_args = build_args_for_all_flavors + build_args_list
-
                 resolved_secret_refs = self.resolve_secrets(
-                    self.config.images[flavor].secrets or {}
+                    deepcopy(self.config.images[flavor].secrets or {})
                 )
 
                 logger.info((
@@ -544,14 +515,6 @@ class BuildImages(FirestarterWorkflow):
 
                 for key, value in resolved_secret_refs.items():
                     flavor_secrets.append(client.set_secret(key, value))
-
-                # Combine generic and custom secrets for this flavor
-                # (Order matters: the secrets added in the second array will
-                # overwrite the ones with the same name in the first array.
-                # In this case, secretss defined in the flavor configuration
-                # will overwrite the same secrets defined as command line
-                # arguments or environment variables)
-                secrets = secrets_for_all_flavors + flavor_secrets
 
                 # Set the address for the default registry
                 registry_address = f"{registry}/{full_repo_name}"
@@ -589,8 +552,8 @@ class BuildImages(FirestarterWorkflow):
                 for image in registry_list:
                     await self.compile_image_and_publish(
                         client,
-                        full_build_args,
-                        secrets,
+                        build_args_list,
+                        flavor_secrets,
                         dockerfile,
                         image,
                         platforms_to_build
@@ -722,7 +685,6 @@ class BuildImages(FirestarterWorkflow):
             auth_strategy, registry
         )
 
-        logger.info(f"Setting creds {creds}")
         provider.creds = creds
 
         return provider.login_registry()

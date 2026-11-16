@@ -29,7 +29,6 @@ vars = {
     "platforms": "linux/amd64,linux/arm64",
 }
 secrets = {}
-additional_build_args = {}
 config_file_path = f"{os.path.dirname(os.path.realpath(__file__))}/fixtures/build_images.yaml"
 
 with open(config_file_path, 'r') as config_file:
@@ -60,7 +59,6 @@ def reset_builder_value() -> None:
     builder = BuildImages(
         vars=vars,
         secrets=secrets,
-        additional_build_args=additional_build_args,
         config_file=config_file_path
     )
 
@@ -210,7 +208,6 @@ def test_dereference_enabled_true_dereferences_from(mocker) -> None:
     dereference_builder = BuildImages(
         vars=vars_with_dereference,
         secrets=secrets,
-        additional_build_args=additional_build_args,
         config_file=config_file_path
     )
 
@@ -229,7 +226,6 @@ def test_dereference_enabled_false_uses_raw_from(mocker) -> None:
     no_dereference_builder = BuildImages(
         vars=vars_without_dereference,
         secrets=secrets,
-        additional_build_args=additional_build_args,
         config_file=config_file_path
     )
 
@@ -250,7 +246,6 @@ def test_non_snapshots_type_uses_raw_from(mocker) -> None:
     releases_builder = BuildImages(
         vars=vars_with_releases_type,
         secrets=secrets,
-        additional_build_args=additional_build_args,
         config_file=config_file_path
     )
 

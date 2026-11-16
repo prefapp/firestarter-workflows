@@ -4,7 +4,6 @@ class FirestarterWorkflow:
         self._config_file = kwargs.get('config_file', None)
         self._vars = kwargs.get('vars', None)
         self._secrets = kwargs.get('secrets', None)
-        self._additional_build_args = kwargs.get('additional_build_args', None)
         self.__validate_required_vars()
 
     def __validate_required_vars(self):
@@ -23,10 +22,6 @@ class FirestarterWorkflow:
     @property
     def vars(self):
         return self._vars
-
-    @property
-    def additional_build_args(self):
-        return self._additional_build_args
 
     @property
     def secrets(self):
