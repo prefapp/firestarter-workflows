@@ -68,7 +68,7 @@ async def exec_run_in_container(commands: List[str], container, dagger_client):
         # Make bash script executable
         .with_exec(["chmod", "+x", f"{file_name}"])
         # Execute the bash script
-        .with_exec([f"{file_name}"])
+        .with_exec([f"{file_name}"], use_entrypoint=True)
     )
 
     return container

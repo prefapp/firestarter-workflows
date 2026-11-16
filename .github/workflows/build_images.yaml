@@ -121,6 +121,7 @@ jobs:
         with:
           working_directory: build
           workflow: build_images
+          python_version: "3.14"
           config_file: ../config/.github/build_images.yaml
           workflows_repository: ${{ inputs.workflows_repo }}
           workflows_repository_ref: ${{ inputs.workflows_repo_ref }}
