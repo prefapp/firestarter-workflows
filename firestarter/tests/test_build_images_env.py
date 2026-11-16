@@ -173,14 +173,15 @@ def test_credential_resolution_does_not_mutate_input_context(monkeypatch, config
 
 
 def test_schema_validation_follows_string_substitution(monkeypatch, config_file):
-    from jsonschema import ValidationError
-
     monkeypatch.setenv('BUILD_VALUE', 'ok')
     data = YAML(typ='safe').load(config_file)
     data['snapshots']['default']['platforms'] = '{{ build_images_vars.platforms }}'
     YAML().dump(data, config_file)
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValueError, match="is not of type 'array'") as error:
         builder(config_file, platforms='amd64,arm64')
+    assert error.value.__cause__ is None
+    assert error.value.__context__ is None
+    assert str(config_file) in str(error.value)
 
 
 @pytest.mark.asyncio

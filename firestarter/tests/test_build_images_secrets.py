@@ -154,3 +154,66 @@ def test_registry_login_does_not_log_credentials(tmp_path, mocker, caplog):
         workflow.login('generic', 'registry.test', 'registry-sensitive-value')
     assert provider.return_value.creds == 'registry-sensitive-value'
     assert 'registry-sensitive-value' not in caplog.text
+
+
+def test_invalid_config_does_not_disclose_interpolated_secrets(tmp_path, capsys, caplog):
+    import logging
+    import traceback
+
+    from firestarter.workflows.build_images import run
+
+    secret = 'PLAINTEXT_SECRET_SENTINEL'
+    config_file = tmp_path / 'build_images.yaml'
+    YAML().dump({
+        'snapshots': {
+            'default': {
+                'secrets': {'TOKEN': EXPRESSION},
+            },
+        },
+        'releases': {
+            'default': {
+                'secrets': {'TOKEN': EXPRESSION},
+            },
+        },
+    }, config_file)
+
+    with caplog.at_level(logging.ERROR):
+        with pytest.raises(SystemExit) as error:
+            run(
+                vars={
+                    'from': 'aaaaaaa',
+                    'repo_name': 'org/app',
+                    'snapshots_registry': 'registry.test',
+                    'releases_registry': 'registry.test',
+                    'snapshots_registry_creds': '',
+                    'dereference_enabled': False,
+                    'output_results': str(tmp_path / 'results.yaml'),
+                },
+                secrets={'TOKEN': secret},
+                config_file=str(config_file),
+            )
+
+    assert error.value.code == 1
+    out = capsys.readouterr().out
+    rule = "'dockerfile' is a required property"
+    expected = f"Invalid build images config '{config_file}': {rule}"
+
+    assert expected in out
+    assert '::error title=BuildImages Failure::' in out
+    assert secret not in out
+    assert 'On instance' not in out
+
+    assert expected in caplog.text
+    assert secret not in caplog.text
+    assert 'On instance' not in caplog.text
+
+    records = [r for r in caplog.records if r.exc_info]
+    assert records
+    formatted = ''.join(
+        traceback.format_exception(*records[-1].exc_info)
+    )
+    assert secret not in formatted
+    assert 'On instance' not in formatted
+    assert records[-1].exc_info[1].__cause__ is None
+    assert records[-1].exc_info[1].__context__ is None
+    assert isinstance(records[-1].exc_info[1], ValueError)

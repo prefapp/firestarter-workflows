@@ -119,6 +119,7 @@ class Config:
     @classmethod
     def from_yaml(cls: t.Type["Config"], config_file: str, type: str,
                   schema_file='schema.json', context=None, allow_undefined=False):
+        sanitized_error = None
         try:
             with open(config_file, 'r') as file:
                 raw_config = load_config_values(file.read())
@@ -142,11 +143,27 @@ class Config:
             logger.error(f"File not found {fnf_error}")
             raise
         except ValidationError as v_error:
-            logger.error(f"Validate error {v_error.message}")
-            raise
+            logger.error(
+                "Invalid build images config '%s': %s",
+                config_file,
+                v_error.message,
+            )
+            sanitized_error = ValueError(
+                f"Invalid build images config '{config_file}': {v_error.message}"
+            )
         except SchemaError as s_error:
-            logger.error(f"Error in schema {s_error.message}")
-            raise
+            logger.error(
+                "Invalid build images schema '%s': %s",
+                schema_file,
+                s_error.message,
+            )
+            sanitized_error = ValueError(
+                f"Invalid build images schema '{schema_file}': {s_error.message}"
+            )
+
+        if sanitized_error is not None:
+            raise sanitized_error
+
         return config
 
     def to_dict(self):
