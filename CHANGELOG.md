@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.0.0](https://github.com/prefapp/firestarter-workflows/compare/v3.6.1...v4.0.0) (2026-11-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* new build_images_vars and build_images_secrets context ([#243](https://github.com/prefapp/firestarter-workflows/issues/243))
+* update Dagger version ([#241](https://github.com/prefapp/firestarter-workflows/issues/241))
+* add variable interpolation support for build_images.yaml ([#234](https://github.com/prefapp/firestarter-workflows/issues/234))
+
+### Features
+
+* add variable interpolation support for build_images.yaml ([#234](https://github.com/prefapp/firestarter-workflows/issues/234)) ([fc0cb9e](https://github.com/prefapp/firestarter-workflows/commit/fc0cb9e68f3a9410606ec333805771faa86001c1))
+* new build_images_vars and build_images_secrets context ([#243](https://github.com/prefapp/firestarter-workflows/issues/243)) ([dbc52b1](https://github.com/prefapp/firestarter-workflows/commit/dbc52b16b5615b730424f729c2dc3a14b5afa7a8))
+* update Dagger version ([#241](https://github.com/prefapp/firestarter-workflows/issues/241)) ([3f291a2](https://github.com/prefapp/firestarter-workflows/commit/3f291a2893f66c5cca4a8bd00cdb2b30e7f44fec))
+
 ## [3.6.1](https://github.com/prefapp/firestarter-workflows/compare/v3.6.0...v3.6.1) (2026-11-06)
 
 
