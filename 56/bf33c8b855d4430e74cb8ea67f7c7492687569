@@ -1,0 +1,14 @@
+.github/workflows/release-please.yaml
+  h_7389ae929e13ef 41,43-44,51-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "56bf33c8b855d4430e74cb8ea67f7c7492687569",
+  "prompts": {},
+  "humans": {
+    "h_7389ae929e13ef": {
+      "author": "Javier Gomez Rodriguez <javiergr@ext.zara.com>"
+    }
+  }
+}
