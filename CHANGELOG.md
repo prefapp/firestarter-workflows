@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.1](https://github.com/prefapp/firestarter-workflows/compare/v4.0.0...v4.0.1) (2026-11-17)
+
+
+### Bug Fixes
+
+* git configuration steps ([#246](https://github.com/prefapp/firestarter-workflows/issues/246)) ([56bf33c](https://github.com/prefapp/firestarter-workflows/commit/56bf33c8b855d4430e74cb8ea67f7c7492687569))
+
 ## [4.0.0](https://github.com/prefapp/firestarter-workflows/compare/v3.6.1...v4.0.0) (2026-11-17)
 
 
