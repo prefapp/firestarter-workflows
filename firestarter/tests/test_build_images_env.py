@@ -3,7 +3,7 @@ from ruamel.yaml import YAML
 
 from firestarter.common.preprocessor import interpolate_config_values
 from firestarter.common.validations import process_env_var
-from firestarter.workflows.build_images.build_images import BuildImages, vars_input_resolver
+from firestarter.workflows.build_images.build_images import BuildImages, input_context_resolver
 from firestarter.workflows.build_images.config import load_config_values
 
 
@@ -14,14 +14,15 @@ def test_values_are_strings_not_yaml_or_expressions(monkeypatch, value):
     data = load_config_values('''
 quoted: "{{ env.BUILD_VALUE }}"
 unquoted: {{ env.BUILD_VALUE }}
-single_quoted: '{{ vars_input.VALUE }}'
-embedded: prefix-{{ env.BUILD_VALUE }}-{{vars_input.VALUE}}-suffix
+single_quoted: '{{ build_images_vars.VALUE }}'
+embedded: prefix-{{ env.BUILD_VALUE }}-{{build_images_vars.VALUE}}-suffix
 list: [{{ env.BUILD_VALUE }}]
 literal: true
 "{{ env.KEY }}": unchanged
 ''')
     result = interpolate_config_values(data, {
-        'env': process_env_var, 'vars_input': vars_input_resolver({'VALUE': value}),
+        'env': process_env_var,
+        'build_images_vars': input_context_resolver('build_images_vars', {'VALUE': value}),
     })
     assert result['quoted'] == result['unquoted'] == result['single_quoted'] == str(value)
     assert result['embedded'] == f'prefix-{value}-{value}-suffix'
@@ -54,7 +55,7 @@ def config_file(tmp_path):
     path = tmp_path / 'build_images.yaml'
     YAML().dump({'snapshots': {'default': {
         'dockerfile': str(dockerfile),
-        'build_args': {'VALUE': '{{ env.BUILD_VALUE }}', 'INPUT': '{{ vars_input.repo_name }}'},
+        'build_args': {'VALUE': '{{ env.BUILD_VALUE }}', 'INPUT': '{{ build_images_vars.repo_name }}'},
     }}}, path)
     return path
 
@@ -64,11 +65,11 @@ def builder(config_file, **variables):
         vars={'from': 'aaaaaaa', 'repo_name': 'org/app',
               'snapshots_registry': 'registry.test', 'releases_registry': 'registry.test',
               'dereference_enabled': False, **variables},
-        secrets={}, additional_build_args={}, config_file=str(config_file),
+        secrets={}, config_file=str(config_file),
     )
 
 
-@pytest.mark.parametrize('context', ['env', 'vars_input'])
+@pytest.mark.parametrize('context', ['env', 'build_images_vars'])
 @pytest.mark.parametrize('allow_undefined', [False, True])
 def test_missing_variables_report_location(monkeypatch, config_file, capsys, context, allow_undefined):
     monkeypatch.delenv('MISSING_VALUE', raising=False)
@@ -88,7 +89,7 @@ def test_missing_variables_report_location(monkeypatch, config_file, capsys, con
     assert str(config_file) in message
 
 
-@pytest.mark.parametrize('symbol', ['github.ref_name', 'vars.X', 'secrets.X', 'build_images_args.X'])
+@pytest.mark.parametrize('symbol', ['github.ref_name', 'vars.X', 'secrets.X', 'build_images_args.X', 'vars_input.X'])
 @pytest.mark.parametrize('allow_undefined', [False, True])
 def test_unsupported_contexts_fail(config_file, symbol, allow_undefined):
     config_file.write_text(config_file.read_text().replace('{{ env.BUILD_VALUE }}', '{{ ' + symbol + ' }}'))
@@ -104,7 +105,7 @@ def test_shared_env_lookup_remains_case_sensitive(monkeypatch):
         process_env_var('build_value')
 
 
-@pytest.mark.parametrize('context', ['env', 'vars_input'])
+@pytest.mark.parametrize('context', ['env', 'build_images_vars'])
 @pytest.mark.parametrize('supplied', ['TEST_VALUE', 'test_value', 'Test_Value'])
 @pytest.mark.parametrize('requested', ['TEST_VALUE', 'test_value', 'Test_Value'])
 @pytest.mark.parametrize('allow_undefined', [False, True])
@@ -135,7 +136,7 @@ def test_case_distinct_names_remain_independent(monkeypatch):
     monkeypatch.setenv('build_value', 'lower')
     assert process_env_var('BUILD_VALUE') == 'upper'
     assert process_env_var('build_value') == 'lower'
-    resolve = vars_input_resolver({'BUILD_VALUE': 'upper', 'build_value': 'lower'})
+    resolve = input_context_resolver('build_images_vars', {'BUILD_VALUE': 'upper', 'build_value': 'lower'})
     assert resolve('BUILD_VALUE') == 'upper'
     assert resolve('build_value') == 'lower'
 
@@ -148,12 +149,12 @@ def test_allow_undefined_requires_boolean(config_file, value):
 
 def test_only_explicit_original_inputs_are_exposed(monkeypatch, config_file):
     monkeypatch.setenv('BUILD_VALUE', 'ok')
-    config_file.write_text(config_file.read_text().replace('{{ vars_input.repo_name }}', '{{ vars_input.from }}'))
+    config_file.write_text(config_file.read_text().replace('{{ build_images_vars.repo_name }}', '{{ build_images_vars.from }}'))
     monkeypatch.setattr(BuildImages, 'dereference_from_input', lambda self, value: 'bbbbbbb')
     result = builder(config_file, dereference_enabled=True)
     assert result.from_version == 'bbbbbbb'
     assert result.config.images['default'].build_args['INPUT'] == 'aaaaaaa'
-    config_file.write_text(config_file.read_text().replace('{{ vars_input.from }}', '{{ vars_input.type }}'))
+    config_file.write_text(config_file.read_text().replace('{{ build_images_vars.from }}', '{{ build_images_vars.type }}'))
     with pytest.raises(ValueError, match='type'):
         builder(config_file)
 
@@ -161,11 +162,10 @@ def test_only_explicit_original_inputs_are_exposed(monkeypatch, config_file):
 def test_credential_resolution_does_not_mutate_input_context(monkeypatch, config_file):
     monkeypatch.setenv('BUILD_VALUE', 'ok')
     config_file.write_text(config_file.read_text().replace(
-        '{{ vars_input.repo_name }}', '{{ vars_input.snapshots_registry_creds }}'))
+        '{{ build_images_vars.repo_name }}', '{{ build_images_vars.snapshots_registry_creds }}'))
 
     def resolve(self, secrets):
-        self.vars['snapshots_registry_creds']['TOKEN'] = 'resolved'
-        return secrets
+        raise AssertionError('Secrets must not be resolved during construction')
 
     monkeypatch.setattr(BuildImages, 'resolve_secrets', resolve)
     workflow = builder(config_file, snapshots_registry_creds={'TOKEN': 'original'})
@@ -173,14 +173,15 @@ def test_credential_resolution_does_not_mutate_input_context(monkeypatch, config
 
 
 def test_schema_validation_follows_string_substitution(monkeypatch, config_file):
-    from jsonschema import ValidationError
-
     monkeypatch.setenv('BUILD_VALUE', 'ok')
     data = YAML(typ='safe').load(config_file)
-    data['snapshots']['default']['platforms'] = '{{ vars_input.platforms }}'
+    data['snapshots']['default']['platforms'] = '{{ build_images_vars.platforms }}'
     YAML().dump(data, config_file)
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValueError, match="is not of type 'array'") as error:
         builder(config_file, platforms='amd64,arm64')
+    assert error.value.__cause__ is None
+    assert error.value.__context__ is None
+    assert str(config_file) in str(error.value)
 
 
 @pytest.mark.asyncio

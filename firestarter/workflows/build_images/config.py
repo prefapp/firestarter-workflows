@@ -5,7 +5,7 @@ import re
 import uuid
 from pathlib import Path
 from jsonschema import ValidationError, SchemaError
-from firestarter.common.preprocessor import interpolate_config_values
+from firestarter.common.preprocessor import ContextPathRule, interpolate_config_values
 from firestarter.common.validations import validate_config_data
 from firestarter.common.validations import validate_config_extra_tags
 import logging
@@ -14,6 +14,23 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 yaml = YAML(typ='safe')
+
+
+def _is_flavor_secret_path(segments):
+    return (
+        len(segments) == 4
+        and segments[0] in ('snapshots', 'releases')
+        and segments[2] == 'secrets'
+        and all(isinstance(segment, str) for segment in segments)
+    )
+
+
+BUILD_IMAGES_RESTRICTED_CONTEXTS = {
+    'build_images_secrets': ContextPathRule(
+        allowed=_is_flavor_secret_path,
+        description="a flavor's 'secrets' mapping",
+    ),
+}
 
 
 def load_config_values(source):
@@ -100,15 +117,17 @@ class Config:
 
 
     @classmethod
-    def from_yaml(cls: t.Type["Config"], config_file: str, type: str, secrets: dict,
+    def from_yaml(cls: t.Type["Config"], config_file: str, type: str,
                   schema_file='schema.json', context=None, allow_undefined=False):
+        sanitized_error = None
         try:
             with open(config_file, 'r') as file:
                 raw_config = load_config_values(file.read())
             if context is not None:
                 try:
                     raw_config = interpolate_config_values(
-                        raw_config, context, allow_undefined, path=f'{config_file}:$')
+                        raw_config, context, allow_undefined, path=f'{config_file}:$',
+                        restricted_contexts=BUILD_IMAGES_RESTRICTED_CONTEXTS)
                 except ValueError as error:
                     hint = ''
                     if str(error).startswith('Unknown context '):
@@ -124,11 +143,27 @@ class Config:
             logger.error(f"File not found {fnf_error}")
             raise
         except ValidationError as v_error:
-            logger.error(f"Validate error {v_error.message}")
-            raise
+            logger.error(
+                "Invalid build images config '%s': %s",
+                config_file,
+                v_error.message,
+            )
+            sanitized_error = ValueError(
+                f"Invalid build images config '{config_file}': {v_error.message}"
+            )
         except SchemaError as s_error:
-            logger.error(f"Error in schema {s_error.message}")
-            raise
+            logger.error(
+                "Invalid build images schema '%s': %s",
+                schema_file,
+                s_error.message,
+            )
+            sanitized_error = ValueError(
+                f"Invalid build images schema '{schema_file}': {s_error.message}"
+            )
+
+        if sanitized_error is not None:
+            raise sanitized_error
+
         return config
 
     def to_dict(self):
