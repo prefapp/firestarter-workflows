@@ -64,12 +64,12 @@ jobs:
       DIFF_FILE: "/tmp/helmfile.md"
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - run: npm install js-yaml
 
       - name: Parse config file
         id: parse_config
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require("fs");
@@ -121,7 +121,7 @@ jobs:
       # Install dependencies
       ## Both kubectl and helm are already installed but we use this step also to use a specific version
       - name: Setup helmfile
-        uses: mamezou-tech/setup-helmfile@v2.1.0
+        uses: mamezou-tech/setup-helmfile@c04e83ec7650bf2ec910864bcb409479cf56d8e6 
         with:
           kubectl-version: '${{ inputs.version_kubectl }}'
           kubectl-release-date: '${{ inputs.version_kubectl_release_date }}'
@@ -133,7 +133,7 @@ jobs:
       # AWS setup
       - name: Configure AWS Credentials
         if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'aws' }}
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-region: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).region }}
           role-to-assume: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).role_to_assume }}
@@ -154,7 +154,7 @@ jobs:
 
       # Azure setup
       - name: Setup / Azure Login
-        uses: Azure/login@v2
+        uses: Azure/login@v3
         if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind == 'azure' }}
         with:
           client-id: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).identifier }}
@@ -163,13 +163,13 @@ jobs:
 
       - name: Set up kubelogin for non-interactive login
         if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind  == 'azure' }}
-        uses: azure/use-kubelogin@v1.2
+        uses: azure/use-kubelogin@v1.3
         with:
           kubelogin-version: 'v0.0.24'
 
       - name: Setup / AKS Context
         if: ${{ fromJSON(steps.parse_config.outputs.result).provider_kind  == 'azure' }}
-        uses: azure/aks-set-context@v4
+        uses: azure/aks-set-context@v5
         with:
           resource-group: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).resource_group_name }}
           cluster-name: ${{ steps.parse_config.outputs.result && fromJSON(steps.parse_config.outputs.result).cluster_name }}
@@ -188,7 +188,7 @@ jobs:
           done
 
       # Helm logic
-      - uses: imranismail/setup-kustomize@v2
+      - uses: imranismail/setup-kustomize@53f941b41dca13ed61874bbc6b4b6e1562877530 # v3.0.0
         with:
           kustomize-version: '${{ inputs.version_kustomize }}'
 
